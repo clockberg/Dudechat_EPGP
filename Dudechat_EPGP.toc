@@ -1,9 +1,10 @@
 ## Interface: 11305
 ## Title: |cFFFFFFFFDudechat_EPGP|r|cFF00FF00 v0.0.1|r
 ## Version: 0.0.1
-## SavedVariables: DEPGPConfig
+## SavedVariables: DEPGPStorage
 
 Dudechat_EPGP.lua
+Data/DefaultOptions.lua
+Data/Items.lua
 InterfaceOptions.lua
 ItemTooltipMod.lua
-Data/Items.lua

@@ -8,45 +8,46 @@ function ItemTooltipMod:New()
 	return self
 end
 
-function DEPGP:InitItemTooltipMod()
-	self.item_tooltip_mod = ItemTooltipMod:New()
-	self.item_tooltip_mod:Init()
+function DEPGP:BuildItemTooltipMod()
+	local item_tooltip_mod = ItemTooltipMod:New()
+	item_tooltip_mod:Build()
 	GameTooltip:HookScript("OnTooltipSetItem", function (tooltip)
-		self.item_tooltip_mod:Update(tooltip)
+		item_tooltip_mod:Update(tooltip)
 	end)
 	ItemRefTooltip:HookScript("OnTooltipSetItem", function (tooltip)
-		self.item_tooltip_mod:Update(tooltip)
+		item_tooltip_mod:Update(tooltip)
 	end)
+	return item_tooltip_mod
 end
 
-function ItemTooltipMod:Init()
+function ItemTooltipMod:Build()
 	self.item_id = nil
-	self.icon_size = 20
+	self.icon_size = 18
 	self.max_num_rows = 5
 	self.max_num_cols = 18
-	self.tier_text_width = 15
-	self.price_text_width = 25
+	self.grade_text_width = 13
+	self.price_text_width = 30
 	self.frame = CreateFrame("Frame")
 	self.frame:SetPoint("TOPLEFT", 0, 0)
 	self:Resize(0, 0)
 
 	self.textures = {}
-	self.tier_texts = {}
+	self.grade_texts = {}
 	self.price_texts = {}
 	for row = 1, self.max_num_rows do
-		local y_offset = -1 * ((row - 1) * self.icon_size)
+		local y_offset = -1 * ((row - 1) * self.icon_size + 2)
 		self.textures[row] = {}
-		self.tier_texts[row] = self.frame:CreateFontString(self.frame, "OVERLAY", "GameTooltipText")
-		self.tier_texts[row]:SetPoint("TOPLEFT", 0, y_offset)
-		self.tier_texts[row]:SetSize(self.tier_text_width, self.icon_size)
-		self.tier_texts[row]:SetText(nil)
-		self.tier_texts[row]:SetJustifyH("CENTER")
+		self.grade_texts[row] = self.frame:CreateFontString(self.frame, "OVERLAY", "GameTooltipText")
+		self.grade_texts[row]:SetPoint("TOPLEFT", 0, y_offset)
+		self.grade_texts[row]:SetSize(self.grade_text_width, self.icon_size)
+		self.grade_texts[row]:SetText(nil)
+		self.grade_texts[row]:SetJustifyH("CENTER")
 		self.price_texts[row] = self.frame:CreateFontString(self.frame, "OVERLAY", "GameTooltipText")
-		self.price_texts[row]:SetPoint("TOPLEFT", self.tier_text_width, y_offset)
+		self.price_texts[row]:SetPoint("TOPLEFT", self.grade_text_width, y_offset)
 		self.price_texts[row]:SetSize(self.price_text_width, self.icon_size)
 		self.price_texts[row]:SetText(nil)
 		self.price_texts[row]:SetJustifyH("CENTER")
-		local text_width = self.tier_text_width + self.price_text_width
+		local text_width = self.grade_text_width + self.price_text_width
 		for col = 1, self.max_num_cols do
 			local x_offset = (col - 1) * self.icon_size + text_width
 			self.textures[row][col] = self.frame:CreateTexture(nil, "OVERLAY")
@@ -58,7 +59,7 @@ end
 
 function ItemTooltipMod:Clear()
 	for row = 1, self.max_num_rows do
-		self.tier_texts[row]:SetText(nil)
+		self.grade_texts[row]:SetText(nil)
 		self.price_texts[row]:SetText(nil)
 	end
 	for row = 1, self.max_num_rows do
@@ -70,7 +71,7 @@ function ItemTooltipMod:Clear()
 end
 
 function ItemTooltipMod:Resize(rows, cols)
-	self.frame:SetSize(self.icon_size * cols + self.tier_text_width + self.price_text_width, self.icon_size * rows)
+	self.frame:SetSize(self.icon_size * cols + self.grade_text_width + self.price_text_width, self.icon_size * rows)
 end
 
 function ItemTooltipMod:Update(tooltip)
@@ -92,22 +93,22 @@ function ItemTooltipMod:Update(tooltip)
 
 	self.frame:Show()
 
-	local num_rows = sizeof(item_data.by_tier)
+	local num_rows = sizeof(item_data.by_grade)
 	local num_cols = 0
-	for tier, tier_data in pairs(item_data.by_tier) do
-		num_cols = max(num_cols, #tier_data.specs)
+	for grade, grade_data in pairs(item_data.by_grade) do
+		num_cols = max(num_cols, #grade_data.specs)
 	end
 	self:Resize(num_rows, num_cols)
 
-	local tiers = table_get_keys(item_data.by_tier)
-	table.sort(tiers)
+	local grades = table_get_keys(item_data.by_grade)
+	table.sort(grades)
 
 	local row = 1
-	for _, tier in pairs(tiers) do
-		tier_data = item_data.by_tier[tier]
-		self.tier_texts[row]:SetText(addon.app.tiers[tier])
-		self.price_texts[row]:SetText(tier_data.price)
-		local specs_as_keys = table_flip(tier_data.specs)
+	for _, grade in pairs(grades) do
+		grade_data = item_data.by_grade[grade]
+		self.grade_texts[row]:SetText(addon.app.grades[grade])
+		self.price_texts[row]:SetText(grade_data.price)
+		local specs_as_keys = table_flip(grade_data.specs)
 		local col = 1
 		for _, spec in pairs(addon.app.specs) do
 			if specs_as_keys[spec] ~= nil then

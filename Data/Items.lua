@@ -1,15 +1,12 @@
 local _, addon = ...
 
-function DEPGP:InitItemsData()
-	if self.data == nil then
-		self.data = {}
-	end
-	self.data.items = {
+function DEPGP:GetItemsData()
+	return {
 		[3363] = {
 			["name"] = "Frayed Belt",
-			["by_tier"] = {
+			["by_grade"] = {
 				[1] = {
-					["price"] = 555,
+					["price"] = 55.5,
 					["specs"] = {
 						"ROGUE",
 					}
@@ -47,7 +44,7 @@ function DEPGP:InitItemsData()
 		},
 		[1377] = {
 			["name"] = "Frayed Gloves",
-			["by_tier"] = {
+			["by_grade"] = {
 				[1] = {
 					["price"] = 50,
 					["specs"] = {
@@ -89,7 +86,7 @@ function DEPGP:InitItemsData()
 		},
 		[153] = {
 			["name"] = "Primitive Kilt",
-			["by_tier"] = {
+			["by_grade"] = {
 				[3] = {
 					["price"] = 5,
 					["specs"] = {
