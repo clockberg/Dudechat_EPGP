@@ -23,7 +23,7 @@ function ItemTooltipMod:Init()
 	self.item_id = nil
 	self.icon_size = 20
 	self.max_num_rows = 5
-	self.max_num_cols = 14
+	self.max_num_cols = 18
 	self.tier_text_width = 15
 	self.price_text_width = 25
 	self.frame = CreateFrame("Frame")
@@ -95,7 +95,7 @@ function ItemTooltipMod:Update(tooltip)
 	local num_rows = sizeof(item_data.by_tier)
 	local num_cols = 0
 	for tier, tier_data in pairs(item_data.by_tier) do
-		num_cols = max(num_cols, #tier_data.roles)
+		num_cols = max(num_cols, #tier_data.specs)
 	end
 	self:Resize(num_rows, num_cols)
 
@@ -105,11 +105,15 @@ function ItemTooltipMod:Update(tooltip)
 	local row = 1
 	for _, tier in pairs(tiers) do
 		tier_data = item_data.by_tier[tier]
-		self.tier_texts[row]:SetText(addon.app.tier_map[tier])
+		self.tier_texts[row]:SetText(addon.app.tiers[tier])
 		self.price_texts[row]:SetText(tier_data.price)
-		table.sort(tier_data.roles)
-		for col, role in pairs(tier_data.roles) do
-			self.textures[row][col]:SetTexture(addon.app.role_textures[role])
+		local specs_as_keys = table_flip(tier_data.specs)
+		local col = 1
+		for _, spec in pairs(addon.app.specs) do
+			if specs_as_keys[spec] ~= nil then
+				self.textures[row][col]:SetTexture(addon.app.spec_textures[spec])
+				col = col + 1
+			end
 		end
 		row = row + 1
 	end

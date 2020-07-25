@@ -10,20 +10,37 @@ function DEPGP:InitItemsData()
 			["by_tier"] = {
 				[1] = {
 					["price"] = 555,
-					["roles"] = {
-						self.roles.HUNTER
+					["specs"] = {
+						"ROGUE",
 					}
 				},
 				[2] = {
 					["price"] = 25,
-					["roles"] = {
-						self.roles.FURY_WAR
+					["specs"] = {
+						"SHADOW_PRIEST",
 					}
 				},
 				[4] = {
 					["price"] = 2,
-					["roles"] = {
-						self.roles.ROGUE
+					["specs"] = {
+						"PROT_WAR",
+						"FURY_WAR",
+						"ROGUE",
+						"HUNTER",
+						"RESTO_SHAM",
+						"ELE_SHAM",
+						"ENHANCE_SHAM",
+						"RESTO_DRUID",
+						"BEAR_DRUID",
+						"CAT_DRUID",
+						"BOOMKIN",
+						"MAGE",
+						"WARLOCK",
+						"HOLY_PRIEST",
+						"SHADOW_PRIEST",
+						"HOLY_PALADIN",
+						"RET_PALADIN",
+						"PROT_PALADIN",
 					}
 				}
 			}
@@ -33,47 +50,39 @@ function DEPGP:InitItemsData()
 			["by_tier"] = {
 				[1] = {
 					["price"] = 50,
-					["roles"] = {
-						self.roles.FURY_WAR
+					["specs"] = {
+						"HUNTER",
 					}
 				},
 				[2] = {
 					["price"] = 25,
-					["roles"] = {
-						self.roles.BOOMKIN,
-						self.roles.PROT_WAR,
-						self.roles.FURY_WAR,
-						self.roles.ROGUE,
-						self.roles.RESTO_SHAM,
-						self.roles.ELE_SHAM,
-						self.roles.BEAR,
-						self.roles.RESTO_DRUID,
-						self.roles.WARLOCK,
+					["specs"] = {
+						"ELE_SHAM",
+						"BOOMKIN",
+						"MAGE",
+						"WARLOCK",
 					}
 				},
 				[3] = {
 					["price"] = 10,
-					["roles"] = {
-						self.roles.PROT_WAR,
-						self.roles.FURY_WAR,
-						self.roles.ROGUE,
+					["specs"] = {
+						"PROT_WAR",
 					}
 				},
 				[4] = {
 					["price"] = 5,
-					["roles"] = {
-						self.roles.BOOMKIN,
-						self.roles.ROGUE,
-						self.roles.RESTO_SHAM,
+					["specs"] = {
+						"PROT_WAR",
+						"FURY_WAR",
+						"ROGUE",
 					}
 				},
 				[5] = {
 					["price"] = 2,
-					["roles"] = {
-						self.roles.BEAR,
-						self.roles.RESTO_DRUID,
-						self.roles.BOOMKIN,
-						self.roles.WARLOCK,
+					["specs"] = {
+						"RESTO_SHAM",
+						"RESTO_DRUID",
+						"HOLY_PRIEST",
 					}
 				}
 			}
@@ -83,8 +92,8 @@ function DEPGP:InitItemsData()
 			["by_tier"] = {
 				[3] = {
 					["price"] = 5,
-					["roles"] = {
-						self.roles.WARLOCK
+					["specs"] = {
+						"WARLOCK",
 					}
 				}
 			}

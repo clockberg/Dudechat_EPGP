@@ -20,61 +20,63 @@ function DEPGP:New()
 end
 
 function DEPGP:Init()
-	self:InitRoles()
-	self:InitTierMap()
-	self:InitRoleTextures()
+	self:InitSpecs()
+	self:InitTiers()
 	self:InitItemsData()
 	self:InitInterfaceOptions()
 	self:InitItemTooltipMod()
 end
 
-function DEPGP:InitRoles()
-	self.roles = {
-		["PROT_WAR"] = "PROT_WAR",
-		["FURY_WAR"] = "FURY_WAR",
-		["ROGUE"] = "ROGUE",
-		["HUNTER"] = "HUNTER",
-		["RESTO_SHAM"] = "RESTO_SHAM",
-		["ELE_SHAM"] = "ELE_SHAM",
-		["ENHANCE_SHAM"] = "ENHANCE_SHAM",
-		["RESTO_DRUID"] = "RESTO_DRUID",
-		["BEAR"] = "BEAR",
-		["CAT"] = "CAT",
-		["BOOMKIN"] = "BOOMKIN",
-		["MAGE"] = "MAGE",
-		["WARLOCK"] = "WARLOCK",
-		["HOLY_PRIEST"] = "HOLY_PRIEST",
-		["SHADOW_PRIEST"] = "SHADOW_PRIEST",
+function DEPGP:InitSpecs()
+	self.specs = {
+		"PROT_WAR",
+		"FURY_WAR",
+		"ROGUE",
+		"HUNTER",
+		"RESTO_SHAM",
+		"ELE_SHAM",
+		"ENHANCE_SHAM",
+		"RESTO_DRUID",
+		"BEAR_DRUID",
+		"CAT_DRUID",
+		"BOOMKIN",
+		"MAGE",
+		"WARLOCK",
+		"HOLY_PRIEST",
+		"SHADOW_PRIEST",
+		"HOLY_PALADIN",
+		"RET_PALADIN",
+		"PROT_PALADIN",
+	}
+	self.spec_textures = {
+		["PROT_WAR"] = GetSpellTexture(7164),
+		["FURY_WAR"] = GetSpellTexture(12303),
+		["ROGUE"] = "Interface\\ICONS\\ClassIcon_Rogue.PNG",
+		["HUNTER"] = "Interface\\ICONS\\ClassIcon_Hunter.PNG",
+		["RESTO_SHAM"] = GetSpellTexture(16367),
+		["ELE_SHAM"] = GetSpellTexture(529),
+		["ENHANCE_SHAM"] = GetSpellTexture(23881),
+		["RESTO_DRUID"] = GetSpellTexture(27527),
+		["BEAR_DRUID"] = GetSpellTexture(19030),
+		["CAT_DRUID"] = GetSpellTexture(5759),
+		["BOOMKIN"] = GetSpellTexture(9835),
+		["MAGE"] = "Interface\\ICONS\\ClassIcon_Mage.PNG",
+		["WARLOCK"] = "Interface\\ICONS\\ClassIcon_Warlock.PNG",
+		["HOLY_PRIEST"] = "Interface\\ICONS\\ClassIcon_Priest.PNG",
+		["SHADOW_PRIEST"] = GetSpellTexture(589),
+		["HOLY_PALADIN"] = GetSpellTexture(635),
+		["RET_PALADIN"] = GetSpellTexture(10300),
+		["PROT_PALADIN"] = GetSpellTexture(10292),
 	}
 end
 
-function DEPGP:InitTierMap()
-	self.tier_map = {
-		[1] = "Z",
-		[2] = "S",
-		[3] = "A",
-		[4] = "B",
-		[5] = "C",
-	}
-end
-
-function DEPGP:InitRoleTextures()
-	self.role_textures = {
-		[self.roles.PROT_WAR] = GetSpellTexture(7164),
-		[self.roles.FURY_WAR] = GetSpellTexture(12303),
-		[self.roles.ROGUE] = GetSpellTexture(27611),
-		[self.roles.HUNTER] = GetSpellTexture(1510),
-		[self.roles.RESTO_SHAM] = GetSpellTexture(16367),
-		[self.roles.ELE_SHAM] = GetSpellTexture(28293),
-		[self.roles.ENHANCE_SHAM] = GetSpellTexture(23881),
-		[self.roles.RESTO_DRUID] = GetSpellTexture(27527),
-		[self.roles.BEAR] = GetSpellTexture(19030),
-		[self.roles.CAT] = GetSpellTexture(5759),
-		[self.roles.BOOMKIN] = GetSpellTexture(9835),
-		[self.roles.MAGE] = GetSpellTexture(20869),
-		[self.roles.WARLOCK] = GetSpellTexture(20791),
-		[self.roles.HOLY_PRIEST] = GetSpellTexture(17843),
-		[self.roles.SHADOW_PRIEST] = GetSpellTexture(22917),
+function DEPGP:InitTiers()
+	self.tiers = {
+		"Z",
+		"S",
+		"A",
+		"B",
+		"C",
 	}
 end
 
@@ -94,4 +96,12 @@ function table_get_keys(tbl)
 		i = i + 1
 	end
 	return keys
+end
+
+function table_flip(tbl)
+	local flipped = {}
+	for key, val in pairs(tbl) do
+		flipped[val] = key
+	end
+	return flipped
 end
