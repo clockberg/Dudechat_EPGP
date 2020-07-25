@@ -3,8 +3,7 @@
 ## Version: 0.0.1
 ## SavedVariables: DEPGPConfig
 
-Constants.lua
-Options.lua
-Database/items_db.lua
 Dudechat_EPGP.lua
-Tooltip.lua
+InterfaceOptions.lua
+ItemTooltipMod.lua
+Data/Items.lua
