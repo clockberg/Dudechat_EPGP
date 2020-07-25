@@ -1,9 +1,8 @@
 local _, ns = ...
 
-ns.dbItems = {
-    [8925] = {
-        ["Name"] = "Crystal Vial",
-        ["Priority"] = "hello world",
+ns.items_db = {
+    [3363] = {
+        ["Name"] = "Frayed Belt",
         ["Rankings"] = {
             [ns.TIER_Z] = {
                 ["Value"] = 50,
@@ -25,9 +24,8 @@ ns.dbItems = {
             }
         }
     },
-    [13463] = {
-        ["Name"] = "Dreamfoil",
-        ["Priority"] = "hello world",
+    [1377] = {
+        ["Name"] = "Frayed Gloves",
         ["Rankings"] = {
             [ns.TIER_Z] = {
                 ["Value"] = 50,

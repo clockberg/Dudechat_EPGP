@@ -1,5 +1,7 @@
 local _, ns = ...
 
+ns.ADDON_NAME = "Dudechat_EPGP"
+
 ns.ROLE_PROT_WAR =      "PROT_WAR"
 ns.ROLE_DPS_WAR =       "DPS_WAR"
 ns.ROLE_ROGUE =         "ROGUE"
@@ -16,11 +18,11 @@ ns.ROLE_WARLOCK =       "WARLOCK"
 ns.ROLE_HOLY_PRIEST =   "HOLY_PRIEST"
 ns.ROLE_SHADOW_PRIEST = "SHADOW_PRIEST"
 
-ns.TIER_Z =             "Z"
-ns.TIER_S =             "S"
-ns.TIER_A =             "A"
-ns.TIER_B =             "B"
-ns.TIER_C =             "C"
+ns.TIER_Z = "Z"
+ns.TIER_S = "S"
+ns.TIER_A = "A"
+ns.TIER_B = "B"
+ns.TIER_C = "C"
 
 ns.roleIconTextures = {
     [ns.ROLE_PROT_WAR] = GetSpellTexture(7164),
