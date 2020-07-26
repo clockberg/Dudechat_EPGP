@@ -11,6 +11,15 @@ frame = CreateFrame("FRAME")
 frame:RegisterEvent("ADDON_LOADED")
 frame:SetScript("OnEvent", hook)
 
+SLASH_DEPGP1 = "/depgp"
+function SlashCmdList.DEPGP(command, editbox)
+	if command == "item" then
+		addon.app.item_dist_window:Toggle()
+	else
+		-- show default window
+	end
+end
+
 DEPGP = {}
 DEPGP.__index = DEPGP
 function DEPGP:New()
@@ -43,6 +52,7 @@ function DEPGP:Init()
 	-- load app modules
 	self.interface_options = self:BuildInterfaceOptions()
 	self.item_tooltip_mod = self:BuildItemTooltipMod()
+	self.item_dist_window = self:BuildItemDistWindow()
 end
 
 function DEPGP:GetOption(key)
@@ -52,6 +62,10 @@ function DEPGP:GetOption(key)
 		return self.data.default_options[key]
 	end
 	return ""
+end
+
+function DEPGP:SetOption(key, val)
+	self.storage.options[key] = val
 end
 
 function DEPGP:SetTmpOption(key, val)
@@ -64,7 +78,7 @@ end
 
 function DEPGP:CommitTmpOptions()
 	for key, val in pairs(self.data.tmp_options) do
-		self.storage.options[key] = val
+		self:SetOption(key, val)
 	end
 end
 
@@ -162,4 +176,12 @@ function table_flip(tbl)
 		flipped[val] = key
 	end
 	return flipped
+end
+
+--- Rounds the given number to the given number of decimal places
+-- @param num number
+-- @return number
+function round(num, places)
+	local mult = 10^(places or 0)
+	return math.floor(num * mult + 0.5) / mult
 end

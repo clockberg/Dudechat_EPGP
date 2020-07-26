@@ -1,10 +1,11 @@
 ## Interface: 11305
-## Title: |cFFFFFFFFDudechat_EPGP|r|cFF00FF00 v0.0.1|r
-## Version: 0.0.1
+## Title: Dudechat EPGP
+## Notes: Handles guild EPGP and raid loot distribution.
 ## SavedVariables: DEPGPStorage
 
 Dudechat_EPGP.lua
 Data/DefaultOptions.lua
 Data/Items.lua
+ItemDistWindow.lua
 InterfaceOptions.lua
 ItemTooltipMod.lua

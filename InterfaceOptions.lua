@@ -60,8 +60,6 @@ function InterfaceOptions:Build()
 	self.checkboxes = {}
 	self.editboxes = {}
 
-	self.pad = 10
-
 	local fs_title = self.panel:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
 	fs_title:SetPoint("TOPLEFT", 10, -10)
 	fs_title:SetPoint("TOPRIGHT", -10, -10)
@@ -84,18 +82,17 @@ function InterfaceOptions:Connect()
 	InterfaceOptions_AddCategory(self.panel)
 end
 
-function InterfaceOptions:AddCheckbox(option_key, x, y, label, desc)
-	desc = desc or nil
+function InterfaceOptions:AddCheckbox(option_key, x, y, label_text, desc_text)
+	desc_text = desc_text or nil
 
 	local frame = CreateFrame("Frame", nil, self.panel)
 	frame:SetPoint("TOPLEFT", x, y)
 	frame:SetWidth(190)
 	frame:SetHeight(30)
 
-	local bg = self.panel:CreateTexture(nil, "BACKGROUND")
+	local bg = frame:CreateTexture(nil, "BACKGROUND")
 	bg:SetColorTexture(0, 0, 0, 0.5)
 	bg:SetAllPoints(frame)
-	bg:Show()
 
 	local checkbox = CreateFrame("CheckButton", nil, frame, "ChatConfigCheckButtonTemplate")
 	checkbox:SetPoint("BOTTOMLEFT", 3, 2)
@@ -104,42 +101,41 @@ function InterfaceOptions:AddCheckbox(option_key, x, y, label, desc)
 	end)
 
 	-- Label
-	local fs_label = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-	fs_label:SetText(label)
+	local label = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+	label:SetText(label_text)
 
 	-- Desc
-	if desc ~= nil then
+	if desc_text ~= nil then
 		-- Label above desc
-		fs_label:SetPoint("BOTTOMLEFT", 30, 14)
+		label:SetPoint("BOTTOMLEFT", 30, 14)
 
-		local fs_desc = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-		fs_desc:SetPoint("BOTTOMLEFT", 30, 4)
-		fs_desc:SetTextColor(1, 1, 1)
-		fs_desc:SetText(desc)
+		local desc = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+		desc:SetPoint("BOTTOMLEFT", 30, 4)
+		desc:SetTextColor(1, 1, 1)
+		desc:SetText(desc_text)
 	else
 		-- Label only
-		fs_label:SetPoint("BOTTOMLEFT", 30, 8)
+		label:SetPoint("BOTTOMLEFT", 30, 8)
 	end
 
 	self.checkboxes[option_key] = checkbox
 end
 
-function InterfaceOptions:AddEditbox(option_key, x, y, label, desc)
-	desc = desc or nil
+function InterfaceOptions:AddEditbox(option_key, x, y, label_text, desc_text)
+	desc_text = desc_text or nil
 
 	local frame = CreateFrame("Frame", nil, self.panel)
 	frame:SetPoint("TOPLEFT", x, y)
 	frame:SetWidth(190)
-	if desc ~= nil then
+	if desc_text ~= nil then
 		frame:SetHeight(57)
 	else
 		frame:SetHeight(45)
 	end
 
-	local bg = self.panel:CreateTexture(nil, "BACKGROUND")
+	local bg = frame:CreateTexture(nil, "BACKGROUND")
 	bg:SetColorTexture(0, 0, 0, 0.5)
 	bg:SetAllPoints(frame)
-	bg:Show()
 
 	local editbox = CreateFrame("EditBox", nil, frame, "InputBoxTemplate")
 	editbox:SetPoint("BOTTOMLEFT", 12, 5)
@@ -150,29 +146,28 @@ function InterfaceOptions:AddEditbox(option_key, x, y, label, desc)
 	editbox:SetScript("OnEscapePressed", function()
 		editbox:ClearFocus()
 	end)
+	editbox:SetScript("OnTextChanged", function()
+		print("textchanged")
+		addon.app:SetTmpOption(option_key, editbox:GetText())
+	end)
 
 	-- Label
-	local fs_label = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-	fs_label:SetText(label)
+	local label = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+	label:SetText(label_text)
 
 	-- Desc
-	if desc ~= nil then
+	if desc_text ~= nil then
 		-- Label above desc above editbox
-		fs_label:SetPoint("BOTTOMLEFT", 7, 39)
+		label:SetPoint("BOTTOMLEFT", 7, 39)
 
-		local fs_desc = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-		fs_desc:SetPoint("BOTTOMLEFT", 7, 27)
-		fs_desc:SetTextColor(1, 1, 1)
-		fs_desc:SetText(desc)
+		local desc = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+		desc:SetPoint("BOTTOMLEFT", 7, 27)
+		desc:SetTextColor(1, 1, 1)
+		desc:SetText(desc_text)
 	else
 		-- Label only above editbox
-		fs_label:SetPoint("BOTTOMLEFT", 7, 27)
+		label:SetPoint("BOTTOMLEFT", 7, 27)
 	end
 
 	self.editboxes[option_key] = editbox
 end
-
--- local texture = self.panel:CreateTexture(nil, "BACKGROUND")
--- texture:SetColorTexture(1, 0, 0)
--- texture:SetAllPoints(checkbox)
--- texture:Show()
