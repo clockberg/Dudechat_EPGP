@@ -30,8 +30,11 @@ end
 
 function DEPGP:Init()
 	-- load constants
+	self.name = "dEPGP"
+	self.name_long = "Dudechat EPGP"
 	self.specs = self:GetSpecs()
 	self.spec_textures = self:GetSpecTextures()
+	self.spec_abbrs = self:GetSpecAbbrs()
 	self.grades = self:GetGrades()
 
 	-- load data
@@ -129,6 +132,29 @@ function DEPGP:GetSpecTextures()
 		["HOLY_PALADIN"] = GetSpellTexture(635),
 		["RET_PALADIN"] = GetSpellTexture(10300),
 		["PROT_PALADIN"] = GetSpellTexture(10292),
+	}
+end
+
+function DEPGP:GetSpecAbbrs()
+	return {
+		["PROT_WAR"] = "ProtWar",
+		["FURY_WAR"] = "Fury",
+		["ROGUE"] = "Rogue",
+		["HUNTER"] = "Hunter",
+		["RESTO_SHAM"] = "RSham",
+		["ELE_SHAM"] = "Ele",
+		["ENHANCE_SHAM"] = "Enh",
+		["RESTO_DRUID"] = "RDruid",
+		["BEAR_DRUID"] = "Bear",
+		["CAT_DRUID"] = "Cat",
+		["BOOMKIN"] = "Boomkin",
+		["MAGE"] = "Mage",
+		["WARLOCK"] = "Lock",
+		["HOLY_PRIEST"] = "HPriest",
+		["SHADOW_PRIEST"] = "SPriest",
+		["HOLY_PALADIN"] = "HPal",
+		["RET_PALADIN"] = "Ret",
+		["PROT_PALADIN"] = "ProtPal",
 	}
 end
 

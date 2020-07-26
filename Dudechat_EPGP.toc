@@ -6,6 +6,7 @@
 Dudechat_EPGP.lua
 Data/DefaultOptions.lua
 Data/Items.lua
+GradeFrame.lua
 ItemDistWindow.lua
 InterfaceOptions.lua
 ItemTooltipMod.lua

@@ -6,7 +6,7 @@ function DEPGP:GetItemsData()
 			["name"] = "Frayed Belt",
 			["by_grade"] = {
 				[1] = {
-					["price"] = 55.5,
+					["price"] = 555,
 					["specs"] = {
 						"ROGUE",
 					}
@@ -91,6 +91,74 @@ function DEPGP:GetItemsData()
 					["price"] = 5,
 					["specs"] = {
 						"WARLOCK",
+					}
+				}
+			}
+		},
+		[1368] = {
+			["name"] = "Ragged Leather Gloves",
+			["by_grade"] = {
+				[3] = {
+					["price"] = 5,
+					["specs"] = {
+						"ROGUE",
+					}
+				}
+			}
+		},
+		[1370] = {
+			["name"] = "Ragged Leather Bracers",
+			["by_grade"] = {
+				[1] = {
+					["price"] = 22,
+					["specs"] = {
+						"PROT_WAR",
+					}
+				},
+				[2] = {
+					["price"] = 12,
+					["specs"] = {
+						"FURY_WAR",
+					}
+				}
+			}
+		},
+		[139] = {
+			["name"] = "Brawler's Pants",
+			["by_grade"] = {
+				[1] = {
+					["price"] = 50,
+					["specs"] = {
+						"PROT_WAR",
+						"FURY_WAR",
+						"ROGUE",
+					}
+				},
+				[2] = {
+					["price"] = 28,
+					["specs"] = {
+						"HUNTER",
+						"ENH_SHAM",
+					}
+				}
+			}
+		},
+		[2654] = {
+			["name"] = "Brawler's Pants",
+			["by_grade"] = {
+				[1] = {
+					["price"] = 50,
+					["specs"] = {
+						"PROT_WAR",
+						"FURY_WAR",
+						"ROGUE",
+					}
+				},
+				[2] = {
+					["price"] = 28,
+					["specs"] = {
+						"HUNTER",
+						"ENH_SHAM",
 					}
 				}
 			}

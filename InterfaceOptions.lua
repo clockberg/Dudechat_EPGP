@@ -11,12 +11,12 @@ end
 function DEPGP:BuildInterfaceOptions()
 	local interface_options = InterfaceOptions:New()
 	interface_options:Build()
-	interface_options:AddCheckbox("flag", 10, -35, "Label", "This is a description.")
-	interface_options:AddCheckbox("flag2", 10, -70, "Label2")
-	interface_options:AddCheckbox("flag3", 210, -70, "Label3")
-	interface_options:AddCheckbox("flag4", 410, -70, "Label4")
-	interface_options:AddEditbox("foo.bar", 10, -105, "Label5", "This is a description.")
-	interface_options:AddEditbox("foo.foo", 210, -105, "Labely 6")
+	interface_options:AddCheckbox("item_tooltip_mod.show", 10, -35, "Item Tooltip", "Show grades on tooltip.")
+	-- interface_options:AddCheckbox("flag2", 10, -70, "Label2")
+	-- interface_options:AddCheckbox("flag3", 210, -70, "Label3")
+	-- interface_options:AddCheckbox("flag4", 410, -70, "Label4")
+	-- interface_options:AddEditbox("foo.bar", 10, -105, "Label5", "This is a description.")
+	-- interface_options:AddEditbox("foo.foo", 210, -105, "Labely 6")
 	interface_options:Sync()
 	interface_options:Connect()
 	return interface_options
@@ -47,7 +47,7 @@ end
 
 function InterfaceOptions:Build()
 	self.panel = CreateFrame("Frame")
-	self.panel.name = "Dudechat EPGP"
+	self.panel.name = addon.app.name_long
 	self.panel:SetPoint("TOPLEFT", 0, 0)
 	self.panel:SetPoint("BOTTOMRIGHT", 0, 0)
 	self.panel:Hide()
@@ -64,7 +64,7 @@ function InterfaceOptions:Build()
 	fs_title:SetPoint("TOPLEFT", 10, -10)
 	fs_title:SetPoint("TOPRIGHT", -10, -10)
 	fs_title:SetJustifyH("LEFT")
-	fs_title:SetText("Dudechat EPGP")
+	fs_title:SetText(addon.app.name_long)
 	fs_title:SetHeight(fs_title:GetStringHeight())
 end
 
@@ -88,14 +88,14 @@ function InterfaceOptions:AddCheckbox(option_key, x, y, label_text, desc_text)
 	local frame = CreateFrame("Frame", nil, self.panel)
 	frame:SetPoint("TOPLEFT", x, y)
 	frame:SetWidth(190)
-	frame:SetHeight(30)
+	frame:SetHeight(31)
 
 	local bg = frame:CreateTexture(nil, "BACKGROUND")
 	bg:SetColorTexture(0, 0, 0, 0.5)
 	bg:SetAllPoints(frame)
 
 	local checkbox = CreateFrame("CheckButton", nil, frame, "ChatConfigCheckButtonTemplate")
-	checkbox:SetPoint("BOTTOMLEFT", 3, 2)
+	checkbox:SetPoint("BOTTOMLEFT", 3, 3)
 	checkbox:SetScript("OnClick", function ()
 		addon.app:SetTmpOption(option_key, checkbox:GetChecked())
 	end)
@@ -107,10 +107,10 @@ function InterfaceOptions:AddCheckbox(option_key, x, y, label_text, desc_text)
 	-- Desc
 	if desc_text ~= nil then
 		-- Label above desc
-		label:SetPoint("BOTTOMLEFT", 30, 14)
+		label:SetPoint("BOTTOMLEFT", 30, 15)
 
 		local desc = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-		desc:SetPoint("BOTTOMLEFT", 30, 4)
+		desc:SetPoint("BOTTOMLEFT", 30, 5)
 		desc:SetTextColor(1, 1, 1)
 		desc:SetText(desc_text)
 	else
