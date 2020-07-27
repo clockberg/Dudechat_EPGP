@@ -532,11 +532,11 @@ function ItemDistWindow:OrderPlayers()
 		table.insert(tmp, self.player_frames[i])
 	end
 	table.sort(tmp, function(t1, t2)
-      return t1.pr > t2.pr
-    end)
-    for i = 1, sizeof(tmp) do
-    	tmp[i]:SetPoint("TOPLEFT", 0, -1 * self.player_height * i)
-    end
+		return t1.pr > t2.pr
+	end)
+	for i = 1, sizeof(tmp) do
+		tmp[i]:SetPoint("TOPLEFT", 0, -1 * self.player_height * i)
+	end
 end
 
 function ItemDistWindow:CreateActionsSection()
