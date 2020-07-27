@@ -31,12 +31,12 @@ function GradeFrame:Build(parent)
 	for row = 1, self.max_num_rows do
 		local y_offset = -1 * ((row - 1) * self.icon_size + 2)
 		self.textures[row] = {}
-		self.grade_texts[row] = self.frame:CreateFontString(self.frame, "OVERLAY", "GameTooltipText")
+		self.grade_texts[row] = self.frame:CreateFontString(self.frame, "OVERLAY", "GameFontNormalSmall")
 		self.grade_texts[row]:SetPoint("TOPLEFT", 0, y_offset)
 		self.grade_texts[row]:SetSize(self.grade_text_width, self.icon_size)
 		self.grade_texts[row]:SetText(nil)
 		self.grade_texts[row]:SetJustifyH("CENTER")
-		self.price_texts[row] = self.frame:CreateFontString(self.frame, "OVERLAY", "GameTooltipText")
+		self.price_texts[row] = self.frame:CreateFontString(self.frame, "OVERLAY", "GameFontNormalSmall")
 		self.price_texts[row]:SetPoint("TOPLEFT", self.grade_text_width, y_offset)
 		self.price_texts[row]:SetSize(self.price_text_width, self.icon_size)
 		self.price_texts[row]:SetText(nil)
@@ -87,7 +87,7 @@ function GradeFrame:Update(item_id)
 	local num_rows = sizeof(item_data.by_grade)
 	local num_cols = 0
 	for grade, grade_data in pairs(item_data.by_grade) do
-		num_cols = max(num_cols, #grade_data.specs)
+		num_cols = max(num_cols, sizeof(grade_data.specs))
 	end
 	self:Resize(num_rows, num_cols)
 

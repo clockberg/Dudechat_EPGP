@@ -52,10 +52,59 @@ function DEPGP:Init()
 		self.storage.options = {}
 	end
 
+	-- load roster
+	self.storage.roster = {}
+	self:LoadRoster()
+
 	-- load app modules
 	self.interface_options = self:BuildInterfaceOptions()
 	self.item_tooltip_mod = self:BuildItemTooltipMod()
 	self.item_dist_window = self:BuildItemDistWindow()
+end
+
+function DEPGP:LoadRoster()
+	local num_members, _, _ = GetNumGuildMembers()
+	for i = 1, num_members do
+		local data = self:GetPlayerDataFresh(i)
+		self.storage.roster[data.name] = data
+	end
+end
+
+function DEPGP:GetPlayerDataFresh(gindex)
+	local name, _, _, level, _, _, _, onote, _, _, class, _, _, _, _, _, guid = GetGuildRosterInfo(gindex)
+	return {
+		["name"] = name,
+		["level"] = level,
+		["onote"] = onote,
+		["class"] = class,
+		["guid"] = guid,
+		["gindex"] = gindex,
+	}
+end
+
+function DEPGP:ParseOfficerNote(onote)
+	local ep, gp = string.match(onote, "(%d+),(%d+)")
+	if ep == nil then ep = 0 end
+	if gp == nil then gp = 0 end
+	return {
+		["ep"] = ep,
+		["gp"] = gp,
+	}
+end
+
+function DEPGP:RemoveServerFromName(name)
+	local s, e = string.find(name, "-")
+	if s == nil then return name end
+	return string.sub(name, 1, s - 1)
+end
+
+function DEPGP:GetPR(ep, gp)
+	if gp == 0 then return 0 end
+	return round(ep / gp, 2)
+end
+
+function DEPGP:GetPlayerData(name)
+	return self.storage.roster[name]
 end
 
 function DEPGP:GetOption(key)

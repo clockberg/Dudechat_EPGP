@@ -27,36 +27,63 @@ end
 
 function ItemDistWindow:ClearItem(play_sound)
 	self.item_id = nil
-	self.panel.item:SetTexture(nil)
-	self.panel.details:Hide()
-	self.panel.actions:Hide()
+	self.selected_player = nil
+	self.player_index = 1
+	for i = 1, sizeof(self.player_frames) do
+		self.player_frames[i]:Hide()
+	end
+	self.sections.top.item_texture:SetTexture(nil)
+	self.sections.top.title:SetText(addon.app.name)
+	self.sections.details:Hide()
+	self.sections.players:Hide()
+	self.sections.actions:Hide()
+	self.panel:SetHeight(self.top_section_height)
 	if play_sound == nil or play_sound then
 		PlaySound(SOUNDKIT.IG_ABILITY_ICON_DROP)
 	end
 end
 
 function ItemDistWindow:SetItem(item_id)
+	self:ClearItem(false)
 	self.item_id = item_id
 	local _, item_link, _, _, _, _, _, _ = GetItemInfo(item_id);
-	self.panel.item:SetTexture(GetItemIcon(item_id))
-	local details = self.panel.details
-	details.itemname:SetText(item_link)
-	details.grade_frame:Update(item_id)
-	details:SetHeight(26 + details.grade_frame.frame:GetHeight())
-	self.panel:SetHeight(43 + details:GetHeight())
-	details:Show()
+	self.sections.top.item_texture:SetTexture(GetItemIcon(item_id))
+	self.sections.top.title:SetText(item_link)
 
-	local actions = self.panel.actions
-	actions:SetPoint("TOPLEFT", 0, -1 * self.panel:GetHeight())
-	actions:SetPoint("TOP", 0, -1 * self.panel:GetHeight())
+	local details = self.sections.details
+	details.grade_frame:Update(item_id)
+	local dh = details.grade_frame.frame:GetHeight()
+	details:SetHeight(dh)
+	if dh > 0 then
+		details:Show()
+	end
+
+	local players = self.sections.players
+	local y = self.top_section_height + details:GetHeight()
+	players:SetPoint("TOPLEFT", 0, -1 * y)
+	players:SetHeight(self.player_height)
+	players:Show()
+
+	local actions = self.sections.actions
+	y = self.top_section_height + details:GetHeight() + players:GetHeight()
+	actions:SetPoint("TOPLEFT", 0, -1 * y)
 	actions:Show()
+
+	y = self.top_section_height + details:GetHeight() + players:GetHeight() + actions:GetHeight()
+	self.panel:SetHeight(y)
 
 	self:AnnounceItem()
 end
 
-function ItemDistWindow:AnnounceItem()
+function ItemDistWindow:HasItem()
 	if self.item_id == nil then
-		print("noitem")
+		return false
+	end
+	return true
+end
+
+function ItemDistWindow:AnnounceItem()
+	if not self:HasItem() then
 		return
 	end
 	local _, item_link, _, _, _, _, _, _ = GetItemInfo(self.item_id);
@@ -68,8 +95,8 @@ function ItemDistWindow:AnnounceItem()
 		table.sort(grades)
 		for _, grade in pairs(grades) do
 			grade_data = item_data.by_grade[grade]
-			local str = " " .. addon.app.grades[grade] .. ": "
-			str = str .. " " .. grade_data.price .. "GP - "
+			local str = " [ " .. addon.app.grades[grade] .. " ] "
+			str = str .. " [ " .. grade_data.price .. "gp ] "
 			local specs_as_keys = table_flip(grade_data.specs)
 			local count = 0
 			for i, spec in pairs(addon.app.specs) do
@@ -96,7 +123,7 @@ function ItemDistWindow:DistributeItem()
 end
 
 function ItemDistWindow:ToggleMenu()
-	local menu = self.panel.menu
+	local menu = self.sections.menu
 	PlaySound(SOUNDKIT.IG_MAINMENU_OPEN)
 	ToggleDropDownMenu(1, nil, menu, "cursor", 3, -3, nil, nil, 2)
 end
@@ -206,6 +233,8 @@ function ItemDistWindow:Unlock()
 		addon.app:SetOption("item_dist_window.x", x)
 		addon.app:SetOption("item_dist_window.y", y)
 		panel:StopMovingOrSizing()
+		panel:SetPoint("TOPLEFT", x, y)
+		panel:SetPoint("TOP", x)
 	end)
 end
 
@@ -217,17 +246,46 @@ end
 
 function ItemDistWindow:Build()
 	self.item_id = nil
-	local width = 200
-	local top_section_height = 43
+	self.width = 200
+	self.top_section_height = 43
+	self.player_height = 15
+	self.selected_player = nil
+	self.player_frames = {}
+	self.player_index = 1
+	self.sections = {
+		["menu"] = nil,
+		["top"] = nil,
+		["details"] = nil,
+		["players"] = nil,
+		["actions"] = nil,
+	}
 
 	self.panel = CreateFrame("Frame")
 	local panel = self.panel
 	panel:EnableMouse(true)
+	panel:SetClampedToScreen(true)
+
+	-- Bind to whisper events
+	panel:RegisterEvent("CHAT_MSG_WHISPER")
+	panel:SetScript("OnEvent", function (self, event, arg1, arg2)
+		if event == "CHAT_MSG_WHISPER" then
+			local msg = arg1
+			local author = arg2
+			local s, e = string.find(msg, "need")
+			if s ~= nil then
+				addon.app.item_dist_window:AddPlayer(author)
+			end
+		end
+	end)
+
+	-- Set lock state
 	if addon.app:GetOption("item_dist_window.lock") then
 		self:Lock()
 	else
 		self:Unlock()
 	end
+
+	-- Bind to mouse events
 	panel:SetScript("OnMouseUp", function (_, button)
 		if button == "LeftButton" then
 			local info_type, item_id, item_link = GetCursorInfo()
@@ -242,115 +300,291 @@ function ItemDistWindow:Build()
 	end)
 	panel:SetPoint("TOPLEFT", addon.app:GetOption("item_dist_window.x"), addon.app:GetOption("item_dist_window.y"))
 	panel:SetPoint("TOP", addon.app:GetOption("item_dist_window.y"))
-	panel:SetWidth(width)
-	panel:SetHeight(top_section_height)
+	panel:SetWidth(self.width)
+	panel:SetHeight(self.top_section_height)
 	-- panel:Hide()
 
-	local bg
+	-- Menu
+	self.sections.menu = CreateFrame("Frame", nil, UIParent, "UIDropDownMenuTemplate")
+	self.sections.menu:SetPoint("CENTER")
+	UIDropDownMenu_Initialize(self.sections.menu, self.CreateMenu, "MENU")
 
-	bg = panel:CreateTexture(nil, "BACKGROUND")
-	bg:SetColorTexture(0, 0, 0, 0.5)
-	bg:SetPoint("TOPLEFT", 0, 0)
-	bg:SetPoint("TOPRIGHT", 0, 0)
-	bg:SetHeight(top_section_height)
+	self:CreateTopSection()
+	self:CreateDetailsSection()
+	self:CreatePlayersSection()
+	self:CreateActionsSection()
+end
 
-	local title = panel:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-	title:SetPoint("TOPLEFT", 45, -4)
-	title:SetPoint("TOPRIGHT", -10, -4)
-	title:SetJustifyH("LEFT")
-	title:SetText(addon.app.name)
-	title:SetHeight(25)
+function ItemDistWindow:CreateTopSection()
+	local elem
+	self.sections.top = CreateFrame("Frame", nil, self.panel)
+	local frame = self.sections.top
+	frame:SetPoint("TOPLEFT", 0, 0)
+	frame:SetPoint("TOP", 0)
+	frame:SetWidth(self.width)
+	frame:SetHeight(self.top_section_height)
 
-	local subtitle = panel:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-	subtitle:SetPoint("TOPLEFT", 45, -16)
-	subtitle:SetPoint("TOPRIGHT", -10, -16)
-	subtitle:SetJustifyH("LEFT")
-	subtitle:SetText("Item Distribution")
-	subtitle:SetTextColor(1, 1, 1)
-	subtitle:SetHeight(25)
+	-- Background
+	elem = frame:CreateTexture(nil, "BACKGROUND")
+	elem:SetColorTexture(0, 0, 0, 0.5)
+	elem:SetPoint("TOPLEFT", 0, 0)
+	elem:SetPoint("TOPRIGHT", 0, 0)
+	elem:SetHeight(self.top_section_height)
 
-	local slot = panel:CreateTexture(nil, "ARTWORK")
-	slot:SetPoint("TOPLEFT", 5, -5)
-	slot:SetHeight(55)
-	slot:SetWidth(55)
-	slot:SetTexture("Interface\\Buttons\\UI-Slot-Background.PNG")
+	-- Title
+	frame.title = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+	elem = frame.title
+	elem:SetPoint("TOPLEFT", 45, -4)
+	elem:SetPoint("TOPRIGHT", -10, -4)
+	elem:SetJustifyH("LEFT")
+	elem:SetText(addon.app.name)
+	elem:SetHeight(25)
 
-	panel.item = panel:CreateTexture(nil, "OVERLAY")
-	local item = panel.item
-	item:SetPoint("TOPLEFT", 5, -5)
-	item:SetHeight(35)
-	item:SetWidth(35)
-	item:SetTexture(nil)
+	-- Subtitle
+	elem = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+	elem:SetPoint("TOPLEFT", 45, -16)
+	elem:SetPoint("TOPRIGHT", -10, -16)
+	elem:SetJustifyH("LEFT")
+	elem:SetText("Item Distribution")
+	elem:SetTextColor(1, 1, 1)
+	elem:SetHeight(25)
 
-	panel.menu = CreateFrame("Frame", nil, UIParent, "UIDropDownMenuTemplate")
-	local menu = panel.menu
-	menu:SetPoint("CENTER")
-	UIDropDownMenu_Initialize(menu, self.CreateMenu, "MENU")
+	-- Item bag slot
+	elem = frame:CreateTexture(nil, "ARTWORK")
+	elem:SetPoint("TOPLEFT", 5, -5)
+	elem:SetHeight(55)
+	elem:SetWidth(55)
+	elem:SetTexture("Interface\\Buttons\\UI-Slot-Background.PNG")
 
-	panel.details = CreateFrame("Frame", nil, panel)
-	local details = panel.details
-	details:SetPoint("TOPLEFT", 0, -1 * top_section_height)
-	details:SetWidth(width)
-	details:Hide()
+	-- Item slot
+	frame.item_texture = frame:CreateTexture(nil, "OVERLAY")
+	elem = frame.item_texture
+	elem:SetPoint("TOPLEFT", 5, -5)
+	elem:SetHeight(35)
+	elem:SetWidth(35)
+	elem:SetTexture(nil)
+end
 
-	bg = details:CreateTexture(nil, "BACKGROUND")
-	bg:SetColorTexture(0, 0, 0, 0.7)
-	bg:SetAllPoints(details)
+function ItemDistWindow:CreateDetailsSection()
+	local elem
 
-	details.itemname = details:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-	local itemname = details.itemname
-	itemname:SetPoint("TOPLEFT", 5, 0)
-	itemname:SetPoint("TOPRIGHT", -5, 0)
-	itemname:SetJustifyH("LEFT")
-	itemname:SetHeight(25)
+	-- Frame
+	self.sections.details = CreateFrame("Frame", nil, self.panel)
+	local frame = self.sections.details
+	frame:SetPoint("TOPLEFT", 0, -1 * self.top_section_height)
+	frame:SetWidth(self.width)
+	frame:Hide()
 
-	details.grade_frame = addon.app:BuildGradeFrame(details)
-	details.grade_frame.frame:SetPoint("TOPLEFT", 5, -20)
+	-- Background
+	elem = frame:CreateTexture(nil, "BACKGROUND")
+	elem:SetColorTexture(0, 0, 0, 0.7)
+	elem:SetAllPoints(frame)
 
-	panel.actions = CreateFrame("Frame", nil, panel)
-	local actions = panel.actions
-	actions:SetPoint("TOPLEFT", 0, -1 *panel:GetHeight())
-	actions:SetWidth(width)
-	actions:SetHeight(23)
-	--actions:Hide()
+	-- Grade frame
+	frame.grade_frame = addon.app:BuildGradeFrame(frame)
+	frame.grade_frame.frame:SetPoint("TOPLEFT", 5, 0)
+end
 
-	bg = actions:CreateTexture(nil, "BACKGROUND")
-	bg:SetColorTexture(0, 0, 0, 0.7)
-	bg:SetAllPoints(actions)
+function ItemDistWindow:CreatePlayersSection()
+	local elem
 
-	local btn, btn_text
+	self.sections.players = CreateFrame("Frame", nil, self.panel)
+	local frame = self.sections.players
+	frame:SetPoint("TOPLEFT", 0, 0)
+	frame:SetWidth(self.width)
+	frame:SetHeight(self.player_height)
+	frame:Hide()
 
-	actions.btn_clear = CreateFrame("Button", nil, actions, "OptionsButtonTemplate")
-	btn = actions.btn_clear
-	btn:SetPoint("TOPLEFT", 3, -2)
-	btn:SetWidth(45)
-	btn:SetHeight(18)
-	btn:SetScript("OnClick", function (_, button)
+	-- Background
+	elem = frame:CreateTexture(nil, "BACKGROUND")
+	elem:SetColorTexture(0, 0, 0, 0.7)
+	elem:SetAllPoints(frame)
+
+	local color = {255, 255, 255, 0.4}
+	elem = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+	elem:SetPoint("TOPLEFT", 5, 0)
+	elem:SetJustifyH("LEFT")
+	elem:SetTextColor(unpack(color))
+	elem:SetHeight(self.player_height)
+	elem:SetText("Player")
+
+	elem = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+	elem:SetPoint("TOPLEFT", 90, 0)
+	elem:SetJustifyH("RIGHT")
+	elem:SetWidth(35)
+	elem:SetTextColor(unpack(color))
+	elem:SetHeight(self.player_height)
+	elem:SetText("EP")
+
+	elem = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+	elem:SetPoint("TOPLEFT", 122, 0)
+	elem:SetJustifyH("RIGHT")
+	elem:SetWidth(35)
+	elem:SetTextColor(unpack(color))
+	elem:SetHeight(self.player_height)
+	elem:SetText("GP")
+
+	elem = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+	elem:SetPoint("TOPRIGHT", -3, 0)
+	elem:SetJustifyH("RIGHT")
+	elem:SetWidth(38)
+	elem:SetTextColor(unpack(color))
+	elem:SetHeight(self.player_height)
+	elem:SetText("PR")
+end
+
+function ItemDistWindow:AddPlayer(name)
+	if not self:HasItem() then
+		return
+	end
+
+	local elem
+
+	local pdata = addon.app:GetPlayerData(name)
+	if pdata == nil then
+		return
+	end
+	pdata = addon.app:GetPlayerDataFresh(pdata.gindex)
+
+	local frame = self.player_frames[self.player_index]
+	if frame == nil then
+		-- Frame
+		frame = CreateFrame("Frame", nil, self.sections.players)
+		self.player_frames[self.player_index] = frame
+		frame.index = self.player_index
+		frame:SetPoint("TOPLEFT", 0, 0)
+		frame:SetWidth(self.width)
+		frame:SetHeight(self.player_height)
+
+		-- Name
+		frame.name_text = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+		elem = frame.name_text
+		elem:SetPoint("TOPLEFT", 5, 0)
+		elem:SetJustifyH("LEFT")
+		elem:SetHeight(self.player_height)
+
+		-- EP
+		frame.ep_text = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+		elem = frame.ep_text
+		elem:SetPoint("TOPLEFT", 90, 0)
+		elem:SetJustifyH("RIGHT")
+		elem:SetWidth(35)
+		elem:SetHeight(self.player_height)
+
+		-- GP
+		frame.gp_text = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+		elem = frame.gp_text
+		elem:SetPoint("TOPLEFT", 122, 0)
+		elem:SetJustifyH("RIGHT")
+		elem:SetWidth(35)
+		elem:SetHeight(self.player_height)
+
+		-- PR
+		frame.pr_text = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+		elem = frame.pr_text
+		elem:SetPoint("TOPRIGHT", -3, 0)
+		elem:SetJustifyH("RIGHT")
+		elem:SetWidth(38)
+		elem:SetHeight(self.player_height)
+	end
+	self.player_index = self.player_index + 1
+
+	-- Get player EP and GP
+	local onote_data = addon.app:ParseOfficerNote(pdata.onote)
+	local ep = onote_data.ep
+	local gp = onote_data.gp
+	ep = math.random(50,500)
+	gp = math.random(10,190)
+	frame.pr = addon.app:GetPR(ep, gp)
+
+	-- Set this row text
+	local color
+	if pdata.class == "SHAMAN" then
+		-- #0070DE
+		frame.name_text:SetTextColor(0, 0.4375, 0.8706)
+	else
+		frame.name_text:SetTextColor(GetClassColor(pdata.class))
+	end
+
+	frame.name_text:SetText(addon.app:RemoveServerFromName(name))
+	frame.ep_text:SetText(ep)
+	frame.gp_text:SetText(gp)
+	frame.pr_text:SetText(frame.pr)
+	frame:Show()
+
+	-- Order the players section
+	self:OrderPlayers()
+
+	-- Resize players section
+	self.sections.players:SetHeight(self.player_height * self.player_index)
+
+	-- Move actions section down
+	local y = self.sections.top:GetHeight() + self.sections.details:GetHeight() + self.sections.players:GetHeight()
+	self.sections.actions:SetPoint("TOPLEFT", 0, -1 * y)
+
+	-- Increase size of panel
+	self.panel:SetHeight(y + self.sections.actions:GetHeight())
+end
+
+function ItemDistWindow:OrderPlayers()
+	local tmp = {}
+	for i = 1, (self.player_index - 1) do
+		table.insert(tmp, self.player_frames[i])
+	end
+	table.sort(tmp, function(t1, t2)
+      return t1.pr > t2.pr
+    end)
+    for i = 1, sizeof(tmp) do
+    	tmp[i]:SetPoint("TOPLEFT", 0, -1 * self.player_height * i)
+    end
+end
+
+function ItemDistWindow:CreateActionsSection()
+	local elem, subelem
+
+	-- Frame
+	self.sections.actions = CreateFrame("Frame", nil, self.panel)
+	local frame = self.sections.actions
+	frame:SetPoint("TOPLEFT", 0, 0)
+	frame:SetWidth(self.width)
+	frame:SetHeight(23)
+	frame:Hide()
+
+	-- Background
+	elem = frame:CreateTexture(nil, "BACKGROUND")
+	elem:SetColorTexture(0, 0, 0, 0.7)
+	elem:SetAllPoints(frame)
+
+	-- Clear button
+	elem = CreateFrame("Button", nil, frame, "OptionsButtonTemplate")
+	elem:SetPoint("TOPLEFT", 3, -2)
+	elem:SetWidth(45)
+	elem:SetHeight(18)
+	elem:SetScript("OnClick", function (_, button)
 		addon.app.item_dist_window:ClearItem()
 	end)
+	subelem = elem:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+	subelem:SetPoint("TOPLEFT", 5, 0)
+	subelem:SetPoint("TOPRIGHT", -5, 0)
+	subelem:SetJustifyH("CENTER")
+	subelem:SetHeight(18)
+	subelem:SetText("Clear")
 
-	btn_text = btn:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-	btn_text:SetPoint("TOPLEFT", 5, 0)
-	btn_text:SetPoint("TOPRIGHT", -5, 0)
-	btn_text:SetJustifyH("CENTER")
-	btn_text:SetHeight(18)
-	btn_text:SetText("Clear")
-
-	actions.btn_dist = CreateFrame("Button", nil, actions, "OptionsButtonTemplate")
-	btn = actions.btn_dist
-	btn:SetPoint("TOPRIGHT", -3, -2)
-	btn:SetWidth(70)
-	btn:SetHeight(18)
-	btn:Disable()
-	btn:SetScript("OnClick", function (_, button)
+	-- Distribute button
+	frame.btn_dist = CreateFrame("Button", nil, frame, "OptionsButtonTemplate")
+	elem = frame.btn_dist
+	elem:SetPoint("TOPRIGHT", -3, -2)
+	elem:SetWidth(70)
+	elem:SetHeight(18)
+	elem:Disable()
+	elem:SetScript("OnClick", function (_, button)
 		addon.app.item_dist_window:DistributeItem()
 	end)
-
-	btn_text = btn:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-	btn_text:SetPoint("TOPLEFT", 5, 0)
-	btn_text:SetPoint("TOPRIGHT", -5, 0)
-	btn_text:SetJustifyH("CENTER")
-	btn_text:SetHeight(18)
-	btn_text:SetTextColor(255, 255, 255, 0.5)
-	btn_text:SetText("Distribute")
+	subelem = elem:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+	subelem:SetPoint("TOPLEFT", 5, 0)
+	subelem:SetPoint("TOPRIGHT", -5, 0)
+	subelem:SetJustifyH("CENTER")
+	subelem:SetHeight(18)
+	subelem:SetTextColor(255, 255, 255, 0.5)
+	subelem:SetText("Distribute")
 end
