@@ -53,7 +53,6 @@ function DEPGP:Init()
 	end
 
 	-- load roster
-	self.storage.roster = {}
 	self:LoadRoster()
 
 	-- load app modules
@@ -64,13 +63,18 @@ end
 
 function DEPGP:LoadRoster()
 	local num_members, _, _ = GetNumGuildMembers()
+	if num_members == 0 then
+		return
+	end
+	self.storage.roster = {}
 	for i = 1, num_members do
-		local data = self:GetPlayerDataFresh(i)
+		local data = self:GetPlayerDataByGIndex(i)
 		self.storage.roster[data.name] = data
 	end
+	print("Loaded " .. num_members .. " guild members data")
 end
 
-function DEPGP:GetPlayerDataFresh(gindex)
+function DEPGP:GetPlayerDataByGIndex(gindex)
 	local name, _, _, level, _, _, _, onote, _, _, class, _, _, _, _, _, guid = GetGuildRosterInfo(gindex)
 	return {
 		["name"] = name,
@@ -80,6 +84,17 @@ function DEPGP:GetPlayerDataFresh(gindex)
 		["guid"] = guid,
 		["gindex"] = gindex,
 	}
+end
+
+function DEPGP:GetPlayerData(name)
+	local tmp = self.storage.roster[name]
+	-- see if the tmp row still matches
+	if tmp.name == name then
+		return tmp
+	end
+	-- need to reload roster
+	self:LoadRoster()
+	return self.storage.roster[name]
 end
 
 function DEPGP:ParseOfficerNote(onote)
@@ -101,10 +116,6 @@ end
 function DEPGP:GetPR(ep, gp)
 	if gp == 0 then return 0 end
 	return round(ep / gp, 2)
-end
-
-function DEPGP:GetPlayerData(name)
-	return self.storage.roster[name]
 end
 
 function DEPGP:GetOption(key)
@@ -259,4 +270,18 @@ end
 function round(num, places)
 	local mult = 10^(places or 0)
 	return math.floor(num * mult + 0.5) / mult
+end
+
+local menu_button = UIDropDownMenu_CreateInfo()
+function get_clean_menu_button()
+	menu_button.text = nil
+	menu_button.value = nil
+	menu_button.arg1 = nil
+	menu_button.disabled = false
+	menu_button.checked = false
+	menu_button.isTitle = false
+	menu_button.noClickSound = false
+	menu_button.notClickable = false
+	menu_button.notCheckable = true
+	return menu_button
 end

@@ -27,8 +27,9 @@ end
 
 function ItemDistWindow:ClearItem(play_sound)
 	self.item_id = nil
-	self.selected_player = nil
 	self.player_index = 1
+	self.selected_gp = 0
+	self:ClearPlayerSelection()
 	for i = 1, sizeof(self.player_frames) do
 		self.player_frames[i]:Hide()
 	end
@@ -37,9 +38,19 @@ function ItemDistWindow:ClearItem(play_sound)
 	self.sections.details:Hide()
 	self.sections.players:Hide()
 	self.sections.actions:Hide()
+	self.sections.transaction:Hide()
+	self:DisableDistributeButton()
 	self.panel:SetHeight(self.top_section_height)
 	if play_sound == nil or play_sound then
 		PlaySound(SOUNDKIT.IG_ABILITY_ICON_DROP)
+	end
+end
+
+function ItemDistWindow:ClearPlayerSelection()
+	self.selected_player = nil
+	self.selected_gp = 0
+	for i = 1, sizeof(self.player_frames) do
+		self.player_frames[i].hili_sel:Hide()
 	end
 end
 
@@ -60,14 +71,25 @@ function ItemDistWindow:SetItem(item_id)
 
 	local players = self.sections.players
 	local y = self.top_section_height + details:GetHeight()
+	players:ClearAllPoints()
 	players:SetPoint("TOPLEFT", 0, -1 * y)
 	players:SetHeight(self.player_height)
 	players:Show()
 
+	local transaction = self.sections.transaction
+	transaction:ClearAllPoints()
+	transaction:SetPoint("TOPLEFT", 0, -1 * y)
+
+	UIDropDownMenu_SetSelectedName(self.sections.transaction.gp_dropdown, "")
+
 	local actions = self.sections.actions
 	y = self.top_section_height + details:GetHeight() + players:GetHeight()
+	actions:ClearAllPoints()
 	actions:SetPoint("TOPLEFT", 0, -1 * y)
 	actions:Show()
+
+	local h = max(self.min_transaction_height, players:GetHeight() + actions:GetHeight())
+	transaction:SetHeight(h)
 
 	y = self.top_section_height + details:GetHeight() + players:GetHeight() + actions:GetHeight()
 	self.panel:SetHeight(y)
@@ -75,15 +97,8 @@ function ItemDistWindow:SetItem(item_id)
 	self:AnnounceItem()
 end
 
-function ItemDistWindow:HasItem()
-	if self.item_id == nil then
-		return false
-	end
-	return true
-end
-
 function ItemDistWindow:AnnounceItem()
-	if not self:HasItem() then
+	if self.item_id == nil then
 		return
 	end
 	local _, item_link, _, _, _, _, _, _ = GetItemInfo(self.item_id);
@@ -119,7 +134,20 @@ function ItemDistWindow:AnnounceItem()
 end
 
 function ItemDistWindow:DistributeItem()
-	print("DistributeItem()")
+	self.sections.players:Hide()
+	self.sections.actions:Hide()
+	self.sections.transaction:Show()
+end
+
+function ItemDistWindow:CancelTransaction()
+	self.sections.players:Show()
+	self.sections.actions:Show()
+	self.sections.transaction:Hide()
+end
+
+function ItemDistWindow:ConfirmTransaction()
+	self:ClearItem()
+	print("ConfirmTransaction()")
 end
 
 function ItemDistWindow:ToggleMenu()
@@ -131,67 +159,58 @@ end
 function ItemDistWindow:CreateMenu(frame, level, menulist)
 	local info
 
-	info = UIDropDownMenu_CreateInfo()
+	info = get_clean_menu_button()
 	info.text = "Open Options"
-	info.notCheckable = true
 	info.func = function ()
 		InterfaceOptionsFrame_OpenToCategory(addon.app.interface_options.panel)
 		InterfaceOptionsFrame_OpenToCategory(addon.app.interface_options.panel)
 	end
 	UIDropDownMenu_AddButton(info)
 
-	info = UIDropDownMenu_CreateInfo()
+	info = get_clean_menu_button()
 	info.disabled = true
-	info.notCheckable = true
 	UIDropDownMenu_AddButton(info)
 
 	if addon.app.item_dist_window and addon.app.item_dist_window.item_id ~= nil then
-		info = UIDropDownMenu_CreateInfo()
+		info = get_clean_menu_button()
 		info.text = "Item Options"
-		info.notCheckable = true
 		info.isTitle = true
 		UIDropDownMenu_AddButton(info)
 
-		info = UIDropDownMenu_CreateInfo()
+		info = get_clean_menu_button()
 		info.text = "Announce Item"
 		info.noClickSound = true
-		info.notCheckable = true
 		info.func = function ()
 			addon.app.item_dist_window:AnnounceItem()
 		end
 		UIDropDownMenu_AddButton(info)
 
-		info = UIDropDownMenu_CreateInfo()
+		info = get_clean_menu_button()
 		info.text = "Clear Item"
 		info.noClickSound = true
-		info.notCheckable = true
 		info.func = function ()
 			addon.app.item_dist_window:ClearItem()
 		end
 		UIDropDownMenu_AddButton(info)
 
-		info = UIDropDownMenu_CreateInfo()
+		info = get_clean_menu_button()
 		info.disabled = true
-		info.notCheckable = true
 		UIDropDownMenu_AddButton(info)
 	end
 
-	info = UIDropDownMenu_CreateInfo()
+	info = get_clean_menu_button()
 	info.text = "Window Options"
-	info.notCheckable = true
 	info.isTitle = true
 	UIDropDownMenu_AddButton(info)
 
-	info = UIDropDownMenu_CreateInfo()
+	info = get_clean_menu_button()
 	info.text = "Close Window"
-	info.notCheckable = true
 	info.func = function ()
 		addon.app.item_dist_window:Toggle()
 	end
 	UIDropDownMenu_AddButton(info)
 
-	info = UIDropDownMenu_CreateInfo()
-	info.notCheckable = true
+	info = get_clean_menu_button()
 	if addon.app:GetOption("item_dist_window.lock") then
 		info.text = "Unlock Window"
 		info.func = function ()
@@ -207,49 +226,63 @@ function ItemDistWindow:CreateMenu(frame, level, menulist)
 	end
 	UIDropDownMenu_AddButton(info)
 
-	info = UIDropDownMenu_CreateInfo()
+	info = get_clean_menu_button()
 	info.disabled = true
-	info.notCheckable = true
 	UIDropDownMenu_AddButton(info)
 
-	info = UIDropDownMenu_CreateInfo()
+	info = get_clean_menu_button()
 	info.text = "Cancel"
-	info.notCheckable = true
-	info.func = function ()
-		-- noop
-	end
 	UIDropDownMenu_AddButton(info)
 end
 
+--- Enable dragging and bind to drag events
 function ItemDistWindow:Unlock()
 	local panel = self.panel
 	panel:SetMovable(true)
 	panel:RegisterForDrag("LeftButton")
+
+	-- Bind to drag start event
 	panel:SetScript("OnDragStart", function ()
 		panel:StartMoving()
 	end)
+
+	-- Bind to drag stop
 	panel:SetScript("OnDragStop", function ()
 		_, _, _, x, y = panel:GetPoint()
+
+		-- Clamp top left
+		x = max(x, 0)
+		y = min(y, 0)
+
+		-- Clamp bottom right
+		x = min(x, GetScreenWidth() - panel:GetWidth())
+		y = max(y, -1 * GetScreenHeight() + panel:GetHeight())
+
+		-- Save position
 		addon.app:SetOption("item_dist_window.x", x)
 		addon.app:SetOption("item_dist_window.y", y)
+
+		-- Set position
 		panel:StopMovingOrSizing()
+		panel:ClearAllPoints()
 		panel:SetPoint("TOPLEFT", x, y)
-		panel:SetPoint("TOP", x)
 	end)
 end
 
+--- Disable dragging
 function ItemDistWindow:Lock()
-	local panel = self.panel
-	panel:SetMovable(false)
-	panel:RegisterForDrag(nil)
+	self.panel:SetMovable(false)
+	self.panel:RegisterForDrag(nil)
 end
 
 function ItemDistWindow:Build()
 	self.item_id = nil
 	self.width = 200
-	self.top_section_height = 43
+	self.top_section_height = 35
+	self.min_transaction_height = 60
 	self.player_height = 15
 	self.selected_player = nil
+	self.selected_gp = 0
 	self.player_frames = {}
 	self.player_index = 1
 	self.sections = {
@@ -258,8 +291,10 @@ function ItemDistWindow:Build()
 		["details"] = nil,
 		["players"] = nil,
 		["actions"] = nil,
+		["transaction"] = nil
 	}
 
+	-- Create the window
 	self.panel = CreateFrame("Frame")
 	local panel = self.panel
 	panel:EnableMouse(true)
@@ -285,7 +320,7 @@ function ItemDistWindow:Build()
 		self:Unlock()
 	end
 
-	-- Bind to mouse events
+	-- Bind to mouse up event
 	panel:SetScript("OnMouseUp", function (_, button)
 		if button == "LeftButton" then
 			local info_type, item_id, item_link = GetCursorInfo()
@@ -313,6 +348,125 @@ function ItemDistWindow:Build()
 	self:CreateDetailsSection()
 	self:CreatePlayersSection()
 	self:CreateActionsSection()
+	self:CreateTransactionSection()
+end
+
+function ItemDistWindow:CreateTransactionSection()
+	local elem, subelem
+	self.sections.transaction = CreateFrame("Frame", nil, self.panel)
+	local frame = self.sections.transaction
+	frame:SetPoint("TOPLEFT", 0, -1 * self.top_section_height)
+	frame:SetWidth(self.width)
+	frame:SetHeight(self.min_transaction_height)
+	frame:Hide()
+
+	elem = frame:CreateTexture(nil, "BACKGROUND")
+	elem:SetColorTexture(0, 0, 0, 0.7)
+	elem:SetAllPoints(frame)
+
+	-- Cancel button
+	elem = CreateFrame("Button", nil, frame, "OptionsButtonTemplate")
+	elem:SetPoint("BOTTOMLEFT", 3, 3)
+	elem:SetWidth(45)
+	elem:SetHeight(18)
+	elem:SetScript("OnClick", function (_, button)
+		addon.app.item_dist_window:CancelTransaction()
+	end)
+	subelem = elem:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+	subelem:SetPoint("TOPLEFT", 5, 0)
+	subelem:SetPoint("TOPRIGHT", -5, 0)
+	subelem:SetJustifyH("CENTER")
+	subelem:SetHeight(18)
+	subelem:SetText("Back")
+
+	-- Confirm button
+	elem = CreateFrame("Button", nil, frame, "OptionsButtonTemplate")
+	elem:SetPoint("BOTTOMRIGHT", -3, 3)
+	elem:SetWidth(70)
+	elem:SetHeight(18)
+	elem:SetScript("OnClick", function (_, button)
+		addon.app.item_dist_window:ConfirmTransaction()
+	end)
+	subelem = elem:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+	subelem:SetPoint("TOPLEFT", 5, 0)
+	subelem:SetPoint("TOPRIGHT", -5, 0)
+	subelem:SetJustifyH("CENTER")
+	subelem:SetHeight(18)
+	subelem:SetText("Confirm")
+
+	-- Give text
+	elem = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+	elem:SetPoint("TOPLEFT", 3, -3)
+	elem:SetJustifyH("LEFT")
+	elem:SetText("Give item to: ")
+
+	-- Player name text
+	frame.player_text = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+	elem = frame.player_text
+	elem:SetPoint("TOPLEFT", 70, -3)
+	elem:SetJustifyH("LEFT")
+
+	-- debug
+	elem:SetText("Clockberg")
+	elem:SetTextColor(0, 0.4375, 0.8706)
+
+	-- For text
+	elem = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+	elem:SetPoint("TOPLEFT", 3, -20)
+	elem:SetJustifyH("LEFT")
+	elem:SetText("For: ")
+
+	-- GP dropdown select
+	frame.gp_dropdown = CreateFrame("BUTTON", nil, frame, "UIDropDownMenuTemplate")
+	frame.gp_dropdown:SetPoint("TOPLEFT", 15, -17)
+	frame.gp_dropdown:SetScale(0.85)
+	UIDropDownMenu_SetWidth(frame.gp_dropdown, 80, 2)
+	UIDropDownMenu_Initialize(frame.gp_dropdown, function (frame, level, menulist)
+		if addon.app.item_dist_window then
+			addon.app.item_dist_window:CreateGPDropdown(frame, level, menulist)
+		end
+	end)
+end
+
+function ItemDistWindow:CreateGPDropdown(frame, level, menulist)
+	local info
+
+	local item_id = addon.app.item_dist_window.item_id
+	if item_id ~= nil then
+		local item_data = addon.app.data.items[item_id]
+		if item_data ~= nil then
+			local grades = table_get_keys(item_data.by_grade)
+			table.sort(grades)
+			for _, grade in pairs(grades) do
+				grade_data = item_data.by_grade[grade]
+				info = get_clean_menu_button()
+				info.text = "[" .. addon.app.grades[grade] .. "] " .. grade_data.price .. " GP"
+				info.value = grade_data.price
+				info.notCheckable = false
+				info.func = function (self)
+					addon.app.item_dist_window:SelectGPValue(self.value)
+					UIDropDownMenu_SetSelectedID(frame, self:GetID())
+				end
+				UIDropDownMenu_AddButton(info)
+			end
+		end
+	end
+
+	info = get_clean_menu_button()
+	info.text = "Manual GP"
+	info.value = -1
+	info.notCheckable = false
+	info.func = function (self)
+		addon.app.item_dist_window:SelectGPValue(self.value)
+		UIDropDownMenu_SetSelectedID(frame, self:GetID())
+	end
+	UIDropDownMenu_AddButton(info)
+end
+
+function ItemDistWindow:SelectGPValue(gp)
+	print("SelectGPValue(" .. gp .. ")")
+	self.selected_gp = gp
+	self.sections.transaction.gp_dropdown:SetText(gp .. " GP")
 end
 
 function ItemDistWindow:CreateTopSection()
@@ -320,30 +474,27 @@ function ItemDistWindow:CreateTopSection()
 	self.sections.top = CreateFrame("Frame", nil, self.panel)
 	local frame = self.sections.top
 	frame:SetPoint("TOPLEFT", 0, 0)
-	frame:SetPoint("TOP", 0)
 	frame:SetWidth(self.width)
 	frame:SetHeight(self.top_section_height)
 
 	-- Background
 	elem = frame:CreateTexture(nil, "BACKGROUND")
 	elem:SetColorTexture(0, 0, 0, 0.5)
-	elem:SetPoint("TOPLEFT", 0, 0)
-	elem:SetPoint("TOPRIGHT", 0, 0)
-	elem:SetHeight(self.top_section_height)
+	elem:SetAllPoints(frame)
 
 	-- Title
 	frame.title = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 	elem = frame.title
-	elem:SetPoint("TOPLEFT", 45, -4)
-	elem:SetPoint("TOPRIGHT", -10, -4)
+	elem:SetPoint("TOPLEFT", 37, -6)
+	elem:SetPoint("BOTTOMRIGHT", -3, 17)
 	elem:SetJustifyH("LEFT")
+	elem:SetJustifyV("TOP")
 	elem:SetText(addon.app.name)
-	elem:SetHeight(25)
 
 	-- Subtitle
-	elem = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-	elem:SetPoint("TOPLEFT", 45, -16)
-	elem:SetPoint("TOPRIGHT", -10, -16)
+	frame.subtitle = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+	elem = frame.subtitle
+	elem:SetPoint("TOPLEFT", 37, -12)
 	elem:SetJustifyH("LEFT")
 	elem:SetText("Item Distribution")
 	elem:SetTextColor(1, 1, 1)
@@ -351,7 +502,7 @@ function ItemDistWindow:CreateTopSection()
 
 	-- Item bag slot
 	elem = frame:CreateTexture(nil, "ARTWORK")
-	elem:SetPoint("TOPLEFT", 5, -5)
+	elem:SetPoint("TOPLEFT", 0, 0)
 	elem:SetHeight(55)
 	elem:SetWidth(55)
 	elem:SetTexture("Interface\\Buttons\\UI-Slot-Background.PNG")
@@ -359,7 +510,7 @@ function ItemDistWindow:CreateTopSection()
 	-- Item slot
 	frame.item_texture = frame:CreateTexture(nil, "OVERLAY")
 	elem = frame.item_texture
-	elem:SetPoint("TOPLEFT", 5, -5)
+	elem:SetPoint("TOPLEFT", 0, 0)
 	elem:SetHeight(35)
 	elem:SetWidth(35)
 	elem:SetTexture(nil)
@@ -400,7 +551,7 @@ function ItemDistWindow:CreatePlayersSection()
 	elem:SetColorTexture(0, 0, 0, 0.7)
 	elem:SetAllPoints(frame)
 
-	local color = {255, 255, 255, 0.4}
+	local color = {1, 1, 1, 0.4}
 	elem = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
 	elem:SetPoint("TOPLEFT", 5, 0)
 	elem:SetJustifyH("LEFT")
@@ -434,7 +585,7 @@ function ItemDistWindow:CreatePlayersSection()
 end
 
 function ItemDistWindow:AddPlayer(name)
-	if not self:HasItem() then
+	if self.item_id == nil then
 		return
 	end
 
@@ -444,13 +595,13 @@ function ItemDistWindow:AddPlayer(name)
 	if pdata == nil then
 		return
 	end
-	pdata = addon.app:GetPlayerDataFresh(pdata.gindex)
 
 	local frame = self.player_frames[self.player_index]
 	if frame == nil then
 		-- Frame
 		frame = CreateFrame("Frame", nil, self.sections.players)
 		self.player_frames[self.player_index] = frame
+		frame:EnableMouse(true)
 		frame.index = self.player_index
 		frame:SetPoint("TOPLEFT", 0, 0)
 		frame:SetWidth(self.width)
@@ -486,6 +637,26 @@ function ItemDistWindow:AddPlayer(name)
 		elem:SetJustifyH("RIGHT")
 		elem:SetWidth(38)
 		elem:SetHeight(self.player_height)
+
+		elem = frame:CreateTexture(nil, "HIGHLIGHT")
+		elem:SetColorTexture(1, 1, 0, 0.1)
+		elem:SetAllPoints(frame)
+
+		frame.hili_sel = frame:CreateTexture(nil, "ARTWORK")
+		elem = frame.hili_sel
+		elem:SetColorTexture(1, 1, 0, 0.2)
+		elem:SetAllPoints(frame)
+		elem:Hide()
+
+		-- Bind to click event
+		frame:SetScript('OnMouseUp', function()
+			local window = addon.app.item_dist_window
+			window:ClearPlayerSelection()
+			frame.hili_sel:Show()
+			window.sections.transaction.player_text:SetTextColor(frame.name_text:GetTextColor())
+			window.sections.transaction.player_text:SetText(frame.name_text:GetText())
+			window:EnableDistributeButton()
+		end)
 	end
 	self.player_index = self.player_index + 1
 
@@ -497,15 +668,17 @@ function ItemDistWindow:AddPlayer(name)
 	gp = math.random(10,190)
 	frame.pr = addon.app:GetPR(ep, gp)
 
-	-- Set this row text
-	local color
+	-- Set class color
+	pdata.class = "HUNTER"
 	if pdata.class == "SHAMAN" then
+		-- Override shaman color to blue
 		-- #0070DE
 		frame.name_text:SetTextColor(0, 0.4375, 0.8706)
 	else
 		frame.name_text:SetTextColor(GetClassColor(pdata.class))
 	end
 
+	-- Set this row text
 	frame.name_text:SetText(addon.app:RemoveServerFromName(name))
 	frame.ep_text:SetText(ep)
 	frame.gp_text:SetText(gp)
@@ -522,10 +695,15 @@ function ItemDistWindow:AddPlayer(name)
 	local y = self.sections.top:GetHeight() + self.sections.details:GetHeight() + self.sections.players:GetHeight()
 	self.sections.actions:SetPoint("TOPLEFT", 0, -1 * y)
 
+	-- Resize transaction section (it's hidden)
+	local h = max(self.min_transaction_height, self.sections.players:GetHeight() + self.sections.actions:GetHeight())
+	self.sections.transaction:SetHeight(h)
+
 	-- Increase size of panel
 	self.panel:SetHeight(y + self.sections.actions:GetHeight())
 end
 
+--- Order the players list by PR
 function ItemDistWindow:OrderPlayers()
 	local tmp = {}
 	for i = 1, (self.player_index - 1) do
@@ -557,7 +735,7 @@ function ItemDistWindow:CreateActionsSection()
 
 	-- Clear button
 	elem = CreateFrame("Button", nil, frame, "OptionsButtonTemplate")
-	elem:SetPoint("TOPLEFT", 3, -2)
+	elem:SetPoint("BOTTOMLEFT", 3, 3)
 	elem:SetWidth(45)
 	elem:SetHeight(18)
 	elem:SetScript("OnClick", function (_, button)
@@ -573,18 +751,29 @@ function ItemDistWindow:CreateActionsSection()
 	-- Distribute button
 	frame.btn_dist = CreateFrame("Button", nil, frame, "OptionsButtonTemplate")
 	elem = frame.btn_dist
-	elem:SetPoint("TOPRIGHT", -3, -2)
+	elem:SetPoint("BOTTOMRIGHT", -3, 3)
 	elem:SetWidth(70)
 	elem:SetHeight(18)
-	elem:Disable()
 	elem:SetScript("OnClick", function (_, button)
 		addon.app.item_dist_window:DistributeItem()
 	end)
-	subelem = elem:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+	frame.btn_dist_text = elem:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+	subelem = frame.btn_dist_text
 	subelem:SetPoint("TOPLEFT", 5, 0)
 	subelem:SetPoint("TOPRIGHT", -5, 0)
 	subelem:SetJustifyH("CENTER")
 	subelem:SetHeight(18)
-	subelem:SetTextColor(255, 255, 255, 0.5)
 	subelem:SetText("Distribute")
+
+	self:DisableDistributeButton()
+end
+
+function ItemDistWindow:EnableDistributeButton()
+	self.sections.actions.btn_dist:Enable()
+	self.sections.actions.btn_dist_text:SetTextColor(1, 0.82, 0)
+end
+
+function ItemDistWindow:DisableDistributeButton()
+	self.sections.actions.btn_dist:Disable()
+	self.sections.actions.btn_dist_text:SetTextColor(1, 1, 1, 0.5)
 end
