@@ -1,5 +1,6 @@
 local _, addon = ...
 
+-- Create ItemTooltipMod class
 local ItemTooltipMod = {}
 ItemTooltipMod.__index = ItemTooltipMod
 function ItemTooltipMod:New()

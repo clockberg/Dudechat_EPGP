@@ -169,7 +169,7 @@ end
 
 --- Returns the value of an app option
 -- @param key <string>
--- @return <string>
+-- @return <mixed>
 function DEPGP:GetOption(key)
 	if self.storage.options[key] ~= nil then
 		return self.storage.options[key]
@@ -181,7 +181,7 @@ end
 
 --- Sets an app option
 -- @param key <string>
--- @param val <string>
+-- @param val <mixed>
 function DEPGP:SetOption(key, val)
 	self.storage.options[key] = val
 end
@@ -189,7 +189,7 @@ end
 --- Temporarily set an app option
 -- The options menu can be "cancelled", so changed options must be staged
 -- @param key <string>
--- @param val <string>
+-- @param val <mixed>
 function DEPGP:SetTmpOption(key, val)
 	self.data.tmp_options[key] = val
 end

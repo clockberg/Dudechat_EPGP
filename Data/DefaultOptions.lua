@@ -1,5 +1,7 @@
 local _, addon = ...
 
+--- Returns the default options for the addon
+-- @return <table>
 function DEPGP:GetDefaultOptionsData()
 	return {
 		["item_tooltip_mod.show"] = true,

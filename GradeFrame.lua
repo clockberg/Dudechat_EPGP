@@ -1,5 +1,6 @@
 local _, addon = ...
 
+-- Create GradeFrame class
 local GradeFrame = {}
 GradeFrame.__index = GradeFrame
 function GradeFrame:New()

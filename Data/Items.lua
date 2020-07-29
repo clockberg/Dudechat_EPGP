@@ -1,5 +1,25 @@
 local _, addon = ...
 
+--- Returns the items data for the addon
+-- @return <table>
+-- Structure:
+-- {
+-- 	[<number> item_id] = {
+-- 		["name"] = "<item name>" -- This is just for reference, not actually needed
+-- 		["by_grade"] = {
+-- 			[<number> grade_num] = { -- 1 is the "best" grade, and 5 is the worst
+-- 				["price"] = <number> gp_price, -- The GP price of the item for this grade
+-- 				["specs"] = { -- The names of the specs that fall under this grade for this item
+-- 					"ROGUE",
+-- 					"FURY_WAR",
+-- 					-- ..
+-- 				}
+-- 			},
+-- 			-- ..
+-- 		}
+-- 	},
+-- 	-- ..
+-- }
 function DEPGP:GetItemsData()
 	return {
 		[3363] = {

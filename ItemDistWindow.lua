@@ -1,5 +1,6 @@
 local _, addon = ...
 
+-- Create ItemDistWindow class
 local ItemDistWindow = {}
 ItemDistWindow.__index = ItemDistWindow
 function ItemDistWindow:New()

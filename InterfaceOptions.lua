@@ -1,5 +1,6 @@
 local _, addon = ...
 
+-- Create InterfaceOptions class
 local InterfaceOptions = {}
 InterfaceOptions.__index = InterfaceOptions
 function InterfaceOptions:New()
