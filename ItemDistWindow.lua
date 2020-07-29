@@ -60,6 +60,7 @@ function ItemDistWindow:SetItem(item_id)
 	local _, item_link, _, _, _, _, _, _ = GetItemInfo(item_id);
 	self.sections.top.item_texture:SetTexture(GetItemIcon(item_id))
 	self.sections.top.title:SetText(item_link)
+	self:LoadGPOptions()
 
 	local details = self.sections.details
 	details.grade_frame:Update(item_id)
@@ -80,8 +81,6 @@ function ItemDistWindow:SetItem(item_id)
 	transaction:ClearAllPoints()
 	transaction:SetPoint("TOPLEFT", 0, -1 * y)
 
-	UIDropDownMenu_SetSelectedName(self.sections.transaction.gp_dropdown, "")
-
 	local actions = self.sections.actions
 	y = self.top_section_height + details:GetHeight() + players:GetHeight()
 	actions:ClearAllPoints()
@@ -95,6 +94,30 @@ function ItemDistWindow:SetItem(item_id)
 	self.panel:SetHeight(y)
 
 	self:AnnounceItem()
+end
+
+function ItemDistWindow:LoadGPOptions()
+	self.gp_options = {}
+	if self.item_id == nil then
+		return
+	end
+
+	local item_data = addon.app.data.items[self.item_id]
+	if item_data == nil then
+		return
+	end
+
+	local grades = table_get_keys(item_data.by_grade)
+	table.sort(grades)
+	for _, grade in pairs(grades) do
+		grade_data = item_data.by_grade[grade]
+		table.insert(self.gp_options, {
+			["text"] = "[" .. addon.app.grades[grade] .. "] " .. grade_data.price .. " GP",
+			["value"] = grade_data.price,
+		})
+	end
+
+	UIDropDownMenu_SetSelectedName(self.sections.transaction.gp_dropdown, "hello world", true)
 end
 
 function ItemDistWindow:AnnounceItem()
@@ -277,14 +300,18 @@ end
 
 function ItemDistWindow:Build()
 	self.item_id = nil
+
 	self.width = 200
 	self.top_section_height = 35
 	self.min_transaction_height = 60
+
 	self.player_height = 15
-	self.selected_player = nil
-	self.selected_gp = 0
-	self.player_frames = {}
 	self.player_index = 1
+	self.player_frames = {}
+	self.selected_player = nil
+
+	self.gp_options = {}
+	self.selected_gp = 0
 	self.sections = {
 		["menu"] = nil,
 		["top"] = nil,
@@ -358,7 +385,7 @@ function ItemDistWindow:CreateTransactionSection()
 	frame:SetPoint("TOPLEFT", 0, -1 * self.top_section_height)
 	frame:SetWidth(self.width)
 	frame:SetHeight(self.min_transaction_height)
-	frame:Hide()
+	--frame:Hide()
 
 	elem = frame:CreateTexture(nil, "BACKGROUND")
 	elem:SetColorTexture(0, 0, 0, 0.7)
@@ -403,12 +430,8 @@ function ItemDistWindow:CreateTransactionSection()
 	-- Player name text
 	frame.player_text = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
 	elem = frame.player_text
-	elem:SetPoint("TOPLEFT", 70, -3)
+	elem:SetPoint("TOPLEFT", 73, -3)
 	elem:SetJustifyH("LEFT")
-
-	-- debug
-	elem:SetText("Clockberg")
-	elem:SetTextColor(0, 0.4375, 0.8706)
 
 	-- For text
 	elem = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
@@ -431,25 +454,16 @@ end
 function ItemDistWindow:CreateGPDropdown(frame, level, menulist)
 	local info
 
-	local item_id = addon.app.item_dist_window.item_id
-	if item_id ~= nil then
-		local item_data = addon.app.data.items[item_id]
-		if item_data ~= nil then
-			local grades = table_get_keys(item_data.by_grade)
-			table.sort(grades)
-			for _, grade in pairs(grades) do
-				grade_data = item_data.by_grade[grade]
-				info = get_clean_menu_button()
-				info.text = "[" .. addon.app.grades[grade] .. "] " .. grade_data.price .. " GP"
-				info.value = grade_data.price
-				info.notCheckable = false
-				info.func = function (self)
-					addon.app.item_dist_window:SelectGPValue(self.value)
-					UIDropDownMenu_SetSelectedID(frame, self:GetID())
-				end
-				UIDropDownMenu_AddButton(info)
-			end
+	for key, option in pairs(addon.app.item_dist_window.gp_options) do
+		info = get_clean_menu_button()
+		info.text = option.text
+		info.value = option.value
+		info.notCheckable = false
+		info.func = function (self)
+			addon.app.item_dist_window:SelectGPValue(self.value)
+			UIDropDownMenu_SetSelectedID(frame, self:GetID())
 		end
+		UIDropDownMenu_AddButton(info)
 	end
 
 	info = get_clean_menu_button()
@@ -541,7 +555,7 @@ function ItemDistWindow:CreatePlayersSection()
 
 	self.sections.players = CreateFrame("Frame", nil, self.panel)
 	local frame = self.sections.players
-	frame:SetPoint("TOPLEFT", 0, 0)
+	frame:SetPoint("TOPLEFT", 0, -1 * self.top_section_height)
 	frame:SetWidth(self.width)
 	frame:SetHeight(self.player_height)
 	frame:Hide()
@@ -639,12 +653,12 @@ function ItemDistWindow:AddPlayer(name)
 		elem:SetHeight(self.player_height)
 
 		elem = frame:CreateTexture(nil, "HIGHLIGHT")
-		elem:SetColorTexture(1, 1, 0, 0.1)
+		elem:SetColorTexture(1, 0.82, 0, 0.2)
 		elem:SetAllPoints(frame)
 
 		frame.hili_sel = frame:CreateTexture(nil, "ARTWORK")
 		elem = frame.hili_sel
-		elem:SetColorTexture(1, 1, 0, 0.2)
+		elem:SetColorTexture(1, 0.82, 0, 0.4)
 		elem:SetAllPoints(frame)
 		elem:Hide()
 
@@ -664,12 +678,14 @@ function ItemDistWindow:AddPlayer(name)
 	local onote_data = addon.app:ParseOfficerNote(pdata.onote)
 	local ep = onote_data.ep
 	local gp = onote_data.gp
+
+	-- debug
 	ep = math.random(50,500)
 	gp = math.random(10,190)
+
 	frame.pr = addon.app:GetPR(ep, gp)
 
 	-- Set class color
-	pdata.class = "HUNTER"
 	if pdata.class == "SHAMAN" then
 		-- Override shaman color to blue
 		-- #0070DE
@@ -723,7 +739,7 @@ function ItemDistWindow:CreateActionsSection()
 	-- Frame
 	self.sections.actions = CreateFrame("Frame", nil, self.panel)
 	local frame = self.sections.actions
-	frame:SetPoint("TOPLEFT", 0, 0)
+	frame:SetPoint("TOPLEFT", 0, -1 * (self.top_section_height + self.player_height))
 	frame:SetWidth(self.width)
 	frame:SetHeight(23)
 	frame:Hide()
