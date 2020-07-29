@@ -9,6 +9,8 @@ function ItemTooltipMod:New()
 	return self
 end
 
+--- App function to build this class
+-- @return <ItemTooltipMod>
 function DEPGP:BuildItemTooltipMod()
 	local item_tooltip_mod = ItemTooltipMod:New()
 	item_tooltip_mod:Build()
@@ -16,7 +18,7 @@ function DEPGP:BuildItemTooltipMod()
 		if addon.app:GetOption("item_tooltip_mod.show") then
 			local item_name = select(1, tooltip:GetItem())
 			local item_id = select(1, GetItemInfoInstant(item_name))
-			item_tooltip_mod.grade_frame:Update(item_id)
+			item_tooltip_mod.grade_frame:UpdateItem(item_id)
 			GameTooltip_InsertFrame(tooltip, item_tooltip_mod.grade_frame.frame)
 		end
 	end)
@@ -24,7 +26,7 @@ function DEPGP:BuildItemTooltipMod()
 		if addon.app:GetOption("item_tooltip_mod.show") then
 			local item_name = select(1, tooltip:GetItem())
 			local item_id = select(1, GetItemInfoInstant(item_name))
-			item_tooltip_mod.grade_frame:Update(item_id)
+			item_tooltip_mod.grade_frame:UpdateItem(item_id)
 			GameTooltip_InsertFrame(tooltip, item_tooltip_mod.grade_frame.frame)
 		end
 	end)

@@ -9,6 +9,9 @@ function GradeFrame:New()
 	return self
 end
 
+--- App function to build this class
+-- @param parent <Frame>
+-- @return <GradeFrame>
 function DEPGP:BuildGradeFrame(parent)
 	local grade_frame = GradeFrame:New()
 	grade_frame:Build(parent)
@@ -18,7 +21,7 @@ end
 function GradeFrame:Build(parent)
 	self.item_id = nil
 	self.icon_size = 18
-	self.max_num_rows = 5
+	self.max_num_rows = 6
 	self.max_num_cols = 18
 	self.grade_text_width = 13
 	self.price_text_width = 30
@@ -69,7 +72,7 @@ function GradeFrame:Resize(rows, cols)
 	self.frame:SetSize(self.icon_size * cols + self.grade_text_width + self.price_text_width, self.icon_size * rows)
 end
 
-function GradeFrame:Update(item_id)
+function GradeFrame:UpdateItem(item_id)
 	if item_id == self.item_id then
 		return
 	end
@@ -86,6 +89,9 @@ function GradeFrame:Update(item_id)
 	self.frame:Show()
 
 	local num_rows = sizeof(item_data.by_grade)
+	if item_data.price ~= nil then
+		num_rows = num_rows + 1
+	end
 	local num_cols = 0
 	for grade, grade_data in pairs(item_data.by_grade) do
 		num_cols = max(num_cols, sizeof(grade_data.specs))
@@ -109,5 +115,10 @@ function GradeFrame:Update(item_id)
 			end
 		end
 		row = row + 1
+	end
+
+	if item_data.price ~= nil then
+		self.grade_texts[row]:SetText("*")
+		self.price_texts[row]:SetText(item_data.price)
 	end
 end

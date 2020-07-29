@@ -6,6 +6,7 @@ local _, addon = ...
 -- {
 -- 	[<number> item_id] = {
 -- 		["name"] = "<item name>" -- This is just for reference, not actually needed
+-- 		["price"] = <number> gp_price, -- The base GP price of the item for anything not explicitly defined below
 -- 		["by_grade"] = {
 -- 			[<number> grade_num] = { -- 1 is the "best" grade, and 5 is the worst
 -- 				["price"] = <number> gp_price, -- The GP price of the item for this grade
@@ -24,6 +25,7 @@ function DEPGP:GetItemsData()
 	return {
 		[3363] = {
 			["name"] = "Frayed Belt",
+			["price"] = 1,
 			["by_grade"] = {
 				[1] = {
 					["price"] = 555,
@@ -64,6 +66,7 @@ function DEPGP:GetItemsData()
 		},
 		[1377] = {
 			["name"] = "Frayed Gloves",
+			["price"] = 1,
 			["by_grade"] = {
 				[1] = {
 					["price"] = 50,
@@ -106,6 +109,7 @@ function DEPGP:GetItemsData()
 		},
 		[153] = {
 			["name"] = "Primitive Kilt",
+			["price"] = 1,
 			["by_grade"] = {
 				[3] = {
 					["price"] = 5,
@@ -117,6 +121,7 @@ function DEPGP:GetItemsData()
 		},
 		[1368] = {
 			["name"] = "Ragged Leather Gloves",
+			["price"] = 1,
 			["by_grade"] = {
 				[3] = {
 					["price"] = 5,
@@ -128,6 +133,7 @@ function DEPGP:GetItemsData()
 		},
 		[1370] = {
 			["name"] = "Ragged Leather Bracers",
+			["price"] = 1,
 			["by_grade"] = {
 				[1] = {
 					["price"] = 22,
@@ -145,6 +151,7 @@ function DEPGP:GetItemsData()
 		},
 		[139] = {
 			["name"] = "Brawler's Pants",
+			["price"] = 1,
 			["by_grade"] = {
 				[1] = {
 					["price"] = 50,
@@ -165,6 +172,7 @@ function DEPGP:GetItemsData()
 		},
 		[2654] = {
 			["name"] = "Brawler's Pants",
+			["price"] = 1,
 			["by_grade"] = {
 				[1] = {
 					["price"] = 50,

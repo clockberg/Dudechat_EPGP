@@ -9,6 +9,8 @@ function InterfaceOptions:New()
 	return self
 end
 
+--- App function to build this class
+-- @return <InterfaceOptions>
 function DEPGP:BuildInterfaceOptions()
 	local interface_options = InterfaceOptions:New()
 	interface_options:Build()

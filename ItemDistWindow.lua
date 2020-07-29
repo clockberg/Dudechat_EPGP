@@ -1,5 +1,18 @@
 local _, addon = ...
 
+--- Hook item link to put into our addon
+-- Normal usage is shift+left click
+local orig_ChatEdit_InsertLink = ChatEdit_InsertLink
+ChatEdit_InsertLink = function (...)
+	local text = ...
+	local result = orig_ChatEdit_InsertLink(...)
+	if not result and text then
+		addon.app.item_dist_window:SetItem(extract_item_id(text))
+		PlaySound(SOUNDKIT.IG_ABILITY_ICON_DROP)
+	end
+	return false
+end
+
 -- Create ItemDistWindow class
 local ItemDistWindow = {}
 ItemDistWindow.__index = ItemDistWindow
@@ -9,12 +22,15 @@ function ItemDistWindow:New()
 	return self
 end
 
+--- App function to build this class
+-- @return <ItemDistWindow>
 function DEPGP:BuildItemDistWindow()
 	local window = ItemDistWindow:New()
 	window:Build()
 	return window
 end
 
+--- Toggle display of the window
 function ItemDistWindow:Toggle()
 	if self.panel:IsVisible() then
 		PlaySound(SOUNDKIT.IG_MAINMENU_CLOSE)
@@ -26,6 +42,8 @@ function ItemDistWindow:Toggle()
 	end
 end
 
+--- Clear the item slot and back the process up to the beginning
+-- @param play_sound <boolean>
 function ItemDistWindow:ClearItem(play_sound)
 	self.item_id = nil
 	self.player_index = 1
@@ -47,6 +65,7 @@ function ItemDistWindow:ClearItem(play_sound)
 	end
 end
 
+--- Clear the player selection
 function ItemDistWindow:ClearPlayerSelection()
 	self.selected_player = nil
 	self.selected_gp = 0
@@ -55,8 +74,13 @@ function ItemDistWindow:ClearPlayerSelection()
 	end
 end
 
+--- Set the item
+-- @param item_id <number>
 function ItemDistWindow:SetItem(item_id)
 	self:ClearItem(false)
+	if not item_id or item_id == nil then
+		return
+	end
 	self.item_id = item_id
 	local _, item_link, _, _, _, _, _, _ = GetItemInfo(item_id);
 	self.sections.top.item_texture:SetTexture(GetItemIcon(item_id))
@@ -64,7 +88,7 @@ function ItemDistWindow:SetItem(item_id)
 	self:LoadGPOptions()
 
 	local details = self.sections.details
-	details.grade_frame:Update(item_id)
+	details.grade_frame:UpdateItem(item_id)
 	local dh = details.grade_frame.frame:GetHeight()
 	details:SetHeight(dh)
 	if dh > 0 then
@@ -97,6 +121,7 @@ function ItemDistWindow:SetItem(item_id)
 	self:AnnounceItem()
 end
 
+--- Load the GP options for the current item
 function ItemDistWindow:LoadGPOptions()
 	self.gp_options = {}
 	if self.item_id == nil then
@@ -114,11 +139,16 @@ function ItemDistWindow:LoadGPOptions()
 		grade_data = item_data.by_grade[grade]
 		table.insert(self.gp_options, {
 			["text"] = "[" .. addon.app.grades[grade] .. "] " .. grade_data.price .. " GP",
-			["value"] = grade_data.price,
+			["price"] = grade_data.price,
 		})
 	end
 
-	UIDropDownMenu_SetSelectedName(self.sections.transaction.gp_dropdown, "hello world", true)
+	if item_data.price ~= nil then
+		table.insert(self.gp_options, {
+			["text"] = "[base]",
+			["price"] = item_data.price,
+		})
+	end
 end
 
 function ItemDistWindow:AnnounceItem()
@@ -157,29 +187,17 @@ function ItemDistWindow:AnnounceItem()
 	SendChatMessage("{SQUARE} DM \"need\" to " .. UnitName("player"), "RAID")
 end
 
-function ItemDistWindow:DistributeItem()
-	self.sections.players:Hide()
-	self.sections.actions:Hide()
-	self.sections.transaction:Show()
-end
-
-function ItemDistWindow:CancelTransaction()
-	self.sections.players:Show()
-	self.sections.actions:Show()
-	self.sections.transaction:Hide()
-end
-
-function ItemDistWindow:ConfirmTransaction()
-	self:ClearItem()
-	print("ConfirmTransaction()")
-end
-
+--- Open or close the context menu
 function ItemDistWindow:ToggleMenu()
 	local menu = self.sections.menu
 	PlaySound(SOUNDKIT.IG_MAINMENU_OPEN)
 	ToggleDropDownMenu(1, nil, menu, "cursor", 3, -3, nil, nil, 2)
 end
 
+--- This function is called every time the context menu is opened
+-- @param frame <Frame>
+-- @param level <number>
+-- @param menulist
 function ItemDistWindow:CreateMenu(frame, level, menulist)
 	local info
 
@@ -259,7 +277,8 @@ function ItemDistWindow:CreateMenu(frame, level, menulist)
 	UIDropDownMenu_AddButton(info)
 end
 
---- Enable dragging and bind to drag events
+--- Unlock the window
+-- Enable dragging and bind to drag events
 function ItemDistWindow:Unlock()
 	local panel = self.panel
 	panel:SetMovable(true)
@@ -293,7 +312,8 @@ function ItemDistWindow:Unlock()
 	end)
 end
 
---- Disable dragging
+--- Lock the window
+-- Disable dragging events and set unmovable
 function ItemDistWindow:Lock()
 	self.panel:SetMovable(false)
 	self.panel:RegisterForDrag(nil)
@@ -323,10 +343,16 @@ function ItemDistWindow:Build()
 	}
 
 	-- Create the window
-	self.panel = CreateFrame("Frame")
+	self.panel = CreateFrame("Frame", nil, nil, "BasicFrameTemplate")
 	local panel = self.panel
 	panel:EnableMouse(true)
 	panel:SetClampedToScreen(true)
+
+	-- Background
+	elem = self.panel:CreateTexture(nil, "ARTWORK")
+	elem:SetColorTexture(0, 0, 0, 0.6)
+	elem:SetPoint("TOPLEFT", 3, -20)
+	elem:SetPoint("BOTTOMRIGHT", -3, 3)
 
 	-- Bind to whisper events
 	panel:RegisterEvent("CHAT_MSG_WHISPER")
@@ -379,111 +405,6 @@ function ItemDistWindow:Build()
 	self:CreateTransactionSection()
 end
 
-function ItemDistWindow:CreateTransactionSection()
-	local elem, subelem
-	self.sections.transaction = CreateFrame("Frame", nil, self.panel)
-	local frame = self.sections.transaction
-	frame:SetPoint("TOPLEFT", 0, -1 * self.top_section_height)
-	frame:SetWidth(self.width)
-	frame:SetHeight(self.min_transaction_height)
-	--frame:Hide()
-
-	elem = frame:CreateTexture(nil, "BACKGROUND")
-	elem:SetColorTexture(0, 0, 0, 0.7)
-	elem:SetAllPoints(frame)
-
-	-- Cancel button
-	elem = CreateFrame("Button", nil, frame, "OptionsButtonTemplate")
-	elem:SetPoint("BOTTOMLEFT", 3, 3)
-	elem:SetWidth(45)
-	elem:SetHeight(18)
-	elem:SetScript("OnClick", function (_, button)
-		addon.app.item_dist_window:CancelTransaction()
-	end)
-	subelem = elem:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-	subelem:SetPoint("TOPLEFT", 5, 0)
-	subelem:SetPoint("TOPRIGHT", -5, 0)
-	subelem:SetJustifyH("CENTER")
-	subelem:SetHeight(18)
-	subelem:SetText("Back")
-
-	-- Confirm button
-	elem = CreateFrame("Button", nil, frame, "OptionsButtonTemplate")
-	elem:SetPoint("BOTTOMRIGHT", -3, 3)
-	elem:SetWidth(70)
-	elem:SetHeight(18)
-	elem:SetScript("OnClick", function (_, button)
-		addon.app.item_dist_window:ConfirmTransaction()
-	end)
-	subelem = elem:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-	subelem:SetPoint("TOPLEFT", 5, 0)
-	subelem:SetPoint("TOPRIGHT", -5, 0)
-	subelem:SetJustifyH("CENTER")
-	subelem:SetHeight(18)
-	subelem:SetText("Confirm")
-
-	-- Give text
-	elem = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-	elem:SetPoint("TOPLEFT", 3, -3)
-	elem:SetJustifyH("LEFT")
-	elem:SetText("Give item to: ")
-
-	-- Player name text
-	frame.player_text = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-	elem = frame.player_text
-	elem:SetPoint("TOPLEFT", 73, -3)
-	elem:SetJustifyH("LEFT")
-
-	-- For text
-	elem = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-	elem:SetPoint("TOPLEFT", 3, -20)
-	elem:SetJustifyH("LEFT")
-	elem:SetText("For: ")
-
-	-- GP dropdown select
-	frame.gp_dropdown = CreateFrame("BUTTON", nil, frame, "UIDropDownMenuTemplate")
-	frame.gp_dropdown:SetPoint("TOPLEFT", 15, -17)
-	frame.gp_dropdown:SetScale(0.85)
-	UIDropDownMenu_SetWidth(frame.gp_dropdown, 80, 2)
-	UIDropDownMenu_Initialize(frame.gp_dropdown, function (frame, level, menulist)
-		if addon.app.item_dist_window then
-			addon.app.item_dist_window:CreateGPDropdown(frame, level, menulist)
-		end
-	end)
-end
-
-function ItemDistWindow:CreateGPDropdown(frame, level, menulist)
-	local info
-
-	for key, option in pairs(addon.app.item_dist_window.gp_options) do
-		info = get_clean_menu_button()
-		info.text = option.text
-		info.value = option.value
-		info.notCheckable = false
-		info.func = function (self)
-			addon.app.item_dist_window:SelectGPValue(self.value)
-			UIDropDownMenu_SetSelectedID(frame, self:GetID())
-		end
-		UIDropDownMenu_AddButton(info)
-	end
-
-	info = get_clean_menu_button()
-	info.text = "Manual GP"
-	info.value = -1
-	info.notCheckable = false
-	info.func = function (self)
-		addon.app.item_dist_window:SelectGPValue(self.value)
-		UIDropDownMenu_SetSelectedID(frame, self:GetID())
-	end
-	UIDropDownMenu_AddButton(info)
-end
-
-function ItemDistWindow:SelectGPValue(gp)
-	print("SelectGPValue(" .. gp .. ")")
-	self.selected_gp = gp
-	self.sections.transaction.gp_dropdown:SetText(gp .. " GP")
-end
-
 function ItemDistWindow:CreateTopSection()
 	local elem
 	self.sections.top = CreateFrame("Frame", nil, self.panel)
@@ -492,24 +413,18 @@ function ItemDistWindow:CreateTopSection()
 	frame:SetWidth(self.width)
 	frame:SetHeight(self.top_section_height)
 
-	-- Background
-	elem = frame:CreateTexture(nil, "BACKGROUND")
-	elem:SetColorTexture(0, 0, 0, 0.5)
-	elem:SetAllPoints(frame)
-
 	-- Title
-	frame.title = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+	frame.title = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
 	elem = frame.title
-	elem:SetPoint("TOPLEFT", 37, -6)
+	elem:SetPoint("TOPLEFT", 37, -6.5)
 	elem:SetPoint("BOTTOMRIGHT", -3, 17)
 	elem:SetJustifyH("LEFT")
 	elem:SetJustifyV("TOP")
 	elem:SetText(addon.app.name)
 
 	-- Subtitle
-	frame.subtitle = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-	elem = frame.subtitle
-	elem:SetPoint("TOPLEFT", 37, -12)
+	elem = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalTiny")
+	elem:SetPoint("TOPLEFT", 37, -14.5)
 	elem:SetJustifyH("LEFT")
 	elem:SetText("Item Distribution")
 	elem:SetTextColor(1, 1, 1)
@@ -541,11 +456,6 @@ function ItemDistWindow:CreateDetailsSection()
 	frame:SetWidth(self.width)
 	frame:Hide()
 
-	-- Background
-	elem = frame:CreateTexture(nil, "BACKGROUND")
-	elem:SetColorTexture(0, 0, 0, 0.7)
-	elem:SetAllPoints(frame)
-
 	-- Grade frame
 	frame.grade_frame = addon.app:BuildGradeFrame(frame)
 	frame.grade_frame.frame:SetPoint("TOPLEFT", 5, 0)
@@ -560,11 +470,6 @@ function ItemDistWindow:CreatePlayersSection()
 	frame:SetWidth(self.width)
 	frame:SetHeight(self.player_height)
 	frame:Hide()
-
-	-- Background
-	elem = frame:CreateTexture(nil, "BACKGROUND")
-	elem:SetColorTexture(0, 0, 0, 0.7)
-	elem:SetAllPoints(frame)
 
 	local color = {1, 1, 1, 0.4}
 	elem = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
@@ -619,7 +524,7 @@ function ItemDistWindow:AddPlayer(name)
 		frame:EnableMouse(true)
 		frame.index = self.player_index
 		frame:SetPoint("TOPLEFT", 0, 0)
-		frame:SetWidth(self.width)
+		frame:SetWidth(self.width - 3)
 		frame:SetHeight(self.player_height)
 
 		-- Name
@@ -654,12 +559,12 @@ function ItemDistWindow:AddPlayer(name)
 		elem:SetHeight(self.player_height)
 
 		elem = frame:CreateTexture(nil, "HIGHLIGHT")
-		elem:SetColorTexture(1, 0.82, 0, 0.2)
+		elem:SetColorTexture(1, 0.82, 0, 0.1)
 		elem:SetAllPoints(frame)
 
 		frame.hili_sel = frame:CreateTexture(nil, "ARTWORK")
 		elem = frame.hili_sel
-		elem:SetColorTexture(1, 0.82, 0, 0.4)
+		elem:SetColorTexture(1, 0.82, 0, 0.3)
 		elem:SetAllPoints(frame)
 		elem:Hide()
 
@@ -721,6 +626,7 @@ function ItemDistWindow:AddPlayer(name)
 end
 
 --- Order the players list by PR
+-- Sets the positions of `self.player_frames`
 function ItemDistWindow:OrderPlayers()
 	local tmp = {}
 	for i = 1, (self.player_index - 1) do
@@ -744,11 +650,6 @@ function ItemDistWindow:CreateActionsSection()
 	frame:SetWidth(self.width)
 	frame:SetHeight(23)
 	frame:Hide()
-
-	-- Background
-	elem = frame:CreateTexture(nil, "BACKGROUND")
-	elem:SetColorTexture(0, 0, 0, 0.7)
-	elem:SetAllPoints(frame)
 
 	-- Clear button
 	elem = CreateFrame("Button", nil, frame, "OptionsButtonTemplate")
@@ -793,4 +694,116 @@ end
 function ItemDistWindow:DisableDistributeButton()
 	self.sections.actions.btn_dist:Disable()
 	self.sections.actions.btn_dist_text:SetTextColor(1, 1, 1, 0.5)
+end
+
+function ItemDistWindow:CreateTransactionSection()
+	local elem, subelem
+	self.sections.transaction = CreateFrame("Frame", nil, self.panel)
+	local frame = self.sections.transaction
+	frame:SetPoint("TOPLEFT", 0, -1 * self.top_section_height)
+	frame:SetWidth(self.width)
+	frame:SetHeight(self.min_transaction_height)
+	--frame:Hide()
+
+	-- Cancel button
+	elem = CreateFrame("Button", nil, frame, "OptionsButtonTemplate")
+	elem:SetPoint("BOTTOMLEFT", 3, 3)
+	elem:SetWidth(45)
+	elem:SetHeight(18)
+	elem:SetScript("OnClick", function (_, button)
+		addon.app.item_dist_window:CancelTransaction()
+	end)
+	subelem = elem:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+	subelem:SetPoint("TOPLEFT", 5, 0)
+	subelem:SetPoint("TOPRIGHT", -5, 0)
+	subelem:SetJustifyH("CENTER")
+	subelem:SetHeight(18)
+	subelem:SetText("Back")
+
+	-- Confirm button
+	elem = CreateFrame("Button", nil, frame, "OptionsButtonTemplate")
+	elem:SetPoint("BOTTOMRIGHT", -3, 3)
+	elem:SetWidth(70)
+	elem:SetHeight(18)
+	elem:SetScript("OnClick", function (_, button)
+		addon.app.item_dist_window:ConfirmTransaction()
+	end)
+	subelem = elem:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+	subelem:SetPoint("TOPLEFT", 5, 0)
+	subelem:SetPoint("TOPRIGHT", -5, 0)
+	subelem:SetJustifyH("CENTER")
+	subelem:SetHeight(18)
+	subelem:SetText("Confirm")
+
+	-- Give text
+	elem = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+	elem:SetPoint("TOPLEFT", 3, -3)
+	elem:SetJustifyH("LEFT")
+	elem:SetText("Give item to: ")
+
+	-- Player name text
+	frame.player_text = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+	elem = frame.player_text
+	elem:SetPoint("TOPLEFT", 73, -3)
+	elem:SetJustifyH("LEFT")
+
+	-- For text
+	elem = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+	elem:SetPoint("TOPLEFT", 3, -20)
+	elem:SetJustifyH("LEFT")
+	elem:SetText("For: ")
+
+	-- GP dropdown select
+	elem = CreateFrame("FRAME", nil, frame, "MoneyFrameButtonTemplate")
+	elem:SetPoint("TOPLEFT", 0, 0)
+	elem:SetWidth(100)
+	elem:SetHeight(40)
+end
+
+function ItemDistWindow:CreateGPDropdown(frame, level, menulist)
+	local info
+
+	for key, option in pairs(addon.app.item_dist_window.gp_options) do
+		info = get_clean_menu_button()
+		info.text = option.text
+		info.value = option.value
+		info.notCheckable = false
+		info.func = function (self)
+			addon.app.item_dist_window:SelectGPValue(self.value)
+			UIDropDownMenu_SetSelectedID(frame, self:GetID())
+		end
+		UIDropDownMenu_AddButton(info)
+	end
+
+	info = get_clean_menu_button()
+	info.text = "Manual GP"
+	info.value = -1
+	info.notCheckable = false
+	info.func = function (self)
+		addon.app.item_dist_window:SelectGPValue(self.value)
+		UIDropDownMenu_SetSelectedID(frame, self:GetID())
+	end
+	UIDropDownMenu_AddButton(info)
+end
+
+function ItemDistWindow:SelectGPValue(gp)
+	print("SelectGPValue(" .. gp .. ")")
+	self.selected_gp = gp
+end
+
+function ItemDistWindow:DistributeItem()
+	self.sections.players:Hide()
+	self.sections.actions:Hide()
+	self.sections.transaction:Show()
+end
+
+function ItemDistWindow:CancelTransaction()
+	self.sections.players:Show()
+	self.sections.actions:Show()
+	self.sections.transaction:Hide()
+end
+
+function ItemDistWindow:ConfirmTransaction()
+	self:ClearItem()
+	print("ConfirmTransaction()")
 end

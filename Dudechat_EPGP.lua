@@ -363,3 +363,14 @@ function get_clean_menu_button()
 	menu_button.notCheckable = true
 	return menu_button
 end
+
+--- Returns the item ID from the given itemlink
+-- @param itemlink <string>
+-- @return <number> or <nil>
+function extract_item_id(itemlink)
+	if not itemlink or itemlink == nil then
+		return nil
+	end
+	local item_id = string.match(itemlink, "item:(%d+)")
+	return tonumber(item_id)
+end
