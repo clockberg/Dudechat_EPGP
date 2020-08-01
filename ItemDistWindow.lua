@@ -6,7 +6,7 @@ local orig_ChatEdit_InsertLink = ChatEdit_InsertLink
 ChatEdit_InsertLink = function (...)
 	local text = ...
 	local result = orig_ChatEdit_InsertLink(...)
-	if not result and text then
+	if not result and text and addon.app.item_dist_window.panel:IsVisible() then
 		addon.app.item_dist_window:SetItem(extract_item_id(text))
 		PlaySound(SOUNDKIT.IG_ABILITY_ICON_DROP)
 	end
@@ -46,6 +46,7 @@ end
 -- @param play_sound <boolean>
 function ItemDistWindow:ClearItem(play_sound)
 	self.item_id = nil
+	self.item_name = nil
 	self.player_index = 1
 	self.selected_gp = 0
 	self:ClearPlayerSelection()
@@ -82,10 +83,12 @@ function ItemDistWindow:SetItem(item_id)
 		return
 	end
 	self.item_id = item_id
-	local _, item_link, _, _, _, _, _, _ = GetItemInfo(item_id);
+	local item_name, item_link, _, _, _, _, _, _ = GetItemInfo(item_id)
+	self.item_name = item_name
 	self.sections.top.item_texture:SetTexture(GetItemIcon(item_id))
 	self.sections.top.title:SetText(item_link)
 	self:LoadGPOptions()
+	self:UpdateGPSelect()
 
 	local details = self.sections.details
 	details.grade_frame:UpdateItem(item_id)
@@ -138,25 +141,37 @@ function ItemDistWindow:LoadGPOptions()
 	for _, grade in pairs(grades) do
 		grade_data = item_data.by_grade[grade]
 		table.insert(self.gp_options, {
-			["text"] = "[" .. addon.app.grades[grade] .. "] " .. grade_data.price .. " GP",
+			["text"] = addon.app.grades[grade] .. ": " .. grade_data.price .. "gp",
 			["price"] = grade_data.price,
 		})
 	end
 
 	if item_data.price ~= nil then
 		table.insert(self.gp_options, {
-			["text"] = "[base]",
+			["text"] = "*: " .. item_data.price .. "gp",
 			["price"] = item_data.price,
 		})
 	end
+end
+
+function ItemDistWindow:Chat(msg, is_warn)
+	local channel = "RAID"
+	if is_warn == true then
+		channel = "RAID_WARNING"
+	end
+	SendChatMessage("{SQUARE} " .. msg, channel)
+end
+
+function ItemDistWindow:AnnouncePlayer(name, class, pr)
+	self:Chat(name .. " (" .. string.lower(class) .. ")" .. " needs ( " .. pr .. " pr )")
 end
 
 function ItemDistWindow:AnnounceItem()
 	if self.item_id == nil then
 		return
 	end
-	local _, item_link, _, _, _, _, _, _ = GetItemInfo(self.item_id);
-	SendChatMessage("{SQUARE} Now Distributing: " .. item_link .. "{SQUARE}", "RAID_WARNING")
+	local _, item_link, _, _, _, _, _, _ = GetItemInfo(self.item_id)
+	self:Chat("Now Distributing: " .. item_link, true)
 	local item_data = addon.app.data.items[self.item_id]
 	local total = 0
 	if item_data ~= nil then
@@ -164,8 +179,7 @@ function ItemDistWindow:AnnounceItem()
 		table.sort(grades)
 		for _, grade in pairs(grades) do
 			grade_data = item_data.by_grade[grade]
-			local str = " [ " .. addon.app.grades[grade] .. " ] "
-			str = str .. " [ " .. grade_data.price .. "gp ] "
+			local str = " ( " .. addon.app.grades[grade] .. ": " .. grade_data.price .. "gp ) "
 			local specs_as_keys = table_flip(grade_data.specs)
 			local count = 0
 			for i, spec in pairs(addon.app.specs) do
@@ -177,14 +191,17 @@ function ItemDistWindow:AnnounceItem()
 					str = str .. addon.app.spec_abbrs[spec]
 				end
 			end
-			SendChatMessage("{SQUARE}" .. str, "RAID")
+			self:Chat(str)
 			total = total + 1
+		end
+		if item_data.price then
+			self:Chat(" ( *: " .. item_data.price .. "gp )")
 		end
 	end
 	if total == 0 then
-		SendChatMessage("{SQUARE} No prices set", "RAID")
+		self:Chat("No prices set")
 	end
-	SendChatMessage("{SQUARE} DM \"need\" to " .. UnitName("player"), "RAID")
+	self:Chat("DM \"need\" to " .. UnitName("player"))
 end
 
 --- Open or close the context menu
@@ -321,16 +338,19 @@ end
 
 function ItemDistWindow:Build()
 	self.item_id = nil
+	self.item_name = nil
 
 	self.width = 200
 	self.top_section_height = 35
-	self.min_transaction_height = 60
+	self.min_transaction_height = 70
+	self.option_height = 15
 
 	self.player_height = 15
 	self.player_index = 1
 	self.player_frames = {}
 	self.selected_player = nil
 
+	self.num_gp_options = 7
 	self.gp_options = {}
 	self.selected_gp = 0
 	self.sections = {
@@ -504,18 +524,39 @@ function ItemDistWindow:CreatePlayersSection()
 	elem:SetText("PR")
 end
 
+--- Returns true if the given player name is already on the "need" list, false otherwise
+-- @param player_name <string>
+-- @return <boolean>
+function ItemDistWindow:IsPlayerOnList(player_name)
+	local found = false
+	for i = 1, sizeof(self.player_frames) do
+		if i < self.player_index and self.player_frames[i] ~= nil and self.player_frames[i].player_name == player_name then
+			found = true
+		end
+	end
+	return found
+end
+
 function ItemDistWindow:AddPlayer(name)
+	-- Must be distributing an item
 	if self.item_id == nil then
 		return
 	end
 
-	local elem
-
+	-- Player must exist in the guild data
 	local pdata = addon.app:GetPlayerData(name)
 	if pdata == nil then
 		return
 	end
 
+	local player_name = addon.app:RemoveServerFromName(name)
+
+	-- See if the player is already on the list
+	if self:IsPlayerOnList(player_name) then
+		return
+	end
+
+	local elem
 	local frame = self.player_frames[self.player_index]
 	if frame == nil then
 		-- Frame
@@ -523,8 +564,8 @@ function ItemDistWindow:AddPlayer(name)
 		self.player_frames[self.player_index] = frame
 		frame:EnableMouse(true)
 		frame.index = self.player_index
-		frame:SetPoint("TOPLEFT", 0, 0)
-		frame:SetWidth(self.width - 3)
+		frame:SetPoint("TOPLEFT", 2, 0)
+		frame:SetWidth(self.width - 6)
 		frame:SetHeight(self.player_height)
 
 		-- Name
@@ -572,6 +613,7 @@ function ItemDistWindow:AddPlayer(name)
 		frame:SetScript('OnMouseUp', function()
 			local window = addon.app.item_dist_window
 			window:ClearPlayerSelection()
+			window.selected_player = frame.name_text:GetText()
 			frame.hili_sel:Show()
 			window.sections.transaction.player_text:SetTextColor(frame.name_text:GetTextColor())
 			window.sections.transaction.player_text:SetText(frame.name_text:GetText())
@@ -584,6 +626,7 @@ function ItemDistWindow:AddPlayer(name)
 	local onote_data = addon.app:ParseOfficerNote(pdata.onote)
 	local ep = onote_data.ep
 	local gp = onote_data.gp
+	frame.player_name = player_name
 
 	-- debug
 	ep = math.random(50,500)
@@ -601,7 +644,7 @@ function ItemDistWindow:AddPlayer(name)
 	end
 
 	-- Set this row text
-	frame.name_text:SetText(addon.app:RemoveServerFromName(name))
+	frame.name_text:SetText(frame.player_name)
 	frame.ep_text:SetText(ep)
 	frame.gp_text:SetText(gp)
 	frame.pr_text:SetText(frame.pr)
@@ -623,6 +666,8 @@ function ItemDistWindow:AddPlayer(name)
 
 	-- Increase size of panel
 	self.panel:SetHeight(y + self.sections.actions:GetHeight())
+
+	self:AnnouncePlayer(frame.player_name, pdata.class, frame.pr)
 end
 
 --- Order the players list by PR
@@ -636,7 +681,7 @@ function ItemDistWindow:OrderPlayers()
 		return t1.pr > t2.pr
 	end)
 	for i = 1, sizeof(tmp) do
-		tmp[i]:SetPoint("TOPLEFT", 0, -1 * self.player_height * i)
+		tmp[i]:SetPoint("TOPLEFT", 2, -1 * self.player_height * i)
 	end
 end
 
@@ -673,7 +718,7 @@ function ItemDistWindow:CreateActionsSection()
 	elem:SetWidth(70)
 	elem:SetHeight(18)
 	elem:SetScript("OnClick", function (_, button)
-		addon.app.item_dist_window:DistributeItem()
+		addon.app.item_dist_window:ShowDistributeStep()
 	end)
 	frame.btn_dist_text = elem:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
 	subelem = frame.btn_dist_text
@@ -711,7 +756,7 @@ function ItemDistWindow:CreateTransactionSection()
 	elem:SetWidth(45)
 	elem:SetHeight(18)
 	elem:SetScript("OnClick", function (_, button)
-		addon.app.item_dist_window:CancelTransaction()
+		addon.app.item_dist_window:CancelDistributeStep()
 	end)
 	subelem = elem:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
 	subelem:SetPoint("TOPLEFT", 5, 0)
@@ -735,7 +780,7 @@ function ItemDistWindow:CreateTransactionSection()
 	subelem:SetHeight(18)
 	subelem:SetText("Confirm")
 
-	-- Give text
+	-- "Give item to.." text
 	elem = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
 	elem:SetPoint("TOPLEFT", 3, -3)
 	elem:SetJustifyH("LEFT")
@@ -747,63 +792,140 @@ function ItemDistWindow:CreateTransactionSection()
 	elem:SetPoint("TOPLEFT", 73, -3)
 	elem:SetJustifyH("LEFT")
 
-	-- For text
+	-- "For.." text
 	elem = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-	elem:SetPoint("TOPLEFT", 3, -20)
+	elem:SetPoint("TOPLEFT", 3, -23)
 	elem:SetJustifyH("LEFT")
 	elem:SetText("For: ")
 
-	-- GP dropdown select
-	elem = CreateFrame("FRAME", nil, frame, "MoneyFrameButtonTemplate")
-	elem:SetPoint("TOPLEFT", 0, 0)
-	elem:SetWidth(100)
-	elem:SetHeight(40)
+	-- GP select
+	frame.gp_select = CreateFrame("FRAME", nil, frame, "OptionsDropdownTemplate")
+	elem = frame.gp_select
+	elem:SetPoint("TOPLEFT", 10, -15)
+	elem.Text:SetText("???")
+	elem.Middle:SetWidth(65)
+	elem.Button:SetScript("OnClick", function (_, button)
+		addon.app.item_dist_window:ShowGPDropdownOptions()
+	end)
+
+	-- GP select options container
+	frame.gp_dropdown = CreateFrame("FRAME", nil, frame.gp_select)
+	elem = frame.gp_dropdown
+	elem:SetPoint("TOPLEFT", 18, -27)
+	elem:SetHeight(self.option_height * self.num_gp_options)
+	elem:SetWidth(15 + frame.gp_select.Middle:GetWidth())
+	elem:Hide()
+
+	-- GP select options container background
+	elem = frame.gp_dropdown:CreateTexture(nil, "BACKGROUND")
+	elem:SetColorTexture(0, 0, 0, 0.6)
+	elem:SetAllPoints(frame.gp_dropdown)
+
+	frame.gp_dropdown_options = {}
+
+	-- Dropdown options
+	for i = 1, self.num_gp_options do
+		-- Option button
+		elem = CreateFrame("BUTTON", nil, frame.gp_dropdown)
+		frame.gp_dropdown_options[i] = elem
+		elem:SetPoint("TOPLEFT", 0, -1 * (i - 1) * self.option_height)
+		elem:SetWidth(frame.gp_dropdown:GetWidth())
+		elem:SetHeight(self.option_height)
+		elem.value = 0
+		elem:SetScript("OnClick", function (button)
+			addon.app.item_dist_window:SetGPDropdownSelection(button)
+		end)
+
+		-- Option highlight
+		subelem = elem:CreateTexture(nil, "HIGHLIGHT")
+		subelem:SetColorTexture(1, 0.82, 0, 0.2)
+		subelem:SetAllPoints(elem)
+
+		-- Option text
+		elem.text = elem:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+		subelem = elem.text
+		subelem:SetPoint("TOPLEFT", 3, -3)
+		subelem:SetTextColor(1, 1, 1)
+		subelem:SetPoint("BOTTOMRIGHT", -3, 3)
+		subelem:SetJustifyH("LEFT")
+		subelem:SetJustifyV("MIDDLE")
+		subelem:SetText("Option #" .. i)
+	end
 end
 
-function ItemDistWindow:CreateGPDropdown(frame, level, menulist)
-	local info
+function ItemDistWindow:ShowGPDropdownOptions()
+	self.sections.transaction.gp_dropdown:Show()
+end
 
+function ItemDistWindow:SetGPDropdownSelection(button)
+	self.sections.transaction.gp_select.Text:SetText(button.text:GetText())
+	self.sections.transaction.gp_dropdown:Hide()
+	if button.value <= 0 then
+		self:ShowGPInput()
+		self.selected_gp = 0
+	else
+		self:HideGPInput()
+		self.selected_gp = button.value
+	end
+end
+
+function ItemDistWindow:UpdateGPSelect()
+	local i = 1
 	for key, option in pairs(addon.app.item_dist_window.gp_options) do
-		info = get_clean_menu_button()
-		info.text = option.text
-		info.value = option.value
-		info.notCheckable = false
-		info.func = function (self)
-			addon.app.item_dist_window:SelectGPValue(self.value)
-			UIDropDownMenu_SetSelectedID(frame, self:GetID())
-		end
-		UIDropDownMenu_AddButton(info)
+		self.sections.transaction.gp_dropdown_options[i].value = option.price
+		self.sections.transaction.gp_dropdown_options[i].text:SetText(option.text)
+		self.sections.transaction.gp_dropdown_options[i]:Show()
+		i = i + 1
 	end
 
-	info = get_clean_menu_button()
-	info.text = "Manual GP"
-	info.value = -1
-	info.notCheckable = false
-	info.func = function (self)
-		addon.app.item_dist_window:SelectGPValue(self.value)
-		UIDropDownMenu_SetSelectedID(frame, self:GetID())
+	self.sections.transaction.gp_dropdown_options[i].value = 0
+	self.sections.transaction.gp_dropdown_options[i].text:SetText("Custom")
+	self.sections.transaction.gp_dropdown_options[i]:Show()
+
+	self.sections.transaction.gp_dropdown:SetHeight(i * self.option_height)
+	self.sections.transaction.gp_select.Text:SetText(self.sections.transaction.gp_dropdown_options[1].text:GetText())
+	self.selected_gp = self.sections.transaction.gp_dropdown_options[1].value
+
+	for j = i + 1, self.num_gp_options do
+		self.sections.transaction.gp_dropdown_options[j]:Hide()
 	end
-	UIDropDownMenu_AddButton(info)
 end
 
-function ItemDistWindow:SelectGPValue(gp)
-	print("SelectGPValue(" .. gp .. ")")
-	self.selected_gp = gp
+function ItemDistWindow:ShowGPInput()
+	print("ShowGPInput()")
 end
 
-function ItemDistWindow:DistributeItem()
+function ItemDistWindow:HideGPInput()
+	print("HideGPInput()")
+end
+
+function ItemDistWindow:ShowDistributeStep()
 	self.sections.players:Hide()
 	self.sections.actions:Hide()
 	self.sections.transaction:Show()
+	self.panel:SetHeight(
+		self.top_section_height
+		+ self.sections.details:GetHeight()
+		+ self.sections.transaction:GetHeight()
+	)
 end
 
-function ItemDistWindow:CancelTransaction()
+function ItemDistWindow:CancelDistributeStep()
 	self.sections.players:Show()
 	self.sections.actions:Show()
 	self.sections.transaction:Hide()
+	self.panel:SetHeight(
+		self.top_section_height
+		+ self.sections.details:GetHeight()
+		+ self.sections.players:GetHeight()
+		+ self.sections.actions:GetHeight()
+	)
 end
 
 function ItemDistWindow:ConfirmTransaction()
-	self:ClearItem()
 	print("ConfirmTransaction()")
+	print("player => " .. self.selected_player)
+	print("item => " .. self.item_name)
+	print("gp => " .. self.selected_gp)
+	self:ClearItem()
 end
