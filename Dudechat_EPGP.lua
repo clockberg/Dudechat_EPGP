@@ -374,3 +374,39 @@ function extract_item_id(itemlink)
 	local item_id = string.match(itemlink, "item:(%d+)")
 	return tonumber(item_id)
 end
+
+--- Call this function to wait a specified amount of time before running another
+--- function with the given parameters
+-- @param delay <number> In Sections
+-- @param func <function> The function to run after the delay
+-- @param ... <mixed> The parameters to the called function
+-- @return <boolean>
+local waitTable = {}
+local waitFrame = nil
+function depgp_wait(delay, func, ...)
+	if (type(delay) ~= "number" or type(func) ~= "function") then
+		return false
+	end
+	if (waitFrame == nil) then
+		waitFrame = CreateFrame("Frame", "WaitFrame", UIParent)
+		waitFrame:SetScript("onUpdate", function (self, elapse)
+			local count = #waitTable
+			local i = 1
+			while (i <= count) do
+				local waitRecord = tremove(waitTable, i)
+				local d = tremove(waitRecord, 1)
+				local f = tremove(waitRecord, 1)
+				local p = tremove(waitRecord, 1)
+				if (d > elapse) then
+					tinsert(waitTable, i, {d - elapse, f, p})
+					i = i + 1
+				else
+					count = count - 1
+					f(unpack(p))
+				end
+			end
+		end)
+	end
+	tinsert(waitTable, {delay, func, {...}})
+	return true
+end
