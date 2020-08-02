@@ -4,10 +4,13 @@
 
 local _, addon = ...
 
+--- Print debug message
+-- @param msg <string>
 function addon.debug(msg)
 	print(msg)
 end
 
+--- Addon globals
 addon.short_name = "dEPGP"
 addon.full_name = "Dudechat EPGP"
 addon.addon_name = "Dudechat_EPGP"

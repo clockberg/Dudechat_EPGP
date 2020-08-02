@@ -1,42 +1,52 @@
 local _, addon = ...
 
--- Set up module
+-- Module setup
 local M = {}
 addon.Options = M
 local _G = _G
 local dd = function (msg) addon.debug("Options." .. msg) end
 setfenv(1, M)
 
+-- Module vars
 panel = nil
 checkboxes = {}
 editboxes = {}
 
--- called when the frame is initially displayed, and after requesting the default values to be restored
+--- Interface options on refresh
+-- Called when the frame is initially displayed, and after
+-- requesting the default values to be restored
 function OnRefresh()
 	dd("OnRefresh")
 end
 
--- called when the player presses the Okay button, indicating that settings should be saved
+--- Interface options on okay
+-- Called when the player presses the Okay button, indicating
+-- that settings should be saved
 function OnOkay()
 	dd("OnOkay")
 	addon.Config.CommitTmpOptions()
 	Sync()
 end
 
--- called when the player presses the Cancel button, indicating that changes made should be discarded
+--- Interface options on cancel
+-- Called when the player presses the Cancel button, indicating
+-- that changes made should be discarded
 function OnCancel()
 	dd("OnCancel")
 	addon.Config:ResetTmpOptions()
 	Sync()
 end
 
--- called when the player presses the Defaults button, indicating that default settings for the addon should be restored
+--- Interface options on default
+-- Called when the player presses the Defaults button, indicating
+-- that default settings for the addon should be restored
 function OnDefault()
 	dd("OnDefault")
 	addon.Config:SetOptionsToDefaults()
 	Sync()
 end
 
+--- Load this module
 function Load()
 	dd("Load")
 	panel = _G.CreateFrame("Frame")
@@ -68,6 +78,7 @@ function Load()
 	_G.InterfaceOptions_AddCategory(panel)
 end
 
+--- Sync the frame elements with the config options
 function Sync()
 	dd("Sync")
 	for option_key, checkbox in _G.pairs(checkboxes) do

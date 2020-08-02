@@ -7,8 +7,10 @@ local _G = _G
 local dd = function (msg) addon.debug("ItemTooltip." .. msg) end
 setfenv(1, M)
 
+-- Module vars
 details_frame = nil
 
+--- Load this module
 function Load()
 	dd("Load")
 	details_frame = addon.ItemDetails.NewFrame()

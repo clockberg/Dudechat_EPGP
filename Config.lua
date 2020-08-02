@@ -1,14 +1,15 @@
 local _, addon = ...
 
--- Set up module
+-- Module setup
 local M = {}
 addon.Config = M
 local _G = _G
 local dd = function (msg) addon.debug("Config." .. msg) end
 setfenv(1, M)
 
+--- Load this module
 function Load()
-	dd("Init")
+	dd("Load")
 	if _G.DEPGPStorage.options == nil then
 		_G.DEPGPStorage.options = {}
 	end

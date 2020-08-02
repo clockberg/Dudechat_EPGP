@@ -1,6 +1,6 @@
 local _, addon = ...
 
--- Set up module
+-- Module setup
 local M = {}
 addon.Util = M
 local _G = _G
