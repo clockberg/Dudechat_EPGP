@@ -4,9 +4,13 @@
 ## SavedVariables: DEPGPStorage
 
 Dudechat_EPGP.lua
+Config.lua
+Core.lua
+ItemDetails.lua
+ItemTooltip.lua
+Options.lua
+Util.lua
 Data/DefaultOptions.lua
 Data/Items.lua
-GradeFrame.lua
-ItemDistWindow.lua
-InterfaceOptions.lua
-ItemTooltipMod.lua
+Data/Specs.lua
+Data/Tiers.lua
