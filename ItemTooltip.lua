@@ -4,16 +4,18 @@ local _, addon = ...
 local M = {}
 addon.ItemTooltip = M
 local _G = _G
-local dd = function (msg) addon.debug("ItemTooltip." .. msg) end
+local dd = function (msg)
+	-- _G.print("ItemTooltip." .. msg)
+end
 setfenv(1, M)
 
 -- Module vars
-details_frame = nil
+item_details_component = nil
 
 --- Load this module
 function Load()
 	dd("Load")
-	details_frame = addon.ItemDetails.NewFrame()
+	item_details_component = addon.ItemDetailsComponent.Create()
 	_G.GameTooltip:HookScript("OnTooltipSetItem", Update)
 	_G.ItemRefTooltip:HookScript("OnTooltipSetItem", Update)
 end
@@ -26,7 +28,11 @@ function Update(tooltip)
 		return
 	end
 	local item_name = _G.select(1, tooltip:GetItem())
-	local item_id = _G.select(1, _G.GetItemInfoInstant(item_name))
-	details_frame:UpdateItem(item_id)
-	_G.GameTooltip_InsertFrame(tooltip, details_frame.frame)
+	if item_name then
+		local item_id = _G.select(1, _G.GetItemInfoInstant(item_name))
+		item_details_component:UpdateItem(item_id)
+		_G.GameTooltip_InsertFrame(tooltip, item_details_component.frame)
+	else
+		item_details_component:UpdateItem(nil)
+	end
 end

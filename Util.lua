@@ -4,7 +4,9 @@ local _, addon = ...
 local M = {}
 addon.Util = M
 local _G = _G
-local dd = function (msg) addon.debug("Util." .. msg) end
+local dd = function (msg)
+	-- _G.print("Util." .. msg)
+end
 setfenv(1, M)
 
 --- Returns the player name with the server part removed
@@ -78,4 +80,24 @@ function Round(num, places)
 	dd("Round")
 	local mult = 10^(places or 0)
 	return _G.math.floor(num * mult + 0.5) / mult
+end
+
+--- Returns a clean menu button
+-- Menu buttons have to be created repeatedly. We don't want to pollute memory
+-- with old, unused menu button tables. So we reuse the table that is sent to
+-- create the menu button. This function cleans out the table so it can be used again.
+-- @return <table>
+local button = _G.UIDropDownMenu_CreateInfo()
+function GetMenuButton()
+	button.text = nil
+	button.value = nil
+	button.arg1 = nil
+	button.disabled = false
+	button.checked = false
+	button.isTitle = false
+	button.noClickSound = false
+	button.notClickable = false
+	button.notCheckable = true
+	button.func = nil
+	return button
 end

@@ -6,7 +6,8 @@
 Dudechat_EPGP.lua
 Config.lua
 Core.lua
-ItemDetails.lua
+ItemDetailsComponent.lua
+ItemDistribute.lua
 ItemTooltip.lua
 Options.lua
 Util.lua

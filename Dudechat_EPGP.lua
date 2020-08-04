@@ -4,12 +4,6 @@
 
 local _, addon = ...
 
---- Print debug message
--- @param msg <string>
-function addon.debug(msg)
-	print(msg)
-end
-
 --- Addon globals
 addon.short_name = "dEPGP"
 addon.full_name = "Dudechat EPGP"
@@ -41,9 +35,10 @@ SLASH_DEPGP1 = "/depgp"
 function SlashCmdList.DEPGP(command, editbox)
 	if command == "" or command == nil then
 		print(addon.short_name .. ": default")
+		addon.ItemDistribute.Window_Toggle()
 	elseif command == "item" or command == "dist" or command == "distribute" then
-		--addon.app.item_dist_window:Toggle()
 		print(addon.short_name .. ": distribute")
+		addon.ItemDistribute.Window_Toggle()
 	else
 		print(addon.short_name .. ": usage")
 	end

@@ -4,7 +4,9 @@ local _, addon = ...
 local M = {}
 addon.Config = M
 local _G = _G
-local dd = function (msg) addon.debug("Config." .. msg) end
+local dd = function (msg)
+	-- _G.print("Config." .. msg)
+end
 setfenv(1, M)
 
 --- Load this module

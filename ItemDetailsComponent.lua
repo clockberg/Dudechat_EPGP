@@ -2,35 +2,37 @@ local _, addon = ...
 
 -- Module setup
 local M = {}
-addon.ItemDetails = M
+addon.ItemDetailsComponent = M
 local _G = _G
-local dd = function (msg) addon.debug("ItemDetails." .. msg) end
+local dd = function (msg)
+	-- _G.print("ItemDetailsComponent." .. msg)
+end
 setfenv(1, M)
 
--- Create ItemDetailsFrame class
-local ItemDetailsFrame = {}
-ItemDetailsFrame.__index = ItemDetailsFrame
-function ItemDetailsFrame:New()
-	dd("ItemDetailsFrame:New")
+-- Create class
+local Component = {}
+Component.__index = Component
+function Component:New()
+	dd("Component:New")
 	local self = {}
-	_G.setmetatable(self, ItemDetailsFrame)
+	_G.setmetatable(self, Component)
 	return self
 end
 
---- Create, build, and return a new ItemDetailsFrame
+--- Create, build, and return a new Component
 -- @param parent <Frame>
--- @return <ItemDetailsFrame>
-function NewFrame(parent)
+-- @return <Component>
+function Create(parent)
 	dd("NewFrame")
-	local frame = ItemDetailsFrame:New()
+	local frame = Component:New()
 	frame:Build(parent)
 	return frame
 end
 
 --- Build the frame
 -- @param parent <Frame>
-function ItemDetailsFrame:Build(parent)
-	dd("ItemDetailsFrame:Build")
+function Component:Build(parent)
+	dd("Component:Build")
 	self.item_id = nil
 	self.max_num_rows = addon.Util.SizeOf(addon.data.tiers) + 1
 	self.max_num_cols = addon.Util.SizeOf(addon.data.specs)
@@ -61,8 +63,6 @@ function ItemDetailsFrame:Build(parent)
 		for col = 1, self.max_num_cols do
 			local x_offset = (col - 1) * self.row_height + self.tier_text_width + self.price_text_width
 
-			_G.print("col #" .. col)
-
 			self.icons[row][col] = self.frame:CreateTexture(nil, "OVERLAY")
 			self.icons[row][col]:SetPoint("TOPLEFT", self.frame, "TOPLEFT", x_offset, y_offset)
 			self.icons[row][col]:SetSize(self.row_height - 1, self.row_height - 1)
@@ -74,8 +74,8 @@ end
 
 --- Clear the frame
 -- Remove all the text and icons from the frame, resize, and hide it
-function ItemDetailsFrame:Clear()
-	dd("ItemDetailsFrame:Clear")
+function Component:Clear()
+	dd("Component:Clear")
 	for row = 1, self.max_num_rows do
 		self.tier_texts[row]:SetText(nil)
 		self.price_texts[row]:SetText(nil)
@@ -92,8 +92,8 @@ end
 --- Resize the frame
 -- @param rows <number>
 -- @param cols <number>
-function ItemDetailsFrame:Resize(rows, cols)
-	dd("ItemDetailsFrame:Resize")
+function Component:Resize(rows, cols)
+	dd("Component:Resize")
 	self.frame:SetSize(
 		self.row_height * cols + self.tier_text_width + self.price_text_width,
 		self.row_height * rows
@@ -102,8 +102,8 @@ end
 
 --- Update the frame with the given item
 -- @param item_id <number>
-function ItemDetailsFrame:UpdateItem(item_id)
-	dd("ItemDetailsFrame:UpdateItem")
+function Component:UpdateItem(item_id)
+	dd("Component:UpdateItem")
 
 	if item_id == self.item_id then
 		-- Item matches existing item, don't update
