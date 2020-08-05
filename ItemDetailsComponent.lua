@@ -4,16 +4,12 @@ local _, addon = ...
 local M = {}
 addon.ItemDetailsComponent = M
 local _G = _G
-local dd = function (msg)
-	-- _G.print("ItemDetailsComponent." .. msg)
-end
 setfenv(1, M)
 
 -- Create class
 local Component = {}
 Component.__index = Component
 function Component:New()
-	dd("Component:New")
 	local self = {}
 	_G.setmetatable(self, Component)
 	return self
@@ -23,7 +19,6 @@ end
 -- @param parent <Frame>
 -- @return <Component>
 function Create(parent)
-	dd("NewFrame")
 	local frame = Component:New()
 	frame:Build(parent)
 	return frame
@@ -32,7 +27,6 @@ end
 --- Build the frame
 -- @param parent <Frame>
 function Component:Build(parent)
-	dd("Component:Build")
 	self.item_id = nil
 	self.max_num_rows = addon.Util.SizeOf(addon.data.tiers) + 1
 	self.max_num_cols = addon.Util.SizeOf(addon.data.specs)
@@ -75,7 +69,6 @@ end
 --- Clear the frame
 -- Remove all the text and icons from the frame, resize, and hide it
 function Component:Clear()
-	dd("Component:Clear")
 	for row = 1, self.max_num_rows do
 		self.tier_texts[row]:SetText(nil)
 		self.price_texts[row]:SetText(nil)
@@ -93,7 +86,6 @@ end
 -- @param rows <number>
 -- @param cols <number>
 function Component:Resize(rows, cols)
-	dd("Component:Resize")
 	self.frame:SetSize(
 		self.row_height * cols + self.tier_text_width + self.price_text_width,
 		self.row_height * rows
@@ -103,8 +95,6 @@ end
 --- Update the frame with the given item
 -- @param item_id <number>
 function Component:UpdateItem(item_id)
-	dd("Component:UpdateItem")
-
 	if item_id == self.item_id then
 		-- Item matches existing item, don't update
 		return

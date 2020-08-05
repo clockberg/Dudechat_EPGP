@@ -4,16 +4,13 @@ local _, addon = ...
 local M = {}
 addon.Core = M
 local _G = _G
-local dd = function (msg)
-	_G.print("Core." .. msg)
-end
 setfenv(1, M)
 
 --- Load this module
 function Load()
-	dd("Load")
 	addon.Config.Load()
 	addon.Options.Load()
+	addon.Guild.Load()
 	addon.ItemTooltip.Load()
 	addon.ItemDistribute.Load()
 end

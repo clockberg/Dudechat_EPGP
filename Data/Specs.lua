@@ -41,3 +41,23 @@ addon.data.spec_textures = {
 	["RET_PALADIN"] = GetSpellTexture(10300),
 	["PROT_PALADIN"] = GetSpellTexture(10292),
 }
+addon.data.spec_abbrs = {
+	["PROT_WAR"] = "ProtWar",
+	["FURY_WAR"] = "Fury",
+	["ROGUE"] = "Rogue",
+	["HUNTER"] = "Hunter",
+	["RESTO_SHAM"] = "RSham",
+	["ELE_SHAM"] = "Ele",
+	["ENHANCE_SHAM"] = "Enh",
+	["RESTO_DRUID"] = "RDruid",
+	["BEAR_DRUID"] = "Bear",
+	["CAT_DRUID"] = "Cat",
+	["BOOMKIN"] = "Boomkin",
+	["MAGE"] = "Mage",
+	["WARLOCK"] = "Lock",
+	["HOLY_PRIEST"] = "HPriest",
+	["SHADOW_PRIEST"] = "SPriest",
+	["HOLY_PALADIN"] = "HPal",
+	["RET_PALADIN"] = "Ret",
+	["PROT_PALADIN"] = "ProtPal",
+}

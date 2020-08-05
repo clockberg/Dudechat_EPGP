@@ -4,9 +4,6 @@ local _, addon = ...
 local M = {}
 addon.Options = M
 local _G = _G
-local dd = function (msg)
-	-- _G.print("Options." .. msg)
-end
 setfenv(1, M)
 
 -- Module vars
@@ -18,14 +15,13 @@ editboxes = {}
 -- Called when the frame is initially displayed, and after
 -- requesting the default values to be restored
 function OnRefresh()
-	dd("OnRefresh")
+	--
 end
 
 --- Interface options on okay
 -- Called when the player presses the Okay button, indicating
 -- that settings should be saved
 function OnOkay()
-	dd("OnOkay")
 	addon.Config.CommitTmpOptions()
 	Sync()
 end
@@ -34,7 +30,6 @@ end
 -- Called when the player presses the Cancel button, indicating
 -- that changes made should be discarded
 function OnCancel()
-	dd("OnCancel")
 	addon.Config:ResetTmpOptions()
 	Sync()
 end
@@ -43,14 +38,12 @@ end
 -- Called when the player presses the Defaults button, indicating
 -- that default settings for the addon should be restored
 function OnDefault()
-	dd("OnDefault")
 	addon.Config:SetOptionsToDefaults()
 	Sync()
 end
 
 --- Load this module
 function Load()
-	dd("Load")
 	panel = _G.CreateFrame("Frame")
 	panel.name = addon.short_name
 	panel:SetPoint("TOPLEFT", 0, 0)
@@ -82,7 +75,6 @@ end
 
 --- Sync the frame elements with the config options
 function Sync()
-	dd("Sync")
 	for option_key, checkbox in _G.pairs(checkboxes) do
 		checkbox:SetChecked(addon.Config.GetOption(option_key))
 	end
@@ -99,7 +91,6 @@ end
 -- @param label_text <string>
 -- @param desc_text <string>
 function AddCheckbox(option_key, x, y, label_text, desc_text)
-	dd("AddCheckbox")
 	desc_text = desc_text or nil
 
 	local frame = _G.CreateFrame("Frame", nil, panel)
@@ -144,7 +135,6 @@ end
 -- @param label_text <string>
 -- @param desc_text <string>
 function AddEditbox(option_key, x, y, label_text, desc_text)
-	dd("AddEditbox")
 	desc_text = desc_text or nil
 
 	local frame = _G.CreateFrame("Frame", nil, panel)

@@ -9,11 +9,51 @@ local dd = function (msg)
 end
 setfenv(1, M)
 
+--- Send a raid message
+-- @param msg <string>
+function Raid(msg)
+	_G.SendChatMessage("{SQUARE} " .. msg, "RAID")
+end
+
+--- Send a raid warning message
+-- @param msg <string>
+function RaidWarning(msg)
+	_G.SendChatMessage("{SQUARE} " .. msg, "RAID_WARNING")
+end
+
+function PlaySoundItemDrop()
+	_G.PlaySound(_G.SOUNDKIT.IG_ABILITY_ICON_DROP)
+end
+function PlaySoundOpen()
+	_G.PlaySound(_G.SOUNDKIT.IG_MAINMENU_OPEN)
+end
+function PlaySoundClose()
+	_G.PlaySound(_G.SOUNDKIT.IG_MAINMENU_CLOSE)
+end
+function PlaySoundBack()
+	_G.PlaySound(_G.SOUNDKIT.IG_CHAT_SCROLL_UP)
+end
+function PlaySoundNext()
+	_G.PlaySound(_G.SOUNDKIT.IG_CHAT_SCROLL_UP)
+end
+
+--- Returns the PR from the given EP and GP
+-- @param ep <number>
+-- @param gp <number>
+-- @return <number>
+function GetPR(ep, gp)
+	dd("GetPR")
+	if gp == nil or gp == 0 then
+		return 0
+	end
+	return Round(ep / gp, 2)
+end
+
 --- Returns the player name with the server part removed
 -- @param name <string>
 -- @return <string>
 function RemoveServerFromPlayerName(name)
-	dd("RemoveServerFromPlayerName")
+	dd("RemoveServerFromPlayerName(" .. name .. ")")
 	if not name or name == nil then
 		return ""
 	end
@@ -77,7 +117,7 @@ end
 -- @param places <number> Number of decimal places to round to
 -- @return <number>
 function Round(num, places)
-	dd("Round")
+	dd("Round(" .. num .. ", " .. places .. ")")
 	local mult = 10^(places or 0)
 	return _G.math.floor(num * mult + 0.5) / mult
 end
@@ -89,6 +129,7 @@ end
 -- @return <table>
 local button = _G.UIDropDownMenu_CreateInfo()
 function GetMenuButton()
+	dd("GetMenuButton")
 	button.text = nil
 	button.value = nil
 	button.arg1 = nil

@@ -4,14 +4,10 @@ local _, addon = ...
 local M = {}
 addon.Config = M
 local _G = _G
-local dd = function (msg)
-	-- _G.print("Config." .. msg)
-end
 setfenv(1, M)
 
 --- Load this module
 function Load()
-	dd("Load")
 	if _G.DEPGPStorage.options == nil then
 		_G.DEPGPStorage.options = {}
 	end
@@ -25,7 +21,6 @@ end
 -- @param key <string>
 -- @return <mixed>
 function GetOption(key)
-	dd("GetOption")
 	if _G.DEPGPStorage.options[key] ~= nil then
 		return _G.DEPGPStorage.options[key]
 	elseif addon.data.default_options[key] ~= nil then
@@ -39,13 +34,11 @@ end
 -- @param key <string>
 -- @param val <mixed>
 function SetOption(key, val)
-	dd("SetOption")
 	_G.DEPGPStorage.options[key] = val
 end
 
 --- Set options to default
 function SetOptionsToDefaults()
-	dd("SetOptionsToDefaults")
 	_G.DEPGPStorage.options = {}
 end
 
@@ -55,14 +48,12 @@ end
 -- @param key <string>
 -- @param val <mixed>
 function SetTmpOption(key, val)
-	dd("SetTmpOption")
 	addon.data.tmp_options[key] = val
 end
 
 --- Commit tmp options
 -- When the user hits "Okay" or "Apply" on the options menu
 function CommitTmpOptions()
-	dd("CommitTmpOptions")
 	for key, val in _G.pairs(addon.data.tmp_options) do
 		SetOption(key, val)
 	end
@@ -71,6 +62,5 @@ end
 --- Reset tmp options
 -- When the user hits "Cancel" on the options menu
 function ResetTmpOptions()
-	dd("ResetTmpOptions")
 	addon.data.tmp_options = {}
 end

@@ -4,14 +4,31 @@ local _, addon = ...
 local M = {}
 addon.ItemDistribute = M
 local _G = _G
-local dd = function (msg)
-	_G.print("ItemDistribute." .. msg)
-end
+local print = _G.print
 setfenv(1, M)
+
+-- Step 1: Window is empty and ready.
+
+-- Step 2: Item is placed in the window.
+--  Update the header with the item name and icon
+--  Show the details section if the item has tier or pricing info
+--  Show the players section with an empty players table
+--  Show the actions section
+
+-- Step 3: User clicks on a player and then clicks "distribute"
+--  Hide the details section
+--  Hide the players section
+--  Hide the actions section
+--  Show the checkout section
+
+-- Step 4: Complete the checkout
 
 -- Window
 window = nil -- <Frame>
 window_width = 200 -- <number>
+
+-- Step
+step = 0
 
 -- Menu
 menu = nil -- <Frame>
@@ -42,6 +59,10 @@ sections = {
 		th_color = {1, 1, 1, 0.4}, -- <table>
 		index = 1, -- <number>
 		frames = {}, -- <table of <Frame>>
+		max_visible = 4, -- <number> (including th)
+		offset = 0, -- <number>
+		up = nil, -- <Frame>
+		down = nil, -- <Frame>
 	},
 	actions = {
 		frame = nil, -- <Frame>
@@ -67,9 +88,7 @@ sections = {
 
 --- Load this module
 function Load()
-	dd("Load")
-
-	-- Window frame
+	-- Window
 	window = _G.CreateFrame("Frame", nil, nil, "BasicFrameTemplate")
 	window:EnableMouse(true)
 	window:SetClampedToScreen(true)
@@ -102,6 +121,7 @@ function Load()
 
 	-- Bind to mouse events
 	window:SetScript("OnMouseUp", Window_OnMouseUp)
+	window:SetScript("OnMouseWheel", Window_OnMouseWheel)
 
 	--- Hook item link to put into our addon
 	-- Normal usage is shift+left click
@@ -110,8 +130,8 @@ function Load()
 		local text = ...
 		local result = orig_ChatEdit_InsertLink(...)
 		if not result and text and window:IsVisible() then
-			Item_Set(addon.Util.GetItemIdFromItemLink(text))
-			_G.PlaySound(_G.SOUNDKIT.IG_ABILITY_ICON_DROP)
+			Step2_Activate(addon.Util.GetItemIdFromItemLink(text))
+			addon.Util.PlaySoundItemDrop()
 		end
 		return false
 	end
@@ -121,24 +141,54 @@ function Load()
 	menu:SetPoint("CENTER")
 	_G.UIDropDownMenu_Initialize(menu, Menu_Create, "MENU")
 
+	-- Load sections
 	Header_Load()
 	Details_Load()
 	Players_Load()
 	Actions_Load()
 	Checkout_Load()
+	Window_Resize()
+
+	-- debug
+	-- Step2_Activate(153)
+	-- Players_Add("Clockberg-Bigglesworth")
+	-- Players_Add("Berg-Bigglesworth")
+	-- Players_Add("Lilberg-Bigglesworth")
+	-- Players_Add("Beefo-Bigglesworth")
+	-- Players_Add("Cleetuscow-Bigglesworth")
+	-- Players_Add("Fish-Bigglesworth")
+	-- Players_Add("Fisheh-Bigglesworth")
+	-- Players_Add("Tuna-Bigglesworth")
+	-- Players_Add("Dambi-Bigglesworth")
+	-- Players_Add("Pound-Bigglesworth")
 end
 
--------
--- Item
--------
+--- Activate step 1
+-- @param play_sound <boolean>
+function Step1_Activate(play_sound)
+	selected_item_id = nil
+	selected_item_name = nil
+	selected_player = nil
+	selected_gp = nil
+	gp_options = {}
 
---- Sets the selected item
+	Header_Reset()
+	Details_Deactivate()
+	Players_Deactivate()
+	Actions_Deactivate()
+	Checkout_Deactivate()
+	Window_Resize()
+
+	if play_sound == nil or play_sound then
+		addon.Util.PlaySoundItemDrop()
+	end
+
+	step = 1
+end
+
+--- Activate step 2
 -- @param item_id <number>
-function Item_Set(item_id)
-	dd("Item_Set(" .. item_id .. ")")
-
-	Item_Clear(false)
-
+function Step2_Activate(item_id)
 	if not item_id then
 		return
 	end
@@ -147,69 +197,45 @@ function Item_Set(item_id)
 	local item_name, item_link, _, _, _, _, _, _ = _G.GetItemInfo(item_id)
 	selected_item_id = item_id
 	selected_item_name = item_name
+	selected_player = nil
 
 	-- Load the item GP data
 	Item_LoadGP()
 
 	-- Update the sections
 	Header_SetItem(item_id, item_link)
-	Details_SetItem(item_id)
+	Details_Activate(item_id)
+	Players_Deactivate()
 	Players_Activate()
 	Actions_Activate()
+	Checkout_Deactivate()
 	Checkout_UpdateGPDropdown()
 	Window_Resize()
+
+	Item_Announce()
+
+	step = 2
 end
 
---- Loads the GP options for the selected item
-function Item_LoadGP()
-	gp_options = {}
-
-	local item_data = addon.data.items[selected_item_id]
-	if item_data == nil then
-		return
-	end
-
-	local tiers = addon.Util.TableGetKeys(item_data.by_tier)
-	_G.table.sort(tiers)
-	for _, tier in _G.pairs(tiers) do
-		tier_data = item_data.by_tier[tier]
-		_G.table.insert(gp_options, {
-			["text"] = addon.data.tiers[tier] .. ": " .. tier_data.price .. "gp",
-			["price"] = tier_data.price,
-		})
-	end
-
-	if item_data.price ~= nil then
-		_G.table.insert(gp_options, {
-			["text"] = "*: " .. item_data.price .. "gp",
-			["price"] = item_data.price,
-		})
-	end
-end
-
---- Announces the selected item
-function Item_Announce()
-	dd("Item_Announce")
-end
-
---- Clears the selected item
--- @param is_play_sound <boolean>
-function Item_Clear(is_play_sound)
-	dd("Item_Clear")
-
-	selected_item_id = nil
-	selected_item_name = nil
-
-	Header_Reset()
-	Details_Reset()
-	Players_Reset()
-	Actions_Reset()
-	Checkout_Reset()
+--- Activate step 3
+function Step3_Activate()
+	sections.players.frame:Hide()
+	sections.actions.frame:Hide()
+	Checkout_Activate()
 	Window_Resize()
 
-	if is_play_sound == nil or is_play_sound then
-		_G.PlaySound(_G.SOUNDKIT.IG_ABILITY_ICON_DROP)
-	end
+	step = 3
+end
+
+--- Back from step 3 to step 2
+function Step3_Back()
+	Details_Activate(selected_item_id)
+	Players_Activate()
+	Actions_Activate()
+	Checkout_Deactivate()
+	Window_Resize()
+
+	step = 2
 end
 
 ---------
@@ -217,8 +243,6 @@ end
 ---------
 
 function Header_Load()
-	dd("Header_Load")
-
 	sections.header.frame = _G.CreateFrame("Frame", nil, window)
 	sections.header.frame:SetPoint("TOPLEFT", 0, 0)
 	sections.header.frame:SetWidth(window_width)
@@ -257,8 +281,6 @@ end
 
 --- Reset the header section
 function Header_Reset()
-	dd("Header_Reset")
-
 	sections.header.title:SetText(addon.short_name)
 	sections.header.icon:SetTexture(nil)
 end
@@ -267,8 +289,6 @@ end
 -- @param item_id <number>
 -- @param item_link <string>
 function Header_SetItem(item_id, item_link)
-	dd("Header_SetItem")
-
 	sections.header.icon:SetTexture(_G.GetItemIcon(item_id))
 	sections.header.title:SetText(item_link)
 end
@@ -279,8 +299,6 @@ end
 
 --- Load the details section
 function Details_Load()
-	dd("Details_Load")
-
 	sections.details.frame = _G.CreateFrame("Frame", nil, window)
 	sections.details.frame:SetPoint("TOPLEFT", 0, -1 * sections.header.height)
 	sections.details.frame:SetWidth(window_width)
@@ -288,23 +306,21 @@ function Details_Load()
 	sections.details.item_details_component = addon.ItemDetailsComponent.Create(sections.details.frame)
 	sections.details.item_details_component.frame:SetPoint("TOPLEFT", 5, 0)
 
-	Details_Reset()
+	Details_Deactivate()
 end
 
---- Reset the details section
-function Details_Reset()
-	dd("Details_Reset")
+--- Deactivate the details section
+function Details_Deactivate()
 	sections.details.frame:Hide()
 end
 
 --- Update the details section with the given item ID
 -- @param item_id <number>
-function Details_SetItem(item_id)
-	dd("Details_SetItem")
+function Details_Activate(item_id)
 	sections.details.item_details_component:UpdateItem(item_id)
 	local h = sections.details.item_details_component.frame:GetHeight()
 	sections.details.frame:SetHeight(h)
-	if h > 0 then
+	if h >= 1 then
 		sections.details.frame:Show()
 	else
 		sections.details.frame:Hide()
@@ -317,20 +333,21 @@ end
 
 --- Load the players section
 function Players_Load()
-	dd("Players_Load")
-
+	-- Create the players frame
 	sections.players.frame = _G.CreateFrame("Frame", nil, window)
 	sections.players.frame:SetPoint("TOPLEFT", 0, -1 * sections.header.height)
 	sections.players.frame:SetWidth(window_width)
 	sections.players.frame:SetHeight(sections.players.height_ea)
 
+	-- "Player" table header
 	local elem = sections.players.frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-	elem:SetPoint("TOPLEFT", 5, 0)
+	elem:SetPoint("TOPLEFT", 10, 0)
 	elem:SetJustifyH("LEFT")
 	elem:SetTextColor(_G.unpack(sections.players.th_color))
 	elem:SetHeight(sections.players.height_ea)
 	elem:SetText("Player")
 
+	-- "EP" table header
 	elem = sections.players.frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
 	elem:SetPoint("TOPLEFT", 90, 0)
 	elem:SetJustifyH("RIGHT")
@@ -339,6 +356,7 @@ function Players_Load()
 	elem:SetHeight(sections.players.height_ea)
 	elem:SetText("EP")
 
+	-- "GP" table header
 	elem = sections.players.frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
 	elem:SetPoint("TOPLEFT", 122, 0)
 	elem:SetJustifyH("RIGHT")
@@ -347,6 +365,7 @@ function Players_Load()
 	elem:SetHeight(sections.players.height_ea)
 	elem:SetText("GP")
 
+	-- "PR" table header
 	elem = sections.players.frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
 	elem:SetPoint("TOPRIGHT", -3, 0)
 	elem:SetJustifyH("RIGHT")
@@ -355,50 +374,299 @@ function Players_Load()
 	elem:SetHeight(sections.players.height_ea)
 	elem:SetText("PR")
 
-	Players_Reset()
+	-- up arrow
+	sections.players.up = sections.players.frame:CreateTexture(nil, "ARTWORK")
+	sections.players.up:SetPoint("TOPLEFT", 3, -12)
+	sections.players.up:SetWidth(10)
+	sections.players.up:SetHeight(15)
+
+	-- down arrow
+	sections.players.down = sections.players.frame:CreateTexture(nil, "ARTWORK")
+	sections.players.down:SetPoint("BOTTOMLEFT", 3, -5)
+	sections.players.down:SetWidth(10)
+	sections.players.down:SetHeight(15)
+
+	Players_Deactivate()
 end
 
---- Reset the players section
-function Players_Reset()
-	dd("Players_Reset")
+--- Deactivate the players section
+function Players_Deactivate()
 	Players_Deselect()
+
+	-- Hide player rows
 	for i = 1, addon.Util.SizeOf(sections.players.frames) do
 		sections.players.frames[i]:Hide()
 	end
+
+	-- Reset players
 	sections.players.index = 1
 	sections.players.frame:Hide()
+	sections.players.offset = 0
+	Players_MoreUp(0)
+	Players_MoreDown(0)
 end
 
---- Reposition the players section
-function Players_Reposition()
-	dd("Players_Reposition")
+--- Resize and reposition the players section
+function Players_Restage()
 	sections.players.frame:ClearAllPoints()
 	local y = sections.header.frame:GetHeight()
 	if sections.details.frame:IsVisible() then
 		y = y + sections.details.frame:GetHeight()
 	end
 	sections.players.frame:SetPoint("TOPLEFT", 0, -1 * y)
-	sections.players.frame:SetHeight(sections.players.height_ea)
+
+	local h = sections.players.height_ea * _G.min(sections.players.max_visible, sections.players.index)
+	sections.players.frame:SetHeight(h)
 end
 
 --- Activate the players section
 function Players_Activate()
-	Players_Reposition()
+	Players_Restage()
 	sections.players.frame:Show()
 end
 
---- A player needs the selected item
--- @param name <string>
-function Players_Need(name)
-	dd("Players_Need")
+--- Announces the selected item
+-- @param player_name <string>
+-- @param class <string>
+-- @param pr <number>
+function Players_Announce(player_name, class, pr)
+	addon.Util.Raid(player_name .. " (" .. _G.string.lower(class) .. ")" .. " needs ( " .. pr .. " pr )")
 end
 
---- Deselect all players
+--- Returns true if the player is already on the list
+-- @param name <string>
+-- @return <boolean>
+function Players_IsOnList(player_name)
+	local found = false
+	for i = 1, addon.Util.SizeOf(sections.players.frames) do
+		if i < sections.players.index and sections.players.frames[i] ~= nil and sections.players.frames[i].player_name == player_name then
+			found = true
+		end
+	end
+	-- return false -- debug
+	return found
+end
+
+--- Adds a new player frame to the list
+-- @return <Frame>
+function Players_NewFrame()
+	-- Frame
+	local frame = _G.CreateFrame("Frame", nil, sections.players.frame)
+	sections.players.frames[sections.players.index] = frame
+
+	-- Frame vars
+	frame.player_name = nil
+	frame.pr = nil
+	frame.index = sections.players.index
+
+	-- Frame settings
+	frame:EnableMouse(true)
+	frame:SetPoint("TOPLEFT", 2, 0)
+	frame:SetWidth(window_width - 6)
+	frame:SetHeight(sections.players.height_ea)
+
+	-- Name
+	frame.name_text = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+	frame.name_text:SetPoint("TOPLEFT", 10, 0)
+	frame.name_text:SetJustifyH("LEFT")
+	frame.name_text:SetHeight(sections.players.height_ea)
+
+	-- EP
+	frame.ep_text = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+	frame.ep_text:SetPoint("TOPLEFT", 90, 0)
+	frame.ep_text:SetJustifyH("RIGHT")
+	frame.ep_text:SetWidth(35)
+	frame.ep_text:SetHeight(sections.players.height_ea)
+
+	-- GP
+	frame.gp_text = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+	frame.gp_text:SetPoint("TOPLEFT", 122, 0)
+	frame.gp_text:SetJustifyH("RIGHT")
+	frame.gp_text:SetWidth(35)
+	frame.gp_text:SetHeight(sections.players.height_ea)
+
+	-- PR
+	frame.pr_text = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+	frame.pr_text:SetPoint("TOPRIGHT", -3, 0)
+	frame.pr_text:SetJustifyH("RIGHT")
+	frame.pr_text:SetWidth(38)
+	frame.pr_text:SetHeight(sections.players.height_ea)
+
+	-- Row highlight (automatic on mouseover)
+	elem = frame:CreateTexture(nil, "HIGHLIGHT")
+	elem:SetColorTexture(1, 0.82, 0, 0.1)
+	elem:SetAllPoints(frame)
+
+	-- Row select (hidden until clicked)
+	frame.select = frame:CreateTexture(nil, "ARTWORK")
+	frame.select:SetColorTexture(1, 0.82, 0, 0.3)
+	frame.select:SetAllPoints(frame)
+	frame.select:Hide()
+
+	-- Bind to click event
+	frame:SetScript('OnMouseUp', Players_Select)
+
+	return frame
+end
+
+--- Select the clicked player row
+-- @param frame <Frame> the clicked player row frame
+function Players_Select(frame)
+	Players_Deselect()
+	selected_player = frame.name_text:GetText()
+	frame.select:Show()
+	sections.checkout.player_text:SetTextColor(frame.name_text:GetTextColor())
+	sections.checkout.player_text:SetText(frame.name_text:GetText())
+	Actions_EnableDistributeButton()
+	addon.Util.PlaySoundNext()
+end
+
+--- Deselect all players rows
 function Players_Deselect()
-	dd("Players_Deselect")
 	selected_player = nil
 	for i = 1, addon.Util.SizeOf(sections.players.frames) do
-		sections.players.frames[i].highlight:Hide()
+		sections.players.frames[i].select:Hide()
+	end
+	if sections.checkout.player_text then
+		sections.checkout.player_text:SetText(nil)
+	end
+	Actions_DisableDistributeButton()
+end
+
+--- A player needs the selected item
+-- @param player_fullname <string>
+function Players_Add(player_fullname)
+	-- Must be on step 2
+	if step ~= 2 or not window:IsVisible() then
+		return
+	end
+
+	-- Player must exist in the guild data
+	local player_data = addon.Guild.GetPlayerData(player_fullname)
+	if player_data == nil then
+		return
+	end
+
+	local player_name = addon.Util.RemoveServerFromPlayerName(player_fullname)
+
+	-- See if the player is already on the list
+	if Players_IsOnList(player_name) then
+		_G.print("z")
+		return
+	end
+
+	local frame = sections.players.frames[sections.players.index]
+	if frame == nil then
+		frame = Players_NewFrame()
+	end
+	sections.players.index = sections.players.index + 1
+
+	-- Get player EP and GP
+	local epgp = addon.Guild.ParseOfficerNote(player_data.officer_note)
+
+	epgp.ep = _G.math.random(1,100)
+
+	frame.pr = addon.Util.GetPR(epgp.ep, epgp.gp)
+	frame.player_name = player_name
+
+	-- Set class color
+	if player_data.class == "SHAMAN" then
+		-- Override shaman color to blue
+		-- #0070DE
+		frame.name_text:SetTextColor(0, 0.4375, 0.8706)
+	else
+		frame.name_text:SetTextColor(_G.GetClassColor(player_data.class))
+	end
+
+	-- Set this row text
+	frame.name_text:SetText(player_name)
+	frame.ep_text:SetText(epgp.ep)
+	frame.gp_text:SetText(epgp.gp)
+	frame.pr_text:SetText(frame.pr)
+	frame:Show()
+
+	Players_Sort()
+	Players_Restage()
+	Actions_Restage()
+	Checkout_Restage()
+	Window_Resize()
+	Players_Announce(player_name, player_data.class, frame.pr)
+end
+
+--- Sorts the players list by PR
+function Players_Sort()
+	local tmp = {}
+	for i = 1, (sections.players.index - 1) do
+		_G.table.insert(tmp, sections.players.frames[i])
+	end
+	_G.table.sort(tmp, function(t1, t2)
+		if t1.pr == t2.pr then
+			return t1.player_name > t2.player_name
+		end
+		return t1.pr > t2.pr
+	end)
+	sections.players.frames = {}
+	for i = 1, addon.Util.SizeOf(tmp) do
+		sections.players.frames[i] = tmp[i]
+	end
+	Players_Reposition()
+end
+
+--- Repositions the players list based on the offset
+function Players_Reposition()
+	local offset = sections.players.offset
+	for i = 1, (sections.players.index - 1) do
+		if i <= offset then
+			sections.players.frames[i]:Hide()
+		elseif i > offset + sections.players.max_visible - 1 then
+			sections.players.frames[i]:Hide()
+		else
+			sections.players.frames[i]:Show()
+			local row = i - offset
+			sections.players.frames[i]:SetPoint("TOPLEFT", 2, -1 * sections.players.height_ea * row)
+		end
+	end
+	if offset > 0 then
+		Players_MoreUp(1)
+	elseif sections.players.index >= sections.players.max_visible then
+		Players_MoreUp(-1)
+	else
+		Players_MoreUp(0)
+	end
+	if sections.players.index > offset + sections.players.max_visible then
+		Players_MoreDown(1)
+	elseif sections.players.index >= sections.players.max_visible then
+		Players_MoreDown(-1)
+	else
+		Players_MoreDown(0)
+	end
+end
+
+--- Sets the arrow texture if there are more players up the list
+-- @param flag <number> 1 if enable, 0 if hide, -1 if disable
+function Players_MoreUp(flag)
+	if flag == 1 then
+		sections.players.up:SetTexture("Interface\\Buttons\\Arrow-Up-Up.PNG")
+		sections.players.up:Show()
+	elseif flag == -1 then
+		sections.players.up:SetTexture("Interface\\Buttons\\Arrow-Up-Disabled.PNG")
+		sections.players.up:Show()
+	else
+		sections.players.up:Hide()
+	end
+end
+
+--- Sets the arrow texture if there are more players down the list
+-- @param flag <number> 1 if enable, 0 if hide, -1 if disable
+function Players_MoreDown(flag)
+	if flag == 1 then
+		sections.players.down:SetTexture("Interface\\Buttons\\Arrow-Down-Up.PNG")
+		sections.players.down:Show()
+	elseif flag == -1 then
+		sections.players.down:SetTexture("Interface\\Buttons\\Arrow-Down-Disabled.PNG")
+		sections.players.down:Show()
+	else
+		sections.players.down:Hide()
 	end
 end
 
@@ -408,8 +676,6 @@ end
 
 --- Load the actions section
 function Actions_Load()
-	dd("Actions_Load")
-
 	-- Frame
 	sections.actions.frame = _G.CreateFrame("Frame", nil, window)
 	sections.actions.frame:SetWidth(window_width)
@@ -421,7 +687,8 @@ function Actions_Load()
 	elem:SetWidth(45)
 	elem:SetHeight(18)
 	elem:SetScript("OnClick", function (_, button)
-		Item_Clear()
+		addon.Util.PlaySoundClose()
+		Step1_Activate()
 	end)
 	subelem = elem:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
 	subelem:SetPoint("TOPLEFT", 5, 0)
@@ -436,7 +703,8 @@ function Actions_Load()
 	sections.actions.btn_dist:SetWidth(70)
 	sections.actions.btn_dist:SetHeight(18)
 	sections.actions.btn_dist:SetScript("OnClick", function (_, button)
-		Checkout_Activate()
+		addon.Util.PlaySoundNext()
+		Step3_Activate()
 	end)
 	sections.actions.btn_dist_text = sections.actions.btn_dist:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
 	sections.actions.btn_dist_text:SetPoint("TOPLEFT", 5, 0)
@@ -445,19 +713,17 @@ function Actions_Load()
 	sections.actions.btn_dist_text:SetHeight(18)
 	sections.actions.btn_dist_text:SetText("Distribute")
 
-	Actions_Reset()
+	Actions_Deactivate()
 end
 
---- Reset the actions section
-function Actions_Reset()
-	dd("Actions_Reset")
+--- Deactivate the actions section
+function Actions_Deactivate()
 	sections.actions.frame:Hide()
 	Actions_DisableDistributeButton()
 end
 
---- Reposition the actions section
-function Actions_Reposition()
-	dd("Actions_Reposition")
+--- Resize and reposition the actions section
+function Actions_Restage()
 	local y = sections.header.height
 	if sections.details.frame:IsVisible() then
 		y = y + sections.details.frame:GetHeight()
@@ -468,21 +734,20 @@ end
 
 --- Activate the actions section
 function Actions_Activate()
-	dd("Actions_Activate")
-	Actions_Reposition()
+	Actions_Restage()
 	sections.actions.frame:Show()
 end
 
 --- Disable the distribute button
 function Actions_DisableDistributeButton()
-	dd("Actions_DisableDistributeButton")
-	sections.actions.btn_dist:Disable()
-	sections.actions.btn_dist_text:SetTextColor(1, 1, 1, 0.5)
+	if sections.actions.btn_dist then
+		sections.actions.btn_dist:Disable()
+		sections.actions.btn_dist_text:SetTextColor(1, 1, 1, 0.5)
+	end
 end
 
 --- Enable the distribute button
 function Actions_EnableDistributeButton()
-	dd("Actions_EnableDistributeButton")
 	sections.actions.btn_dist:Enable()
 	sections.actions.btn_dist_text:SetTextColor(1, 0.82, 0)
 end
@@ -493,8 +758,6 @@ end
 
 --- Load the checkout section
 function Checkout_Load()
-	dd("Checkout_Load")
-
 	sections.checkout.frame = _G.CreateFrame("Frame", nil, window)
 	sections.checkout.frame:SetPoint("TOPLEFT", 0, -1 * sections.header.height)
 	sections.checkout.frame:SetWidth(window_width)
@@ -506,7 +769,8 @@ function Checkout_Load()
 	elem:SetWidth(45)
 	elem:SetHeight(18)
 	elem:SetScript("OnClick", function (_, button)
-		Checkout_Cancel()
+		addon.Util.PlaySoundBack()
+		Step3_Back()
 	end)
 	local subelem = elem:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
 	subelem:SetPoint("TOPLEFT", 5, 0)
@@ -537,9 +801,9 @@ function Checkout_Load()
 	elem:SetText("Give item to: ")
 
 	-- Player name text
-	sections.checkout.player = sections.checkout.frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-	sections.checkout.player:SetPoint("TOPLEFT", 73, -3)
-	sections.checkout.player:SetJustifyH("LEFT")
+	sections.checkout.player_text = sections.checkout.frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+	sections.checkout.player_text:SetPoint("TOPLEFT", 73, -3)
+	sections.checkout.player_text:SetJustifyH("LEFT")
 
 	-- "For.." text
 	elem = sections.checkout.frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
@@ -549,13 +813,14 @@ function Checkout_Load()
 
 	-- GP select dropdown
 	local sel = sections.checkout.gp_select
-	sel.options.max = addon.Util.SizeOf(addon.data.tiers) + 1
+	sel.options.max = addon.Util.SizeOf(addon.data.tiers) + 2
 	sel.dropdown = _G.CreateFrame("FRAME", nil, sections.checkout.frame, "OptionsDropdownTemplate")
 	sel.dropdown:SetPoint("TOPLEFT", 10, -15)
 	sel.dropdown.Text:SetText("N/A")
 	sel.dropdown.Middle:SetWidth(65)
 	sel.dropdown.Button:SetScript("OnClick", function (_, button)
-		Checkout_ShowGPOptions()
+		Checkout_ToggleGPOptions()
+		addon.Util.PlaySoundBack()
 	end)
 
 	-- GP select wrapper
@@ -596,25 +861,27 @@ function Checkout_Load()
 		sel.options.frames[i].text:SetText("Option #" .. i)
 	end
 
-	Checkout_Reset()
+	Checkout_Deactivate()
 end
 
---- Reset the checkout section
-function Checkout_Reset()
+--- Deactivate the checkout section
+function Checkout_Deactivate()
 	selected_gp = nil
 	sections.checkout.frame:Hide()
 	sections.checkout.gp_select.wrapper:Hide()
 end
 
---- Reposition the checkout section
-function Checkout_Reposition()
-	dd("Checkout_Reposition")
+--- Resize and reposition the checkout section
+function Checkout_Restage()
+	-- Reposition
 	sections.checkout.frame:ClearAllPoints()
 	local y = sections.header.frame:GetHeight()
 	if sections.details.frame:IsVisible() then
 		y = y + sections.details.frame:GetHeight()
 	end
 	sections.checkout.frame:SetPoint("TOPLEFT", 0, -1 * y)
+
+	-- Resize
 	local h = _G.max(
 		sections.checkout.min_height,
 		sections.players.frame:GetHeight() + sections.actions.frame:GetHeight()
@@ -624,27 +891,20 @@ end
 
 --- Activate the checkout section
 function Checkout_Activate()
-	dd("Checkout_Activate")
-end
-
---- Cancel the checkout (go back)
-function Checkout_Cancel()
-	dd("Checkout_Cancel")
+	Checkout_Restage()
+	sections.checkout.frame:Show()
 end
 
 --- Confirm the checkout
 function Checkout_Confirm()
-	dd("Checkout_Confirm")
-	dd("player => " .. selected_player)
-	dd("item => " .. item_name .. " #" .. selected_item_id)
-	dd("gp => " .. selected_gp)
-	Item_Clear()
+	print("player => " .. selected_player)
+	print("item => " .. item_name .. " #" .. selected_item_id)
+	print("gp => " .. selected_gp)
+	Step1_Activate()
 end
 
 --- Update the GP dropdown
 function Checkout_UpdateGPDropdown()
-	dd("Checkout_UpdateGPDropdown")
-
 	local sel = sections.checkout.gp_select
 
 	local i = 1
@@ -669,15 +929,17 @@ function Checkout_UpdateGPDropdown()
 end
 
 --- When the user clicks on the GP dropdown
-function Checkout_ShowGPOptions()
-	dd("Checkout_ShowGPOptions")
-	sections.checkout.gp_select.wrapper:Show()
+function Checkout_ToggleGPOptions()
+	if sections.checkout.gp_select.wrapper:IsVisible() then
+		sections.checkout.gp_select.wrapper:Hide()
+	else
+		sections.checkout.gp_select.wrapper:Show()
+	end
 end
 
 --- When an option is selected on the GP dropdown
 -- @param option <Frame>
 function Checkout_ChooseGPOption(option)
-	dd("Checkout_ChooseGPOption")
 	sections.checkout.gp_select.wrapper:Hide()
 	sections.checkout.gp_select.dropdown.Text:SetText(option.text:GetText())
 	if option.value <= 0 then
@@ -687,14 +949,88 @@ function Checkout_ChooseGPOption(option)
 		Checkout_HideCustomGPInput()
 		selected_gp = option.value
 	end
+	addon.Util.PlaySoundNext()
 end
 
+--- Show the custom GP input
 function Checkout_ShowCustomGPInput()
-	dd("Checkout_ShowCustomGPInput")
+	print("Checkout_ShowCustomGPInput")
 end
 
+--- Hide the custom GP input
 function Checkout_HideCustomGPInput()
-	dd("Checkout_HideCustomGPInput")
+	print("Checkout_HideCustomGPInput")
+end
+
+-------
+-- Item
+-------
+
+--- Loads the GP options for the selected item
+function Item_LoadGP()
+	gp_options = {}
+
+	local item_data = addon.data.items[selected_item_id]
+	if item_data == nil then
+		return
+	end
+
+	local tiers = addon.Util.TableGetKeys(item_data.by_tier)
+	_G.table.sort(tiers)
+	for _, tier in _G.pairs(tiers) do
+		tier_data = item_data.by_tier[tier]
+		_G.table.insert(gp_options, {
+			["text"] = addon.data.tiers[tier] .. ": " .. tier_data.price .. "gp",
+			["price"] = tier_data.price,
+		})
+	end
+
+	if item_data.price ~= nil then
+		_G.table.insert(gp_options, {
+			["text"] = "*: " .. item_data.price .. "gp",
+			["price"] = item_data.price,
+		})
+	end
+end
+
+--- Announces the selected item
+function Item_Announce()
+	if selected_item_id == nil then
+		return
+	end
+
+	local _, item_link, _, _, _, _, _, _ = _G.GetItemInfo(selected_item_id)
+	addon.Util.RaidWarning("Now Distributing: " .. item_link)
+	local item_data = addon.data.items[selected_item_id]
+	local total = 0
+	if item_data ~= nil then
+		local tiers = addon.Util.TableGetKeys(item_data.by_tier)
+		_G.table.sort(tiers)
+		for _, tier in _G.pairs(tiers) do
+			tier_data = item_data.by_tier[tier]
+			local str = " ( " .. addon.data.tiers[tier] .. ": " .. tier_data.price .. "gp ) "
+			local specs_as_keys = addon.Util.TableFlip(tier_data.specs)
+			local count = 0
+			for i, spec in _G.pairs(addon.data.specs) do
+				if specs_as_keys[spec] ~= nil then
+					if count > 0 then
+						str = str .. ", "
+					end
+					count = count + 1
+					str = str .. addon.data.spec_abbrs[spec]
+				end
+			end
+			addon.Util.Raid(str)
+			total = total + 1
+		end
+		if item_data.price then
+			addon.Util.Raid(" ( *: " .. item_data.price .. "gp )")
+		end
+	end
+	if total == 0 then
+		addon.Util.Raid("No prices set")
+	end
+	addon.Util.Raid("DM \"need\" to " .. _G.UnitName("player"))
 end
 
 -------
@@ -706,7 +1042,6 @@ end
 -- @param level <number>
 -- @param menulist
 function Menu_Create(frame, level, menulist)
-	dd("Menu_Create")
 	local GetMenuButton = addon.Util.GetMenuButton
 
 	local button = GetMenuButton()
@@ -739,7 +1074,7 @@ function Menu_Create(frame, level, menulist)
 		button.text = "Clear Item"
 		button.noClickSound = true
 		button.func = function ()
-			Item_Clear()
+			Step1_Activate()
 		end
 		_G.UIDropDownMenu_AddButton(button)
 
@@ -787,8 +1122,7 @@ end
 
 --- Toggle the context menu (right click)
 function Menu_Toggle()
-	dd("Menu_Toggle")
-	_G.PlaySound(_G.SOUNDKIT.IG_MAINMENU_OPEN)
+	addon.Util.PlaySoundOpen()
 	_G.ToggleDropDownMenu(1, nil, menu, "cursor", 3, -3, nil, nil, 2)
 end
 
@@ -804,12 +1138,11 @@ end
 -- @param arg2 <string> author
 function Window_OnEvent(window, event, arg1, arg2)
 	if event == "CHAT_MSG_WHISPER" then
-		dd("Window_OnEvent CHAT_MSG_WHISPER")
 		local msg = arg1
 		local author = arg2
 		local s, e = _G.string.find(msg, "need")
 		if s ~= nil then
-			Players_Need(author)
+			Players_Add(author)
 		end
 	end
 end
@@ -818,7 +1151,6 @@ end
 -- @param window <Frame>
 -- @param button <string> the mouse button that was pressed
 function Window_OnMouseUp(window, button)
-	dd("Window_OnMouseUp " .. button)
 	if button == "LeftButton" then
 		-- Occurs when the player drops the item onto the window
 		local info_type, item_id, item_link = _G.GetCursorInfo()
@@ -829,15 +1161,28 @@ function Window_OnMouseUp(window, button)
 		-- Return held item to where it came from
 		_G.ClearCursor()
 
-		Item_Set(item_id)
+		Step2_Activate(item_id)
 	elseif button == "RightButton" then
 		Menu_Toggle()
 	end
 end
 
+--- When scrolling the window
+-- @param window <Frame>
+-- @param dir <number> 1 for up, -1 for down
+function Window_OnMouseWheel(window, dir)
+	if step == 2 then
+		local min = 0
+		local max = sections.players.index - 2
+		local diff = -1 * dir
+		local new_offset = sections.players.offset + diff
+		sections.players.offset = _G.max(min, _G.min(max, new_offset))
+		Players_Reposition()
+	end
+end
+
 --- Resize the window
 function Window_Resize()
-	dd("Window_Resize")
 	local h = sections.header.height
 	if sections.details.frame:IsVisible() then
 		h = h + sections.details.frame:GetHeight()
@@ -857,7 +1202,6 @@ end
 --- Unlock the window
 -- Enable dragging and bind to drag events
 function Window_Unlock()
-	dd("Window_Unlock")
 	window:SetMovable(true)
 	window:RegisterForDrag("LeftButton")
 	window:SetScript("OnDragStart", Window_OnDragStart)
@@ -866,14 +1210,11 @@ end
 
 --- When starting window drag
 function Window_OnDragStart()
-	dd("Window_OnDragStart")
 	window:StartMoving()
 end
 
 --- When stopping window drag
 function Window_OnDragStop()
-	dd("Window_OnDragStop")
-
 	local _, _, _, x, y = window:GetPoint()
 
 	-- Clamp top left
@@ -897,7 +1238,6 @@ end
 --- Lock the window
 -- Disable dragging events and set unmovable
 function Window_Lock()
-	dd("Window_Lock")
 	window:SetMovable(false)
 	window:RegisterForDrag(nil)
 	window:SetScript("OnDragStart", nil)
@@ -906,7 +1246,6 @@ end
 
 --- Toggle display of the window
 function Window_Toggle()
-	dd("Window_Toggle")
 	if window:IsVisible() then
 		Window_Close()
 	else
@@ -916,15 +1255,14 @@ end
 
 --- Close the window
 function Window_Close()
-	dd("Window_Close")
-	_G.PlaySound(_G.SOUNDKIT.IG_MAINMENU_CLOSE)
+	addon.Util.PlaySoundClose()
 	window:Hide()
-	Item_Clear(false)
+	Step1_Activate(false)
 end
 
 --- Open the window
 function Window_Open()
-	dd("Window_Open")
-	_G.PlaySound(_G.SOUNDKIT.IG_MAINMENU_OPEN)
+	addon.Util.PlaySoundOpen()
 	window:Show()
+	Step1_Activate(false)
 end
