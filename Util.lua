@@ -4,9 +4,6 @@ local _, addon = ...
 local M = {}
 addon.Util = M
 local _G = _G
-local dd = function (msg)
-	-- _G.print("Util." .. msg)
-end
 setfenv(1, M)
 
 --- Send a raid message
@@ -42,7 +39,6 @@ end
 -- @param gp <number>
 -- @return <number>
 function GetPR(ep, gp)
-	dd("GetPR")
 	if gp == nil or gp == 0 then
 		return 0
 	end
@@ -53,7 +49,6 @@ end
 -- @param name <string>
 -- @return <string>
 function RemoveServerFromPlayerName(name)
-	dd("RemoveServerFromPlayerName(" .. name .. ")")
 	if not name or name == nil then
 		return ""
 	end
@@ -66,7 +61,6 @@ end
 -- @param itemlink <string>
 -- @return <number>
 function GetItemIdFromItemLink(itemlink)
-	dd("GetItemIdFromItemLink")
 	if not itemlink or itemlink == nil then
 		return 0
 	end
@@ -78,7 +72,6 @@ end
 -- @param tbl <table>
 -- @return <number>
 function SizeOf(tbl)
-	dd("SizeOf")
 	local count = 0
 	for _ in _G.pairs(tbl) do
 		count = count + 1
@@ -90,7 +83,6 @@ end
 -- @param tbl <table>
 -- @return <table>
 function TableGetKeys(tbl)
-	dd("TableGetKeys")
 	local i = 1
 	local keys = {}
 	for key, _ in _G.pairs(tbl) do
@@ -104,7 +96,6 @@ end
 -- @param tbl <table>
 -- @return <table>
 function TableFlip(tbl)
-	dd("TableFlip")
 	local flipped = {}
 	for key, val in _G.pairs(tbl) do
 		flipped[val] = key
@@ -117,7 +108,6 @@ end
 -- @param places <number> Number of decimal places to round to
 -- @return <number>
 function Round(num, places)
-	dd("Round(" .. num .. ", " .. places .. ")")
 	local mult = 10^(places or 0)
 	return _G.math.floor(num * mult + 0.5) / mult
 end
@@ -129,7 +119,6 @@ end
 -- @return <table>
 local button = _G.UIDropDownMenu_CreateInfo()
 function GetMenuButton()
-	dd("GetMenuButton")
 	button.text = nil
 	button.value = nil
 	button.arg1 = nil

@@ -39,7 +39,6 @@ end
 --   Note: changes frequently.
 -- @return <table>
 function GetFreshPlayerData(gindex)
-	-- dd("GetFreshPlayerData(" .. gindex ..")")
 	local name, _, _, level, _, _, _, officer_note, _, _, class, _, _, _, _, _, guid = _G.GetGuildRosterInfo(gindex)
 	return {
 		["name"] = name,
