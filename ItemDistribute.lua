@@ -4,24 +4,21 @@ local _, addon = ...
 local M = {}
 addon.ItemDistribute = M
 local _G = _G
-local print = _G.print
 setfenv(1, M)
 
--- Step 1: Window is empty and ready.
+-- Step 1 - Blank: Window is empty and ready.
 
--- Step 2: Item is placed in the window.
+-- Step 2 - Ready: Item is placed in the window.
 --  Update the header with the item name and icon
 --  Show the details section if the item has tier or pricing info
 --  Show the players section with an empty players table
 --  Show the actions section
 
--- Step 3: User clicks on a player and then clicks "distribute"
+-- Step 3 - Distribute: User clicks on a player and then clicks "distribute"
 --  Hide the details section
 --  Hide the players section
 --  Hide the actions section
 --  Show the checkout section
-
--- Step 4: Complete the checkout
 
 -- Window
 window = nil -- <Frame>
@@ -35,9 +32,8 @@ menu = nil -- <Frame>
 
 -- Selected
 selected_item_id = nil -- <number>
-selected_item_name = nil -- <string>
-selected_player = nil -- <string>
-selected_gp = nil -- <number>
+selected_player_name = nil -- <string>
+selected_gp = 0 -- <number>
 
 gp_options = {}
 
@@ -59,7 +55,7 @@ sections = {
 		th_color = {1, 1, 1, 0.4}, -- <table>
 		index = 1, -- <number>
 		frames = {}, -- <table of <Frame>>
-		max_visible = 4, -- <number> (including th)
+		max_visible = 6, -- <number> (including th)
 		offset = 0, -- <number>
 		up = nil, -- <Frame>
 		down = nil, -- <Frame>
@@ -83,6 +79,7 @@ sections = {
 				frames = {}, -- <table of <Frame>>
 			},
 		},
+		custom_gp = nil, -- <EditBox>
 	},
 }
 
@@ -150,26 +147,21 @@ function Load()
 	Window_Resize()
 
 	-- debug
-	-- Step2_Activate(153)
-	-- Players_Add("Clockberg-Bigglesworth")
-	-- Players_Add("Berg-Bigglesworth")
-	-- Players_Add("Lilberg-Bigglesworth")
-	-- Players_Add("Beefo-Bigglesworth")
-	-- Players_Add("Cleetuscow-Bigglesworth")
-	-- Players_Add("Fish-Bigglesworth")
-	-- Players_Add("Fisheh-Bigglesworth")
-	-- Players_Add("Tuna-Bigglesworth")
-	-- Players_Add("Dambi-Bigglesworth")
-	-- Players_Add("Pound-Bigglesworth")
+	Step2_Activate(153)
+	Players_Add("Clockberg-Bigglesworth")
+	Players_Add("Thinkz-Bigglesworth")
+	Players_Add("Dudebank-Bigglesworth")
+	Players_Add("Dudeherbs-Bigglesworth")
+	Players_Select(sections.players.frames[1])
+	Step3_Activate()
 end
 
 --- Activate step 1
 -- @param play_sound <boolean>
 function Step1_Activate(play_sound)
 	selected_item_id = nil
-	selected_item_name = nil
-	selected_player = nil
-	selected_gp = nil
+	selected_player_name = nil
+	Checkout_SetSelectedGP(0)
 	gp_options = {}
 
 	Header_Reset()
@@ -196,8 +188,7 @@ function Step2_Activate(item_id)
 	-- Set the selected item
 	local item_name, item_link, _, _, _, _, _, _ = _G.GetItemInfo(item_id)
 	selected_item_id = item_id
-	selected_item_name = item_name
-	selected_player = nil
+	selected_player_name = nil
 
 	-- Load the item GP data
 	Item_LoadGP()
@@ -223,6 +214,7 @@ function Step3_Activate()
 	sections.actions.frame:Hide()
 	Checkout_Activate()
 	Window_Resize()
+	Checkout_RefreshSelectedGP()
 
 	step = 3
 end
@@ -430,11 +422,11 @@ end
 -- @param class <string>
 -- @param pr <number>
 function Players_Announce(player_name, class, pr)
-	addon.Util.Raid(player_name .. " (" .. _G.string.lower(class) .. ")" .. " needs ( " .. pr .. " pr )")
+	addon.Util.ChatRaid(player_name .. " (" .. _G.string.lower(class) .. ")" .. " needs ( " .. pr .. " pr )")
 end
 
 --- Returns true if the player is already on the list
--- @param name <string>
+-- @param player_name <string>
 -- @return <boolean>
 function Players_IsOnList(player_name)
 	local found = false
@@ -443,7 +435,6 @@ function Players_IsOnList(player_name)
 			found = true
 		end
 	end
-	-- return false -- debug
 	return found
 end
 
@@ -513,7 +504,7 @@ end
 -- @param frame <Frame> the clicked player row frame
 function Players_Select(frame)
 	Players_Deselect()
-	selected_player = frame.name_text:GetText()
+	selected_player_name = frame.name_text:GetText()
 	frame.select:Show()
 	sections.checkout.player_text:SetTextColor(frame.name_text:GetTextColor())
 	sections.checkout.player_text:SetText(frame.name_text:GetText())
@@ -523,7 +514,7 @@ end
 
 --- Deselect all players rows
 function Players_Deselect()
-	selected_player = nil
+	selected_player_name = nil
 	for i = 1, addon.Util.SizeOf(sections.players.frames) do
 		sections.players.frames[i].select:Hide()
 	end
@@ -544,6 +535,7 @@ function Players_Add(player_fullname)
 	-- Player must exist in the guild data
 	local player_data = addon.Guild.GetPlayerData(player_fullname)
 	if player_data == nil then
+		addon.Core.Warning("Need disregarded for player '" .. player_fullname .. "'. Guild data not found.")
 		return
 	end
 
@@ -551,8 +543,7 @@ function Players_Add(player_fullname)
 
 	-- See if the player is already on the list
 	if Players_IsOnList(player_name) then
-		_G.print("z")
-		return
+		--return
 	end
 
 	local frame = sections.players.frames[sections.players.index]
@@ -562,9 +553,9 @@ function Players_Add(player_fullname)
 	sections.players.index = sections.players.index + 1
 
 	-- Get player EP and GP
-	local epgp = addon.Guild.ParseOfficerNote(player_data.officer_note)
+	local epgp = addon.Guild.DecodeOfficerNote(player_data.officer_note)
 
-	epgp.ep = _G.math.random(1,100)
+	epgp.ep = _G.math.random(1,100) -- debug
 
 	frame.pr = addon.Util.GetPR(epgp.ep, epgp.gp)
 	frame.player_name = player_name
@@ -582,7 +573,7 @@ function Players_Add(player_fullname)
 	frame.name_text:SetText(player_name)
 	frame.ep_text:SetText(epgp.ep)
 	frame.gp_text:SetText(epgp.gp)
-	frame.pr_text:SetText(frame.pr)
+	frame.pr_text:SetText(_G.string.format("%.2f", frame.pr))
 	frame:Show()
 
 	Players_Sort()
@@ -861,12 +852,27 @@ function Checkout_Load()
 		sel.options.frames[i].text:SetText("Option #" .. i)
 	end
 
+	-- Custom GP Input
+	sections.checkout.custom_gp = _G.CreateFrame("EditBox", nil, sections.checkout.frame, "InputBoxTemplate")
+	sections.checkout.custom_gp:SetPoint("TOPRIGHT", -10, -16)
+	sections.checkout.custom_gp:SetAutoFocus(false)
+	sections.checkout.custom_gp:SetMaxLetters(5)
+	sections.checkout.custom_gp:SetHeight(24)
+	sections.checkout.custom_gp:SetWidth(55)
+	sections.checkout.custom_gp:SetScript("OnEscapePressed", function()
+		sections.checkout.custom_gp:ClearFocus()
+	end)
+	sections.checkout.custom_gp:SetScript("OnTextChanged", function()
+		local val = sections.checkout.custom_gp:GetText()
+		Checkout_SetSelectedGP(val)
+	end)
+
 	Checkout_Deactivate()
 end
 
 --- Deactivate the checkout section
 function Checkout_Deactivate()
-	selected_gp = nil
+	Checkout_SetSelectedGP(0)
 	sections.checkout.frame:Hide()
 	sections.checkout.gp_select.wrapper:Hide()
 end
@@ -897,9 +903,7 @@ end
 
 --- Confirm the checkout
 function Checkout_Confirm()
-	print("player => " .. selected_player)
-	print("item => " .. item_name .. " #" .. selected_item_id)
-	print("gp => " .. selected_gp)
+	addon.Core.Transact(selected_player_name, selected_item_id, selected_gp, false, "Item Distribute", true, true)
 	Step1_Activate()
 end
 
@@ -921,7 +925,9 @@ function Checkout_UpdateGPDropdown()
 
 	sel.wrapper:SetHeight(i * sel.options.height_ea)
 	sel.dropdown.Text:SetText(sel.options.frames[1].text:GetText())
-	selected_gp = sel.options.frames[1].value
+	sel.dropdown.value = sel.options.frames[1].value
+
+	Checkout_SetSelectedGP(sel.options.frames[1].value)
 
 	for j = i + 1, sel.options.max do
 		sel.options.frames[j]:Hide()
@@ -942,24 +948,40 @@ end
 function Checkout_ChooseGPOption(option)
 	sections.checkout.gp_select.wrapper:Hide()
 	sections.checkout.gp_select.dropdown.Text:SetText(option.text:GetText())
+	sections.checkout.gp_select.dropdown.value = option.value
 	if option.value <= 0 then
 		Checkout_ShowCustomGPInput()
-		selected_gp = 0
 	else
 		Checkout_HideCustomGPInput()
-		selected_gp = option.value
+		Checkout_SetSelectedGP(option.value)
 	end
 	addon.Util.PlaySoundNext()
 end
 
 --- Show the custom GP input
 function Checkout_ShowCustomGPInput()
-	print("Checkout_ShowCustomGPInput")
+	sections.checkout.custom_gp:Show()
 end
 
 --- Hide the custom GP input
 function Checkout_HideCustomGPInput()
-	print("Checkout_HideCustomGPInput")
+	sections.checkout.custom_gp:Hide()
+end
+
+--- Sets the currently selected GP
+-- @param gp <number>
+function Checkout_SetSelectedGP(gp)
+	gp = addon.Util.WholeNumber(gp)
+	selected_gp = gp
+end
+
+--- Automatically refresh the selected GP
+function Checkout_RefreshSelectedGP()
+	if sections.checkout.custom_gp:IsVisible() then
+		Checkout_SetSelectedGP(addon.Util.WholeNumber(sections.checkout.custom_gp:GetText()))
+	else
+		Checkout_SetSelectedGP(sections.checkout.gp_select.dropdown.value)
+	end
 end
 
 -------
@@ -991,6 +1013,14 @@ function Item_LoadGP()
 			["price"] = item_data.price,
 		})
 	end
+
+	sections.checkout.custom_gp:SetText(addon.Config.GetOption("ItemDistribute.default_price"))
+
+	if addon.Util.SizeOf(gp_options) then
+		Checkout_HideCustomGPInput()
+	else
+		Checkout_ShowCustomGPInput()
+	end
 end
 
 --- Announces the selected item
@@ -1000,7 +1030,12 @@ function Item_Announce()
 	end
 
 	local _, item_link, _, _, _, _, _, _ = _G.GetItemInfo(selected_item_id)
-	addon.Util.RaidWarning("Now Distributing: " .. item_link)
+	local msg = "Now Distributing: " .. item_link
+	if addon.Config.GetOption("ItemDistribute.announce_raid_warning") then
+		addon.Util.ChatRaidWarning(msg)
+	else
+		addon.Util.ChatRaid(msg)
+	end
 	local item_data = addon.data.items[selected_item_id]
 	local total = 0
 	if item_data ~= nil then
@@ -1020,17 +1055,17 @@ function Item_Announce()
 					str = str .. addon.data.spec_abbrs[spec]
 				end
 			end
-			addon.Util.Raid(str)
+			addon.Util.ChatRaid(str)
 			total = total + 1
 		end
 		if item_data.price then
-			addon.Util.Raid(" ( *: " .. item_data.price .. "gp )")
+			addon.Util.ChatRaid(" ( *: " .. item_data.price .. "gp )")
 		end
 	end
 	if total == 0 then
-		addon.Util.Raid("No prices set")
+		addon.Util.ChatRaid("No prices set")
 	end
-	addon.Util.Raid("DM \"need\" to " .. _G.UnitName("player"))
+	addon.Util.ChatRaid("DM \"need\" to " .. _G.UnitName("player"))
 end
 
 -------
@@ -1173,7 +1208,7 @@ end
 function Window_OnMouseWheel(window, dir)
 	if step == 2 then
 		local min = 0
-		local max = sections.players.index - 2
+		local max = sections.players.index - sections.players.max_visible
 		local diff = -1 * dir
 		local new_offset = sections.players.offset + diff
 		sections.players.offset = _G.max(min, _G.min(max, new_offset))

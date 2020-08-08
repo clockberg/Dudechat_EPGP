@@ -6,15 +6,21 @@ addon.Util = M
 local _G = _G
 setfenv(1, M)
 
+--- Send a guild message
+-- @param msg <string>
+function ChatGuild(msg)
+	_G.SendChatMessage(msg, "GUILD")
+end
+
 --- Send a raid message
 -- @param msg <string>
-function Raid(msg)
+function ChatRaid(msg)
 	_G.SendChatMessage("{SQUARE} " .. msg, "RAID")
 end
 
 --- Send a raid warning message
 -- @param msg <string>
-function RaidWarning(msg)
+function ChatRaidWarning(msg)
 	_G.SendChatMessage("{SQUARE} " .. msg, "RAID_WARNING")
 end
 
@@ -46,15 +52,15 @@ function GetPR(ep, gp)
 end
 
 --- Returns the player name with the server part removed
--- @param name <string>
+-- @param player_name <string>
 -- @return <string>
-function RemoveServerFromPlayerName(name)
-	if not name or name == nil then
+function RemoveServerFromPlayerName(player_name)
+	if not player_name or player_name == nil then
 		return ""
 	end
-	local s, e = _G.string.find(name, "-")
-	if s == nil then return name end
-	return _G.string.sub(name, 1, s - 1)
+	local s, e = _G.string.find(player_name, "-")
+	if s == nil then return player_name end
+	return _G.string.sub(player_name, 1, s - 1)
 end
 
 --- Returns the item ID from the given itemlink
@@ -66,6 +72,16 @@ function GetItemIdFromItemLink(itemlink)
 	end
 	local item_id = _G.string.match(itemlink, "item:(%d+)")
 	return _G.tonumber(item_id)
+end
+
+--- Returns a whole number
+-- @param val <number>
+-- @return <number>
+function WholeNumber(val)
+	val = _G.tonumber(val) or 0
+	val = Round(val)
+	val = _G.min(99999, _G.max(0, val))
+	return val
 end
 
 --- Returns the size of the given table

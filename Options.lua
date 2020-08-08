@@ -11,6 +11,14 @@ panel = nil
 checkboxes = {}
 editboxes = {}
 
+settings = {
+	["padding"] = 10,
+	["col_width"] = 200,
+	["row_height"] = 35,
+	["title_height"] = 20,
+	["cellspacing"] = 5,
+}
+
 --- Interface options on refresh
 -- Called when the frame is initially displayed, and after
 -- requesting the default values to be restored
@@ -56,21 +64,32 @@ function Load()
 	panel.default = OnDefault
 
 	local title = panel:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-	title:SetPoint("TOPLEFT", 10, -10)
-	title:SetPoint("TOPRIGHT", -10, -10)
+	title:SetPoint("TOPLEFT", settings.padding, -1 * settings.padding)
+	title:SetPoint("TOPRIGHT", -1 * settings.padding, -1 * settings.padding)
 	title:SetJustifyH("LEFT")
 	title:SetText(addon.full_name)
 
-	AddCheckbox("item_tooltip_mod.show", 10, -35, "Item Tooltip", "Show grades on tooltip.")
-	AddCheckbox("flag2", 10, -70, "Label2", "checkbox with a desc")
-	AddCheckbox("flag3", 210, -70, "Label3")
-	AddCheckbox("flag4", 410, -70, "Label4")
-	AddEditbox("foo.bar", 10, -105, "Label5", "This is a description.")
-	AddEditbox("foo.foo", 210, -105, "Labely 6")
+	AddCheckbox("ItemTooltip.show", 1, 1, "Item Tooltip", "Show prices and tiers on tooltip.")
+	AddCheckbox("ItemDistribute.announce_raid_warning", 2, 1, "Item Raid Warning", "Send a raid warning when announcing an item.", 2)
+	AddEditbox("ItemDistribute.default_price", 1, 2, "Item Default Price", "The default price for items in the custom GP editbox.", 2)
 
 	Sync()
 
 	_G.InterfaceOptions_AddCategory(panel)
+end
+
+--- Returns the X position of the column
+-- @param col <number>
+-- @return <number>
+function ColGetX(col)
+	return settings.padding + (col - 1) * settings.col_width
+end
+
+--- Returns the Y position of the row (will be negative)
+-- @param row <number>
+-- @return <number>
+function RowGetY(row)
+	return -1 * (settings.padding + settings.title_height + settings.row_height * (row - 1))
 end
 
 --- Sync the frame elements with the config options
@@ -86,17 +105,22 @@ end
 
 --- Add a checkbox to the options panel
 -- @param option_key <string>
--- @param x <number>
--- @param y <number>
+-- @param col <number>
+-- @param row <number>
 -- @param label_text <string>
 -- @param desc_text <string>
-function AddCheckbox(option_key, x, y, label_text, desc_text)
+-- @param colspan <number>
+function AddCheckbox(option_key, col, row, label_text, desc_text, colspan)
 	desc_text = desc_text or nil
+	colspan = colspan or 1
+
+	x = ColGetX(col)
+	y = RowGetY(row)
 
 	local frame = _G.CreateFrame("Frame", nil, panel)
 	frame:SetPoint("TOPLEFT", x, y)
-	frame:SetWidth(190)
-	frame:SetHeight(31)
+	frame:SetWidth(settings.col_width * colspan - settings.cellspacing)
+	frame:SetHeight(settings.row_height - settings.cellspacing)
 
 	local bg = frame:CreateTexture(nil, "BACKGROUND")
 	bg:SetColorTexture(0, 0, 0, 0.5)
@@ -114,15 +138,15 @@ function AddCheckbox(option_key, x, y, label_text, desc_text)
 
 	if desc_text ~= nil then
 		-- Label above desc
-		label:SetPoint("BOTTOMLEFT", 30, 15)
+		label:SetPoint("BOTTOMLEFT", 29, 15)
 
 		local desc = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-		desc:SetPoint("BOTTOMLEFT", 30, 5)
+		desc:SetPoint("BOTTOMLEFT", 29, 5)
 		desc:SetTextColor(1, 1, 1)
 		desc:SetText(desc_text)
 	else
 		-- Label only
-		label:SetPoint("BOTTOMLEFT", 30, 9)
+		label:SetPoint("BOTTOMLEFT", 29, 9)
 	end
 
 	checkboxes[option_key] = checkbox
@@ -130,56 +154,57 @@ end
 
 --- Add an editbox to the options panel
 -- @param option_key <string>
--- @param x <number>
--- @param y <number>
+-- @param col <number>
+-- @param row <number>
 -- @param label_text <string>
 -- @param desc_text <string>
-function AddEditbox(option_key, x, y, label_text, desc_text)
+-- @param colspan <number>
+function AddEditbox(option_key, col, row, label_text, desc_text, colspan)
 	desc_text = desc_text or nil
+	colspan = colspan or 2
+
+	x = ColGetX(col)
+	y = RowGetY(row)
 
 	local frame = _G.CreateFrame("Frame", nil, panel)
 	frame:SetPoint("TOPLEFT", x, y)
-	frame:SetWidth(190)
-	if desc_text ~= nil then
-		frame:SetHeight(57)
-	else
-		frame:SetHeight(45)
-	end
+	frame:SetWidth(settings.col_width * colspan - settings.cellspacing)
+	frame:SetHeight(settings.row_height - settings.cellspacing)
 
 	local bg = frame:CreateTexture(nil, "BACKGROUND")
 	bg:SetColorTexture(0, 0, 0, 0.5)
 	bg:SetAllPoints(frame)
 
 	local editbox = _G.CreateFrame("EditBox", nil, frame, "InputBoxTemplate")
-	editbox:SetPoint("BOTTOMLEFT", 12, 5)
+	editbox:SetPoint("BOTTOMLEFT", 10, 3)
 	editbox:SetAutoFocus(false)
 	editbox:SetMaxLetters(5)
 	editbox:SetHeight(24)
-	editbox:SetWidth(60)
+	editbox:SetWidth(55)
 	editbox:SetScript("OnEscapePressed", function()
 		editbox:ClearFocus()
 	end)
 	editbox.option_key = option_key
 	editbox:SetScript("OnTextChanged", function()
-		addon.Config.SetTmpOption(editbox.option_key, editbox:GetText())
+		local val = editbox:GetText()
+		val = addon.Util.WholeNumber(val)
+		addon.Config.SetTmpOption(editbox.option_key, val)
 	end)
 
-	-- Label
 	local label = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 	label:SetText(label_text)
-
-	-- Desc
 	if desc_text ~= nil then
-		-- Label above desc above editbox
-		label:SetPoint("BOTTOMLEFT", 7, 39)
+		-- Label above desc
+		label:SetPoint("BOTTOMLEFT", 69, 15)
 
+		-- Desc
 		local desc = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-		desc:SetPoint("BOTTOMLEFT", 7, 27)
 		desc:SetTextColor(1, 1, 1)
 		desc:SetText(desc_text)
+		desc:SetPoint("BOTTOMLEFT", 69, 5)
 	else
-		-- Label only above editbox
-		label:SetPoint("BOTTOMLEFT", 7, 27)
+		-- Label only
+		label:SetPoint("BOTTOMLEFT", 69, 9)
 	end
 
 	editboxes[option_key] = editbox

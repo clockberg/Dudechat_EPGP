@@ -19,7 +19,7 @@ end
 --- Update the tooltip
 -- @param tooltip
 function Update(tooltip)
-	if not addon.Config.GetOption("item_tooltip_mod.show") then
+	if not addon.Config.GetOption("ItemTooltip.show") then
 		return
 	end
 
