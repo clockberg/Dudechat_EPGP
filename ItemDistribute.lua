@@ -81,6 +81,12 @@ sections = {
 		},
 		custom_gp = nil, -- <EditBox>
 	},
+	history = {
+		frame = nil, -- <Frame>
+		frames = {}, -- <table of <Frame>>
+		height_ea = 12, -- <number>
+		index = 1, -- <number>
+	},
 }
 
 --- Load this module
@@ -144,16 +150,11 @@ function Load()
 	Players_Load()
 	Actions_Load()
 	Checkout_Load()
+	History_Load()
 	Window_Resize()
 
-	-- debug
-	Step2_Activate(153)
-	Players_Add("Clockberg-Bigglesworth")
-	Players_Add("Thinkz-Bigglesworth")
-	Players_Add("Dudebank-Bigglesworth")
-	Players_Add("Dudeherbs-Bigglesworth")
-	Players_Select(sections.players.frames[1])
-	Step3_Activate()
+	History_Add("Clockberg", 153, 55555)
+	History_Add("Fish", 2654, 33)
 end
 
 --- Activate step 1
@@ -169,6 +170,7 @@ function Step1_Activate(play_sound)
 	Players_Deactivate()
 	Actions_Deactivate()
 	Checkout_Deactivate()
+	History_Restage()
 	Window_Resize()
 
 	if play_sound == nil or play_sound then
@@ -201,6 +203,7 @@ function Step2_Activate(item_id)
 	Actions_Activate()
 	Checkout_Deactivate()
 	Checkout_UpdateGPDropdown()
+	History_Restage()
 	Window_Resize()
 
 	Item_Announce()
@@ -213,6 +216,7 @@ function Step3_Activate()
 	sections.players.frame:Hide()
 	sections.actions.frame:Hide()
 	Checkout_Activate()
+	History_Restage()
 	Window_Resize()
 	Checkout_RefreshSelectedGP()
 
@@ -225,6 +229,7 @@ function Step3_Back()
 	Players_Activate()
 	Actions_Activate()
 	Checkout_Deactivate()
+	History_Restage()
 	Window_Resize()
 
 	step = 2
@@ -561,13 +566,7 @@ function Players_Add(player_fullname)
 	frame.player_name = player_name
 
 	-- Set class color
-	if player_data.class == "SHAMAN" then
-		-- Override shaman color to blue
-		-- #0070DE
-		frame.name_text:SetTextColor(0, 0.4375, 0.8706)
-	else
-		frame.name_text:SetTextColor(_G.GetClassColor(player_data.class))
-	end
+	frame.name_text:SetTextColor(_G.unpack(addon.Util.MyGetClassColor(player_data.class)))
 
 	-- Set this row text
 	frame.name_text:SetText(player_name)
@@ -580,6 +579,7 @@ function Players_Add(player_fullname)
 	Players_Restage()
 	Actions_Restage()
 	Checkout_Restage()
+	History_Restage()
 	Window_Resize()
 	Players_Announce(player_name, player_data.class, frame.pr)
 end
@@ -904,6 +904,7 @@ end
 --- Confirm the checkout
 function Checkout_Confirm()
 	addon.Core.Transact(selected_player_name, selected_item_id, selected_gp, false, "Item Distribute", true, true)
+	History_Add(selected_player_name, selected_item_id, selected_gp)
 	Step1_Activate()
 end
 
@@ -984,6 +985,103 @@ function Checkout_RefreshSelectedGP()
 	end
 end
 
+----------
+-- History
+----------
+
+--- Load the history section
+function History_Load()
+	sections.history.frame = _G.CreateFrame("Frame", nil, window)
+	sections.history.frame:SetPoint("TOPLEFT", 0, -1 * sections.header.height)
+	sections.history.frame:SetWidth(window_width)
+end
+
+--- Resize and reposition the history section
+function History_Restage()
+	-- Reposition
+	sections.history.frame:ClearAllPoints()
+	local y = sections.header.height
+	if sections.details.frame:IsVisible() then
+		y = y + sections.details.frame:GetHeight()
+	end
+	if sections.players.frame:IsVisible() then
+		y = y + sections.players.frame:GetHeight()
+	end
+	if sections.actions.frame:IsVisible() then
+		y = y + sections.actions.frame:GetHeight()
+	end
+	if sections.checkout.frame:IsVisible() then
+		y = y + sections.checkout.frame:GetHeight()
+	end
+	sections.history.frame:SetPoint("TOPLEFT", 0, -1 * y)
+
+	sections.history.frame:SetHeight((sections.history.index - 1) * sections.history.height_ea + 3)
+end
+
+--- Add an entry into the history list
+-- @param player_name <string>
+-- @param item_id <number>
+-- @param gp <number>
+function History_Add(player_name, item_id, gp)
+	local frame = sections.history.frames[sections.history.index]
+	if frame == nil then
+		frame = History_NewFrame()
+	end
+	sections.history.index = sections.history.index + 1
+
+	local _, item_link, _, _, _, _, _, _ = _G.GetItemInfo(item_id)
+
+	frame.item_text:SetText(item_link)
+	frame.name_text:SetText(player_name)
+	frame.name_text:SetTextColor(_G.unpack(addon.Util.MyGetClassColor(addon.Guild.GetPlayerClass(player_name))))
+	frame.gp_text:SetText(gp)
+
+	History_Restage()
+	Window_Resize()
+end
+
+--- Create a new history frame and return it
+-- @return <Frame>
+function History_NewFrame()
+	-- Frame
+	local frame = _G.CreateFrame("Frame", nil, sections.history.frame)
+	sections.history.frames[sections.history.index] = frame
+
+	-- Frame vars
+	frame.player_name = nil
+	frame.gp = nil
+	frame.item_id = nil
+	frame.index = sections.history.index
+
+	-- Frame settings
+	frame:SetPoint("TOPLEFT", 0, -1 * sections.history.height_ea * (sections.history.index - 1))
+	frame:SetWidth(window_width)
+	frame:SetHeight(sections.history.height_ea)
+
+	-- Item
+	frame.item_text = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalTiny")
+	frame.item_text:SetPoint("TOPLEFT", 2, 0)
+	frame.item_text:SetJustifyH("LEFT")
+	frame.item_text:SetWidth(92)
+	frame.item_text:SetHeight(sections.history.height_ea)
+
+	-- Player Name
+	frame.name_text = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalTiny")
+	frame.name_text:SetPoint("TOPRIGHT", -36, 0)
+	frame.name_text:SetJustifyH("LEFT")
+	frame.name_text:SetWidth(70)
+	frame.name_text:SetHeight(sections.history.height_ea)
+
+	-- GP
+	frame.gp_text = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalTiny")
+	frame.gp_text:SetPoint("TOPRIGHT", -4, 0)
+	frame.gp_text:SetJustifyH("RIGHT")
+	frame.gp_text:SetWidth(32)
+	frame.gp_text:SetHeight(sections.history.height_ea)
+
+	return frame
+end
+
 -------
 -- Item
 -------
@@ -994,6 +1092,7 @@ function Item_LoadGP()
 
 	local item_data = addon.data.items[selected_item_id]
 	if item_data == nil then
+		Checkout_ShowCustomGPInput()
 		return
 	end
 
@@ -1230,6 +1329,9 @@ function Window_Resize()
 	end
 	if sections.checkout.frame:IsVisible() then
 		h = h + sections.checkout.frame:GetHeight()
+	end
+	if sections.history.frame:IsVisible() then
+		h = h + sections.history.frame:GetHeight()
 	end
 	window:SetHeight(h)
 end

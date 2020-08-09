@@ -38,6 +38,9 @@ end
 -- @param announce <boolean> Announce the transaction in guild
 function Transact(player_name, item_id, amount, is_ep, desc, save, announce)
 	-- Defaults
+	if amount == nil then
+		amount = 0
+	end
 	if is_ep == nil then
 		is_ep = true
 	end
@@ -71,9 +74,9 @@ function Transact(player_name, item_id, amount, is_ep, desc, save, announce)
 			["player_name"] = player_name,
 			["item_id"] = item_id,
 			["item_name"] = item_name,
-			["desc"] = desc,
 			["ep_change"] = ep_change,
 			["gp_change"] = gp_change,
+			["desc"] = desc,
 		}
 		_G.table.insert(_G.DEPGPStorage.transactions, transaction)
 	end
@@ -120,11 +123,12 @@ function Transact(player_name, item_id, amount, is_ep, desc, save, announce)
 				msg = "No change for "
 			end
 			msg = msg .. player_name
-		else
+		end
 		if desc ~= nil and desc then
 			msg = msg .. " (" .. desc .. ")"
 		end
 
-		addon.Util.ChatGuild(msg)
+		_G.print(msg)
+		-- addon.Util.ChatGuild(msg)
 	end
 end

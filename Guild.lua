@@ -40,9 +40,9 @@ end
 --   Note: changes frequently.
 -- @return <table>
 function GetFreshPlayerData(gindex)
-	local name, _, _, level, _, _, _, officer_note, _, _, class, _, _, _, _, _, guid = _G.GetGuildRosterInfo(gindex)
+	local fullname, _, _, level, _, _, _, officer_note, _, _, class, _, _, _, _, _, guid = _G.GetGuildRosterInfo(gindex)
 	return {
-		["name"] = name,
+		["name"] = fullname,
 		["level"] = level,
 		["officer_note"] = officer_note,
 		["class"] = class,
@@ -74,6 +74,16 @@ function GetPlayerData(player_fullname)
 	-- Local roster cache is dirty, need to refresh
 	RefreshRoster()
 	return addon.data.roster[player_fullname]
+end
+
+--- Returns the class of the player from the cached data
+-- @param player_name <string>
+-- @return string
+function GetPlayerClass(player_name)
+	local player_fullname = GetPlayerFullname(player_name)
+	local player_data = addon.data.roster[player_fullname]
+	if player_data then return player_data.class end
+	return nil
 end
 
 --- Returns EP and GP from the given officer note
@@ -112,7 +122,7 @@ function UpdateEPGP(player_name, ep_change, gp_change)
 	epgp.ep = epgp.ep + ep_change
 	epgp.gp = epgp.gp + gp_change
 	local officer_note = EncodeOfficerNote(epgp.ep, epgp.gp)
-	_G.print("SET OFFICER NOTE = '" .. officer_note .. "'")
+	_G.print("GuildRosterSetOfficerNote(" .. officer_note .. ")")
 	--_G.GuildRosterSetOfficerNote(player_data.gindex, officer_note)
 end
 

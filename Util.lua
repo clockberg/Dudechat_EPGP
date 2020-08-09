@@ -147,3 +147,18 @@ function GetMenuButton()
 	button.func = nil
 	return button
 end
+
+--- Returns the class color for the given class
+-- @param player_class <string>
+-- @return <table>
+function MyGetClassColor(player_class)
+	if not player_class or player_class == nil then
+		return {1, 1, 1}
+	end
+	if player_class == "SHAMAN" then
+		-- Override shaman color to blue
+		-- #0070DE
+		return {0, 0.4375, 0.8706}
+	end
+	return {_G.GetClassColor(player_class)}
+end
