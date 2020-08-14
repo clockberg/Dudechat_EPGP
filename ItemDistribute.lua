@@ -153,7 +153,7 @@ function Load()
 	History_Load()
 	Window_Resize()
 
-	History_Add("Clockberg", 153, 55555)
+	History_Add("Clockberg", 153, 5555)
 	History_Add("Fish", 2654, 33)
 end
 
@@ -346,27 +346,27 @@ function Players_Load()
 
 	-- "EP" table header
 	elem = sections.players.frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-	elem:SetPoint("TOPLEFT", 90, 0)
+	elem:SetPoint("TOPLEFT", 77, 0)
 	elem:SetJustifyH("RIGHT")
-	elem:SetWidth(35)
+	elem:SetWidth(40)
 	elem:SetTextColor(_G.unpack(sections.players.th_color))
 	elem:SetHeight(sections.players.height_ea)
 	elem:SetText("EP")
 
 	-- "GP" table header
 	elem = sections.players.frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-	elem:SetPoint("TOPLEFT", 122, 0)
+	elem:SetPoint("TOPLEFT", 114, 0)
 	elem:SetJustifyH("RIGHT")
-	elem:SetWidth(35)
+	elem:SetWidth(40)
 	elem:SetTextColor(_G.unpack(sections.players.th_color))
 	elem:SetHeight(sections.players.height_ea)
 	elem:SetText("GP")
 
 	-- "PR" table header
 	elem = sections.players.frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-	elem:SetPoint("TOPRIGHT", -3, 0)
+	elem:SetPoint("TOPRIGHT", -1, 0)
 	elem:SetJustifyH("RIGHT")
-	elem:SetWidth(38)
+	elem:SetWidth(45)
 	elem:SetTextColor(_G.unpack(sections.players.th_color))
 	elem:SetHeight(sections.players.height_ea)
 	elem:SetText("PR")
@@ -469,24 +469,25 @@ function Players_NewFrame()
 
 	-- EP
 	frame.ep_text = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-	frame.ep_text:SetPoint("TOPLEFT", 90, 0)
+	frame.ep_text:SetPoint("TOPLEFT", 75, 0)
 	frame.ep_text:SetJustifyH("RIGHT")
-	frame.ep_text:SetWidth(35)
+	frame.ep_text:SetWidth(40)
 	frame.ep_text:SetHeight(sections.players.height_ea)
 
 	-- GP
 	frame.gp_text = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-	frame.gp_text:SetPoint("TOPLEFT", 122, 0)
+	frame.gp_text:SetPoint("TOPLEFT", 112, 0)
 	frame.gp_text:SetJustifyH("RIGHT")
-	frame.gp_text:SetWidth(35)
+	frame.gp_text:SetWidth(40)
 	frame.gp_text:SetHeight(sections.players.height_ea)
 
 	-- PR
 	frame.pr_text = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-	frame.pr_text:SetPoint("TOPRIGHT", -3, 0)
+	frame.pr_text:SetPoint("TOPRIGHT", 2, 0)
 	frame.pr_text:SetJustifyH("RIGHT")
-	frame.pr_text:SetWidth(38)
+	frame.pr_text:SetWidth(45)
 	frame.pr_text:SetHeight(sections.players.height_ea)
+	frame.pr_text:SetTextColor(1, 1, 1)
 
 	-- Row highlight (automatic on mouseover)
 	elem = frame:CreateTexture(nil, "HIGHLIGHT")
@@ -559,8 +560,6 @@ function Players_Add(player_fullname)
 
 	-- Get player EP and GP
 	local epgp = addon.Guild.DecodeOfficerNote(player_data.officer_note)
-
-	epgp.ep = _G.math.random(1,100) -- debug
 
 	frame.pr = addon.Util.GetPR(epgp.ep, epgp.gp)
 	frame.player_name = player_name
@@ -675,7 +674,7 @@ function Actions_Load()
 	-- Cancel button
 	local elem = _G.CreateFrame("Button", nil, sections.actions.frame, "OptionsButtonTemplate")
 	elem:SetPoint("BOTTOMLEFT", 3, 3)
-	elem:SetWidth(45)
+	elem:SetWidth(55)
 	elem:SetHeight(18)
 	elem:SetScript("OnClick", function (_, button)
 		addon.Util.PlaySoundClose()
@@ -691,7 +690,7 @@ function Actions_Load()
 	-- Distribute button
 	sections.actions.btn_dist = _G.CreateFrame("Button", nil, sections.actions.frame, "OptionsButtonTemplate")
 	sections.actions.btn_dist:SetPoint("BOTTOMRIGHT", -3, 3)
-	sections.actions.btn_dist:SetWidth(70)
+	sections.actions.btn_dist:SetWidth(75)
 	sections.actions.btn_dist:SetHeight(18)
 	sections.actions.btn_dist:SetScript("OnClick", function (_, button)
 		addon.Util.PlaySoundNext()
@@ -808,7 +807,7 @@ function Checkout_Load()
 	sel.dropdown = _G.CreateFrame("FRAME", nil, sections.checkout.frame, "OptionsDropdownTemplate")
 	sel.dropdown:SetPoint("TOPLEFT", 10, -15)
 	sel.dropdown.Text:SetText("N/A")
-	sel.dropdown.Middle:SetWidth(65)
+	sel.dropdown.Middle:SetWidth(80)
 	sel.dropdown.Button:SetScript("OnClick", function (_, button)
 		Checkout_ToggleGPOptions()
 		addon.Util.PlaySoundBack()
@@ -822,7 +821,7 @@ function Checkout_Load()
 
 	-- GP select wrapper background
 	elem = sel.wrapper:CreateTexture(nil, "BACKGROUND")
-	elem:SetColorTexture(0, 0, 0, 0.6)
+	elem:SetColorTexture(0, 0, 0, 0.8)
 	elem:SetAllPoints(sel.wrapper)
 
 	-- GP select options
@@ -844,7 +843,7 @@ function Checkout_Load()
 
 		-- Option text
 		sel.options.frames[i].text = sel.options.frames[i]:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-		sel.options.frames[i].text:SetPoint("TOPLEFT", 3, -3)
+		sel.options.frames[i].text:SetPoint("TOPLEFT", 15, -3)
 		sel.options.frames[i].text:SetTextColor(1, 1, 1)
 		sel.options.frames[i].text:SetPoint("BOTTOMRIGHT", -3, 3)
 		sel.options.frames[i].text:SetJustifyH("LEFT")
@@ -972,14 +971,14 @@ end
 --- Sets the currently selected GP
 -- @param gp <number>
 function Checkout_SetSelectedGP(gp)
-	gp = addon.Util.WholeNumber(gp)
+	gp = addon.Util.AddonNumber(gp)
 	selected_gp = gp
 end
 
 --- Automatically refresh the selected GP
 function Checkout_RefreshSelectedGP()
 	if sections.checkout.custom_gp:IsVisible() then
-		Checkout_SetSelectedGP(addon.Util.WholeNumber(sections.checkout.custom_gp:GetText()))
+		Checkout_SetSelectedGP(addon.Util.AddonNumber(sections.checkout.custom_gp:GetText()))
 	else
 		Checkout_SetSelectedGP(sections.checkout.gp_select.dropdown.value)
 	end
@@ -1018,6 +1017,19 @@ function History_Restage()
 	sections.history.frame:SetHeight((sections.history.index - 1) * sections.history.height_ea + 3)
 end
 
+function History_Clear()
+	-- Hide history rows
+	for i = 1, addon.Util.SizeOf(sections.history.frames) do
+		sections.history.frames[i]:Hide()
+	end
+
+	-- Reset history
+	sections.history.index = 1
+
+	History_Restage()
+	Window_Resize()
+end
+
 --- Add an entry into the history list
 -- @param player_name <string>
 -- @param item_id <number>
@@ -1031,6 +1043,7 @@ function History_Add(player_name, item_id, gp)
 
 	local _, item_link, _, _, _, _, _, _ = _G.GetItemInfo(item_id)
 
+	frame:Show()
 	frame.item_text:SetText(item_link)
 	frame.name_text:SetText(player_name)
 	frame.name_text:SetTextColor(_G.unpack(addon.Util.MyGetClassColor(addon.Guild.GetPlayerClass(player_name))))
@@ -1074,9 +1087,9 @@ function History_NewFrame()
 
 	-- GP
 	frame.gp_text = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalTiny")
-	frame.gp_text:SetPoint("TOPRIGHT", -4, 0)
+	frame.gp_text:SetPoint("TOPRIGHT", -5, 0)
 	frame.gp_text:SetJustifyH("RIGHT")
-	frame.gp_text:SetWidth(32)
+	frame.gp_text:SetWidth(35)
 	frame.gp_text:SetHeight(sections.history.height_ea)
 
 	return frame
@@ -1108,7 +1121,7 @@ function Item_LoadGP()
 
 	if item_data.price ~= nil then
 		_G.table.insert(gp_options, {
-			["text"] = "*: " .. item_data.price .. "gp",
+			["text"] = addon.data.tier_base_name .. ": " .. item_data.price .. "gp",
 			["price"] = item_data.price,
 		})
 	end
@@ -1158,7 +1171,7 @@ function Item_Announce()
 			total = total + 1
 		end
 		if item_data.price then
-			addon.Util.ChatRaid(" ( *: " .. item_data.price .. "gp )")
+			addon.Util.ChatRaid(" ( " .. addon.data.tier_base_name .. ": " .. item_data.price .. "gp )")
 		end
 	end
 	if total == 0 then
@@ -1179,20 +1192,22 @@ function Menu_Create(frame, level, menulist)
 	local GetMenuButton = addon.Util.GetMenuButton
 
 	local button = GetMenuButton()
-	button.text = "Open Options"
+	button = GetMenuButton()
+	button.text = addon.short_name
+	button.isTitle = true
+	_G.UIDropDownMenu_AddButton(button)
+
+	button = GetMenuButton()
+	button.text = "Addon Options"
 	button.func = function ()
 		_G.InterfaceOptionsFrame_OpenToCategory(addon.Options.panel)
 		_G.InterfaceOptionsFrame_OpenToCategory(addon.Options.panel)
 	end
 	_G.UIDropDownMenu_AddButton(button)
 
-	button = GetMenuButton()
-	button.disabled = true
-	_G.UIDropDownMenu_AddButton(button)
-
 	if window and selected_item_id then
 		button = GetMenuButton()
-		button.text = "Item Options"
+		button.text = "Item"
 		button.isTitle = true
 		_G.UIDropDownMenu_AddButton(button)
 
@@ -1211,14 +1226,24 @@ function Menu_Create(frame, level, menulist)
 			Step1_Activate()
 		end
 		_G.UIDropDownMenu_AddButton(button)
+	end
+
+	if window and sections.history.index > 1 then
+		button = GetMenuButton()
+		button.text = "History"
+		button.isTitle = true
+		_G.UIDropDownMenu_AddButton(button)
 
 		button = GetMenuButton()
-		button.disabled = true
+		button.text = "Clear History"
+		button.func = function ()
+			History_Clear()
+		end
 		_G.UIDropDownMenu_AddButton(button)
 	end
 
 	button = GetMenuButton()
-	button.text = "Window Options"
+	button.text = "Window"
 	button.isTitle = true
 	_G.UIDropDownMenu_AddButton(button)
 

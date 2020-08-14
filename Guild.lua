@@ -90,7 +90,7 @@ end
 -- @param note <string> The officer note to decode
 -- @return <table> {"ep" = <number>, "gp" = <number>}
 function DecodeOfficerNote(note)
-	local ep, gp = _G.string.match(note, "(%d+)%s*,%s*(%d+)")
+	local ep, gp = _G.string.match(note, "(%d*%.?%d+)%s*,%s*(%d*%.?%d+)")
 	if ep == nil or not ep then ep = 0 end
 	if gp == nil or not gp then gp = 0 end
 	return {
@@ -122,8 +122,11 @@ function UpdateEPGP(player_name, ep_change, gp_change)
 	epgp.ep = epgp.ep + ep_change
 	epgp.gp = epgp.gp + gp_change
 	local officer_note = EncodeOfficerNote(epgp.ep, epgp.gp)
-	_G.print("GuildRosterSetOfficerNote(" .. officer_note .. ")")
-	--_G.GuildRosterSetOfficerNote(player_data.gindex, officer_note)
+	if addon.Core.TEST then
+		_G.print("(TEST) GuildRosterSetOfficerNote(" .. officer_note .. ")")
+	else
+		_G.GuildRosterSetOfficerNote(player_data.gindex, officer_note)
+	end
 end
 
 --- Returns the full name of the given player (server included)
@@ -133,6 +136,7 @@ function GetPlayerFullname(player_name)
 	if _G.string.find(player_name, '-') then
 		-- There is already a dash in the player name,
 		-- therefore most likely already a fullname
+		-- (dashes are not allowed in player names)
 		return player_name
 	end
 	return player_name .. '-' .. _G.GetRealmName()

@@ -5,6 +5,5 @@ addon.data.tiers = {
 	"Z",
 	"S",
 	"A",
-	"B",
-	"C",
 }
+addon.data.tier_base_name = "B"

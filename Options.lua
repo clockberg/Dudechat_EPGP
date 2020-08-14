@@ -187,7 +187,7 @@ function AddEditbox(option_key, col, row, label_text, desc_text, colspan)
 	editbox.option_key = option_key
 	editbox:SetScript("OnTextChanged", function()
 		local val = editbox:GetText()
-		val = addon.Util.WholeNumber(val)
+		val = addon.Util.AddonNumber(val)
 		addon.Config.SetTmpOption(editbox.option_key, val)
 	end)
 

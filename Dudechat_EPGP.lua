@@ -15,7 +15,7 @@ addon.addon_name = "Dudechat_EPGP"
 -- @param _ <Frame> self
 -- @param event <string> the name of the event that fired
 -- @param arg1 <mixed> event arg
-local function onevent(_, event, arg1)
+local function OnEvent(_, event, arg1)
 	if event == "ADDON_LOADED" and arg1 == addon.addon_name then
 		addon.Core.Load()
 	end
@@ -24,7 +24,7 @@ end
 -- Create a frame to hook OnEvent
 local frame = CreateFrame("FRAME")
 frame:RegisterEvent("ADDON_LOADED")
-frame:SetScript("OnEvent", onevent)
+frame:SetScript("OnEvent", OnEvent)
 
 -- Set up chat command
 SLASH_DEPGP1 = "/depgp"

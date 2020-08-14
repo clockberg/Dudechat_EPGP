@@ -74,13 +74,18 @@ function GetItemIdFromItemLink(itemlink)
 	return _G.tonumber(item_id)
 end
 
---- Returns a whole number
+--- Returns a number appropriate for the addon
+-- Rounds to a number of places. Also limits to a range.
 -- @param val <number>
+-- @param places <number> (default: 1)
 -- @return <number>
-function WholeNumber(val)
+function AddonNumber(val, places, min, max)
+	places = places or 1
+	min = min or -99999
+	max = max or 99999
 	val = _G.tonumber(val) or 0
-	val = Round(val)
-	val = _G.min(99999, _G.max(0, val))
+	val = Round(val, places)
+	val = _G.min(max, _G.max(min, val))
 	return val
 end
 

@@ -6,6 +6,8 @@ addon.Core = M
 local _G = _G
 setfenv(1, M)
 
+TEST = true
+
 --- Load this module
 function Load()
 	if _G.DEPGPStorage.transactions == nil then
@@ -19,23 +21,33 @@ function Load()
 	addon.ItemDistribute.Load()
 end
 
+--- Prints an error message
+-- @param message <string>
 function Error(message)
 	_G.print("Error: " .. message)
 end
 
+--- Prints a warning message
+-- @param message <string>
 function Warning(message)
 	_G.print("Warning: " .. message)
 end
 
 --- Create a transaction
+-- The transaction can either be for EP or GP, not both. The transaction
+-- is performed by getting the current EPGP of the player from the officer
+-- note and adding or subtracting the amount given to the appropriate field.
+-- Then the new EPGP is put into the officer note.
+-- If the save parameter is true, the transaction is also added to the saved
+-- list of transactions in the addon's storage.
 -- @param player_name <string>
 -- @param item_id <number>
 -- @param item_name <string>
--- @param amount <number> Can be negative
--- @param is_ep <boolean> If true, EP. If false, GP
+-- @param amount <number> (default: 0) Can be negative
+-- @param is_ep <boolean> (default: true) If true, EP. If false, GP
 -- @param desc <string> Transaction description
--- @param save <boolean> Save the transaction in storage
--- @param announce <boolean> Announce the transaction in guild
+-- @param save <boolean> (default: true) Save the transaction in storage
+-- @param announce <boolean> (default: true) Announce the transaction in guild
 function Transact(player_name, item_id, amount, is_ep, desc, save, announce)
 	-- Defaults
 	if amount == nil then
@@ -51,7 +63,7 @@ function Transact(player_name, item_id, amount, is_ep, desc, save, announce)
 		announce = true
 	end
 
-	amount = addon.Util.WholeNumber(amount)
+	amount = addon.Util.AddonNumber(amount)
 
 	-- Item info
 	local item_name = nil
@@ -77,6 +89,7 @@ function Transact(player_name, item_id, amount, is_ep, desc, save, announce)
 			["ep_change"] = ep_change,
 			["gp_change"] = gp_change,
 			["desc"] = desc,
+			["at"] = _G.date("%y-%m-%d %H:%M:%S"),
 		}
 		_G.table.insert(_G.DEPGPStorage.transactions, transaction)
 	end
@@ -128,7 +141,10 @@ function Transact(player_name, item_id, amount, is_ep, desc, save, announce)
 			msg = msg .. " (" .. desc .. ")"
 		end
 
-		_G.print(msg)
-		-- addon.Util.ChatGuild(msg)
+		if TEST then
+			_G.print("(TEST) " .. msg)
+		else
+			addon.Util.ChatGuild(msg)
+		end
 	end
 end

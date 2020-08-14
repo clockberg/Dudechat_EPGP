@@ -139,7 +139,7 @@ function Component:UpdateItem(item_id)
 	end
 
 	if item_data.price ~= nil then
-		self.tier_texts[row]:SetText("*")
+		self.tier_texts[row]:SetText(addon.data.tier_base_name)
 		self.price_texts[row]:SetText(item_data.price)
 	end
 
