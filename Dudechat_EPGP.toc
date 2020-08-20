@@ -12,6 +12,7 @@ ItemDistribute.lua
 ItemTooltip.lua
 Options.lua
 Util.lua
+Data/Bosses.lua
 Data/DefaultOptions.lua
 Data/Items.lua
 Data/Specs.lua

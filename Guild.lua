@@ -55,9 +55,10 @@ end
 --- Returns player data for the given character name
 -- If the response from the server doesn't match the local roster cache,
 -- we need to reload the whole roster in order to get accurate data.
--- @param player_fullname <string> The name of the character to return data for
+-- @param player_name <string> The name of the character to return data for
 -- @return <table> or <nil>
-function GetPlayerData(player_fullname)
+function GetPlayerData(player_name)
+	local player_fullname = GetPlayerFullname(player_name)
 	local cached_data = addon.data.roster[player_fullname]
 	if cached_data == nil then
 		-- No record of this player

@@ -9,7 +9,7 @@ setfenv(1, M)
 --- Send a guild message
 -- @param msg <string>
 function ChatGuild(msg)
-	_G.SendChatMessage(msg, "GUILD")
+	_G.SendChatMessage("{SQUARE} " .. msg, "GUILD")
 end
 
 --- Send a raid message
@@ -93,6 +93,9 @@ end
 -- @param tbl <table>
 -- @return <number>
 function SizeOf(tbl)
+	if not tbl then
+		return 0
+	end
 	local count = 0
 	for _ in _G.pairs(tbl) do
 		count = count + 1
@@ -104,6 +107,9 @@ end
 -- @param tbl <table>
 -- @return <table>
 function TableGetKeys(tbl)
+	if not tbl then
+		return {}
+	end
 	local i = 1
 	local keys = {}
 	for key, _ in _G.pairs(tbl) do

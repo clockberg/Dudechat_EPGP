@@ -103,7 +103,7 @@ function Component:UpdateItem(item_id)
 	self:Clear()
 	self.item_id = item_id
 
-	local item_data = addon.data.items[item_id]
+	local item_data = addon.Core.GetItemData(item_id)
 	if item_data == nil then
 		-- Item has no data, don't update
 		return
@@ -119,8 +119,11 @@ function Component:UpdateItem(item_id)
 		num_cols = _G.max(num_cols, addon.Util.SizeOf(tier_data.specs))
 	end
 
-	local tiers = addon.Util.TableGetKeys(item_data.by_tier)
-	_G.table.sort(tiers)
+	local tiers = {}
+	if item_data.by_tier then
+		tiers = addon.Util.TableGetKeys(item_data.by_tier)
+		_G.table.sort(tiers)
+	end
 
 	local row = 1
 	for _, tier in _G.pairs(tiers) do

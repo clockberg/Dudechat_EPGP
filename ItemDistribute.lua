@@ -153,8 +153,7 @@ function Load()
 	History_Load()
 	Window_Resize()
 
-	History_Add("Clockberg", 153, 5555)
-	History_Add("Fish", 2654, 33)
+	window:Hide()
 end
 
 --- Activate step 1
@@ -364,7 +363,7 @@ function Players_Load()
 
 	-- "PR" table header
 	elem = sections.players.frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-	elem:SetPoint("TOPRIGHT", -1, 0)
+	elem:SetPoint("TOPRIGHT", -3, 0)
 	elem:SetJustifyH("RIGHT")
 	elem:SetWidth(45)
 	elem:SetTextColor(_G.unpack(sections.players.th_color))
@@ -1103,13 +1102,19 @@ end
 function Item_LoadGP()
 	gp_options = {}
 
-	local item_data = addon.data.items[selected_item_id]
+	sections.checkout.custom_gp:SetText(addon.Config.GetOption("ItemDistribute.default_price"))
+
+	local item_data = addon.Core.GetItemData(selected_item_id)
 	if item_data == nil then
 		Checkout_ShowCustomGPInput()
 		return
 	end
 
-	local tiers = addon.Util.TableGetKeys(item_data.by_tier)
+	local tiers = {}
+	if item_data.by_tier then
+		tiers = addon.Util.TableGetKeys(item_data.by_tier)
+		_G.table.sort(tiers)
+	end
 	_G.table.sort(tiers)
 	for _, tier in _G.pairs(tiers) do
 		tier_data = item_data.by_tier[tier]
@@ -1125,8 +1130,6 @@ function Item_LoadGP()
 			["price"] = item_data.price,
 		})
 	end
-
-	sections.checkout.custom_gp:SetText(addon.Config.GetOption("ItemDistribute.default_price"))
 
 	if addon.Util.SizeOf(gp_options) then
 		Checkout_HideCustomGPInput()
@@ -1148,10 +1151,14 @@ function Item_Announce()
 	else
 		addon.Util.ChatRaid(msg)
 	end
-	local item_data = addon.data.items[selected_item_id]
+	local item_data = addon.Core.GetItemData(selected_item_id)
 	local total = 0
 	if item_data ~= nil then
-		local tiers = addon.Util.TableGetKeys(item_data.by_tier)
+		local tiers = {}
+		if item_data.by_tier then
+			tiers = addon.Util.TableGetKeys(item_data.by_tier)
+			_G.table.sort(tiers)
+		end
 		_G.table.sort(tiers)
 		for _, tier in _G.pairs(tiers) do
 			tier_data = item_data.by_tier[tier]
