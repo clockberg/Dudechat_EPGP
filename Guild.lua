@@ -123,11 +123,7 @@ function UpdateEPGP(player_name, ep_change, gp_change)
 	epgp.ep = epgp.ep + ep_change
 	epgp.gp = epgp.gp + gp_change
 	local officer_note = EncodeOfficerNote(epgp.ep, epgp.gp)
-	if addon.Core.TEST then
-		_G.print("(TEST) GuildRosterSetOfficerNote(" .. officer_note .. ")")
-	else
-		_G.GuildRosterSetOfficerNote(player_data.gindex, officer_note)
-	end
+	_G.GuildRosterSetOfficerNote(player_data.gindex, officer_note)
 end
 
 --- Returns the full name of the given player (server included)
