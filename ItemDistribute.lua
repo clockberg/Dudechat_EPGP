@@ -127,15 +127,30 @@ function Load()
 	window:SetScript("OnMouseWheel", Window_OnMouseWheel)
 
 	--- Hook item link to put into our addon
-	-- Normal usage is shift+left click
+	-- Shift+left click to put item into addon. Only works during looting.
 	local orig_ChatEdit_InsertLink = _G.ChatEdit_InsertLink
 	_G.ChatEdit_InsertLink = function (...)
 		local text = ...
 		local result = orig_ChatEdit_InsertLink(...)
-		if not result and text and window:IsVisible() then
-			Step2_Activate(addon.Util.GetItemIdFromItemLink(text))
-			addon.Util.PlaySoundItemDrop()
+		if result then
+			-- A chat link was inserted, that was probably the
+			-- desired action, so don't do anything
+			return result
 		end
+		if not text then
+			return false
+		end
+		-- Check for looting
+		local loot_info = _G.GetLootInfo()
+		if not loot_info or addon.Util.SizeOf(loot_info) == 0 then
+			-- We are not looting
+			return false
+		end
+		if not window:IsVisible() then
+			return false
+		end
+		Step2_Activate(addon.Util.GetItemIdFromItemLink(text))
+		addon.Util.PlaySoundItemDrop()
 		return false
 	end
 
@@ -426,7 +441,7 @@ end
 -- @param class <string>
 -- @param pr <number>
 function Players_Announce(player_name, class, pr)
-	addon.Util.ChatRaid(player_name .. " (" .. _G.string.lower(class) .. ")" .. " needs ( " .. pr .. " pr )")
+	addon.Util.ChatGroup(player_name .. " (" .. _G.string.lower(class) .. ")" .. " needs ( " .. pr .. " pr )")
 end
 
 --- Returns true if the player is already on the list
@@ -1146,11 +1161,7 @@ function Item_Announce()
 
 	local _, item_link, _, _, _, _, _, _ = _G.GetItemInfo(selected_item_id)
 	local msg = "Now Distributing: " .. item_link
-	if addon.Config.GetOption("ItemDistribute.announce_raid_warning") then
-		addon.Util.ChatRaidWarning(msg)
-	else
-		addon.Util.ChatRaid(msg)
-	end
+	addon.Util.ChatGroup(msg, addon.Config.GetOption("ItemDistribute.announce_raid_warning"))
 	local item_data = addon.Core.GetItemData(selected_item_id)
 	local total = 0
 	if item_data ~= nil then
@@ -1174,17 +1185,17 @@ function Item_Announce()
 					str = str .. addon.data.spec_abbrs[spec]
 				end
 			end
-			addon.Util.ChatRaid(str)
+			addon.Util.ChatGroup(str)
 			total = total + 1
 		end
 		if item_data.price then
-			addon.Util.ChatRaid(" ( " .. addon.data.tier_base_name .. ": " .. item_data.price .. "gp )")
+			addon.Util.ChatGroup(" ( " .. addon.data.tier_base_name .. ": " .. item_data.price .. "gp )")
 		end
 	end
 	if total == 0 then
-		addon.Util.ChatRaid("No prices set")
+		addon.Util.ChatGroup("No prices set")
 	end
-	addon.Util.ChatRaid("DM \"need\" to " .. _G.UnitName("player"))
+	addon.Util.ChatGroup("DM \"need\" to " .. _G.UnitName("player"))
 end
 
 -------

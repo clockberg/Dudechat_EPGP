@@ -12,16 +12,19 @@ function ChatGuild(msg)
 	_G.SendChatMessage("{SQUARE} " .. msg, "GUILD")
 end
 
---- Send a raid message
+--- Send a group message
 -- @param msg <string>
-function ChatRaid(msg)
-	_G.SendChatMessage("{SQUARE} " .. msg, "RAID")
-end
-
---- Send a raid warning message
--- @param msg <string>
-function ChatRaidWarning(msg)
-	_G.SendChatMessage("{SQUARE} " .. msg, "RAID_WARNING")
+-- @param is_alert <boolean>
+function ChatGroup(msg, is_alert)
+	if _G.IsInRaid() then
+		if is_alert then
+			_G.SendChatMessage("{SQUARE} " .. msg, "RAID_WARNING")
+		else
+			_G.SendChatMessage("{SQUARE} " .. msg, "RAID")
+		end
+	else
+		_G.SendChatMessage("{SQUARE} " .. msg, "PARTY")
+	end
 end
 
 function PlaySoundItemDrop()
