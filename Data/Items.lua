@@ -1,12 +1,5 @@
 local _, addon = ...
 
--- Items are "hardcoded" here for now
--- Eventually will want to have a way to import item overrides
--- in-game, using a big textarea input that accepts CSV
--- of some sort that saves to DEPGPStorage. Then would need
--- to update the Core.GetItemData function to correctly
--- grab from DEPGPStorage.
-
 addon.data = addon.data or {}
 addon.data.items = {
 	[21837] = {
@@ -308,8 +301,9 @@ addon.data.items = {
 		["price"] = 1,
 		["by_tier"] = {
 			[3] = {
-				["price"] = 3,
+				["price"] = 4,
 				["specs"] = {
+					"PROT_WAR",
 					"FURY_WAR",
 				},
 			},
