@@ -142,7 +142,6 @@ function IsMasterLooter()
 end
 
 function LootOpened()
-	_G.print("LootOpened")
 	if not addon.enabled then
 		return
 	end
