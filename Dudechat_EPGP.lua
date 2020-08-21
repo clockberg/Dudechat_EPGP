@@ -2,6 +2,13 @@
 -- @author clockberg <clockberg.gaming@gmail.com>
 -- @license MIT
 
+-- Items are currently "hardcoded" in Data/Items.lua.
+-- Eventually will want to have a way to import item overrides
+-- in-game, using a big textarea input that accepts CSV
+-- of some sort that saves to DEPGPStorage. Then would need
+-- to update the Core.GetItemData function to correctly
+-- grab from DEPGPStorage.
+
 local _, addon = ...
 
 --- Addon globals
@@ -47,13 +54,18 @@ SLASH_DEPGP1 = "/depgp"
 -- @param editbox <Frame>
 function SlashCmdList.DEPGP(command, editbox)
 	if command == "" or command == nil then
-		print(addon.short_name .. ": default")
 		addon.ItemDistribute.Window_Toggle()
 	elseif command == "item" or command == "dist" or command == "distribute" then
-		print(addon.short_name .. ": distribute")
 		addon.ItemDistribute.Window_Toggle()
+	elseif command == "on" then
+		addon.Core.Activate()
+	elseif command == "off" then
+		addon.Core.Deactivate()
+	elseif command == "test" then
+		addon.Core.HandleEncounterEnd(123, "The Prophet Skeram", 9, 40, 1)
+		--addon.Core.Transact("Clockbergo", nil, 10, true, "RAID BOSS KILL", false, false)
 	else
-		print(addon.short_name .. ": usage")
+		addon.Core.Log("dist | on | off | test")
 	end
 end
 
