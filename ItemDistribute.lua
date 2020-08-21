@@ -149,6 +149,7 @@ function Load()
 		if not window:IsVisible() then
 			return false
 		end
+
 		Step2_Activate(addon.Util.GetItemIdFromItemLink(text))
 		addon.Util.PlaySoundItemDrop()
 		return false
@@ -202,7 +203,7 @@ function Step2_Activate(item_id)
 	end
 
 	-- Set the selected item
-	local item_name, item_link, _, _, _, _, _, _ = _G.GetItemInfo(item_id)
+	local item_name, item_link = _G.GetItemInfo(item_id)
 	selected_item_id = item_id
 	selected_player_name = nil
 
@@ -547,8 +548,10 @@ end
 --- A player needs the selected item
 -- @param player_fullname <string>
 function Players_Add(player_fullname)
-	-- Must be on step 2
-	if step ~= 2 or not window:IsVisible() then
+	if not window:IsVisible() then
+		return
+	end
+	if step ~= 2 and step ~= 3 then
 		return
 	end
 
@@ -1002,6 +1005,18 @@ end
 -- History
 ----------
 
+--- Returns true if the history contains the given item, false otherwise
+-- @param item_link <string>
+-- @return <boolean>
+function History_HasItem(item_link)
+	for i = 1, addon.Util.SizeOf(sections.history.frames) do
+		if sections.history.frames[i].item_text:GetText() == item_link then
+			return true
+		end
+	end
+	return false
+end
+
 --- Load the history section
 function History_Load()
 	sections.history.frame = _G.CreateFrame("Frame", nil, window)
@@ -1055,9 +1070,10 @@ function History_Add(player_name, item_id, gp)
 	end
 	sections.history.index = sections.history.index + 1
 
-	local _, item_link, _, _, _, _, _, _ = _G.GetItemInfo(item_id)
+	local _, item_link = _G.GetItemInfo(item_id)
 
 	frame:Show()
+	frame.item_id = item_id
 	frame.item_text:SetText(item_link)
 	frame.name_text:SetText(player_name)
 	frame.name_text:SetTextColor(_G.unpack(addon.Util.MyGetClassColor(addon.Guild.GetPlayerClass(player_name))))
@@ -1159,7 +1175,7 @@ function Item_Announce()
 		return
 	end
 
-	local _, item_link, _, _, _, _, _, _ = _G.GetItemInfo(selected_item_id)
+	local _, item_link = _G.GetItemInfo(selected_item_id)
 	local msg = "Now Distributing: " .. item_link
 	addon.Util.ChatGroup(msg, addon.Config.GetOption("ItemDistribute.announce_raid_warning"))
 	local item_data = addon.Core.GetItemData(selected_item_id)

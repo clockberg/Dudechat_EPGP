@@ -61,9 +61,14 @@ function GetPlayerData(player_name)
 	local player_fullname = GetPlayerFullname(player_name)
 	local cached_data = addon.data.roster[player_fullname]
 	if cached_data == nil then
+		local size = addon.Util.SizeOf(addon.data.roster)
 		-- No record of this player
 		-- Maybe not in the guild, maybe another problem
-		return nil
+		if addon.Util.SizeOf(addon.data.roster) > 0 then
+			return nil
+		end
+		RefreshRoster()
+		cached_data = addon.data.roster[player_fullname]
 	end
 	local fresh_data = GetFreshPlayerData(cached_data.gindex)
 

@@ -35,6 +35,10 @@ local function OnEvent(_, event, arg1, arg2, arg3, arg4, arg5)
 		addon.Core.Boot()
 	elseif event == "PLAYER_ROLES_ASSIGNED" then
 		addon.Core.Boot()
+	elseif event == "LOOT_OPENED" then
+		addon.Core.LootOpened()
+	elseif event == "CHAT_MSG_LOOT" then
+		-- addon.Core.HandleLoot(arg1, arg2)
 	end
 end
 
@@ -44,6 +48,8 @@ frame:RegisterEvent("ADDON_LOADED")
 frame:RegisterEvent("ENCOUNTER_END")
 frame:RegisterEvent("PARTY_LOOT_METHOD_CHANGED")
 frame:RegisterEvent("PLAYER_ROLES_ASSIGNED")
+frame:RegisterEvent("LOOT_OPENED")
+frame:RegisterEvent("CHAT_MSG_LOOT")
 frame:SetScript("OnEvent", OnEvent)
 
 -- Set up chat command
@@ -62,7 +68,7 @@ function SlashCmdList.DEPGP(command, editbox)
 	elseif command == "off" then
 		addon.Core.Deactivate()
 	elseif command == "test" then
-		addon.Core.HandleEncounterEnd(123, "The Prophet Skeram", 9, 40, 1)
+		--addon.Core.HandleEncounterEnd(123, "The Prophet Skeram", 9, 40, 1)
 		--addon.Core.Transact("Clockbergo", nil, 10, true, "RAID BOSS KILL", false, false)
 	else
 		addon.Core.Log("dist | on | off | test")

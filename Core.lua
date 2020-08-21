@@ -141,6 +141,71 @@ function IsMasterLooter()
 	return true
 end
 
+function LootOpened()
+	_G.print("LootOpened")
+	if not addon.enabled then
+		return
+	end
+
+	-- Determine if any items are at or above the loot threshold
+	local threshold = _G.GetLootThreshold()
+	local slot_num = 0
+	local any_above = false
+	for slot = 1, _G.GetNumLootItems() do
+		if (_G.LootSlotHasItem(slot)) then
+			_, _, _, _, rarity = _G.GetLootSlotInfo(slot)
+			if rarity >= threshold then
+				any_above = true
+			end
+		end
+	end
+
+	if not any_above then
+		return
+	end
+
+	if addon.activated and not addon.ItemDistribute.window:IsVisible() then
+		addon.ItemDistribute.Window_Open()
+	end
+end
+
+function HandleLoot(text, player_name)
+	if not text then
+		return
+	end
+
+	local item_link = _G.string.match(text, "(|.*|r)")
+	if not item_link then
+		return
+	end
+
+	-- 0 Poor (grey)
+	-- 1 Standard (white)
+	-- 2 Good (green)
+	-- 3 Superior (blue)
+	-- 4 Epic (purple)
+	-- 5 Legendary (orange)
+	local threshold = _G.GetLootThreshold()
+
+	local _, _, item_rarity = _G.GetItemInfo(item_link)
+	if item_rarity < threshold then
+		-- normal item loot, not master looted
+		return
+	end
+
+	-- See if this item is in the history
+	if addon.ItemDistribute.History_HasItem(item_link) then
+		_G.print("history has item")
+		return
+	else
+		_G.print("history does not have item")
+	end
+
+	_G.print("HandleLoot(" .. text .. ", " .. player_name)
+	_G.print(item_link)
+	_G.print(threshold)
+end
+
 function Boot()
 	if not addon.enabled then
 		return
@@ -287,7 +352,7 @@ function Transact(player_name, item_id, amount, is_ep, desc, save, announce)
 	local item_name = nil
 	local item_link = nil
 	if item_id ~= nil then
-		item_name, item_link, _, _, _, _, _, _ = _G.GetItemInfo(item_id)
+		item_name, item_link = _G.GetItemInfo(item_id)
 	end
 
 	local ep_change = 0
