@@ -6,7 +6,6 @@ addon.Core = M
 local _G = _G
 setfenv(1, M)
 
-TEST = false
 activation_prompt = nil -- <Frame>
 
 --- Load this module
@@ -22,46 +21,53 @@ function Load()
 	addon.ItemDistribute.Load()
 
 	ActivationPrompt_Load()
-
-	--addon.activated = true
-	--HandleEncounterEnd(709, nil, nil, nil, true)
 	Boot()
+end
+
+function Log(message)
+	_G.print(addon.short_name .. " - " .. message)
 end
 
 --- Prints an error message
 -- @param message <string>
 function Error(message)
-	_G.print("Error: " .. message)
+	Log("Error: " .. message)
 end
 
 --- Prints a warning message
 -- @param message <string>
 function Warning(message)
-	_G.print("Warning: " .. message)
+	Log("Warning: " .. message)
 end
 
 function Disable()
+	Log("Disabled")
 	addon.enabled = false
 end
 
 function Enable()
+	Log("Enabled")
 	addon.enabled = true
 end
 
 function Deactivate()
+	activation_prompt:Hide()
 	if not addon.activated then
 		return
 	end
 	addon.activated = false
 	addon.ItemDistribute.Window_Close()
+	Log("Deactivated")
 end
 
 function Activate()
+	activation_prompt:Hide()
 	if addon.activated then
 		return
 	end
 	addon.activated = true
 	addon.ItemDistribute.Window_Open()
+	Log("Activated")
 end
 
 function ActivationPrompt_Load()
@@ -115,28 +121,32 @@ function PromptActivation()
 	activation_prompt:Show()
 end
 
-function Boot()
-	if not addon.enabled then
-		return
-	end
-
-	if not _G.IsInRaid() then
-		Deactivate()
-		return
-	end
-
+--- Returns true if we are the master looter, false otherwise
+-- @return <boolean>
+function IsMasterLooter()
 	local loot_method, master_looter_party_id, _ = _G.GetLootMethod()
 
 	-- One of 'freeforall', 'roundrobin', 'master', 'group', 'needbeforegreed', 'personalloot'
 	if loot_method ~= "master" then
-		Deactivate()
-		return
+		return false
 	end
 
 	-- Returns 0 if player is the mater looter
 	-- 1-4 if party member is master looter (corresponding to party1-4)
 	-- and nil if the master looter isn't in the player's party or master looting is not used
 	if master_looter_party_id ~= 0 then
+		return false
+	end
+
+	return true
+end
+
+function Boot()
+	if not addon.enabled then
+		return
+	end
+
+	if not IsMasterLooter() then
 		Deactivate()
 		return
 	end
@@ -149,23 +159,21 @@ function Boot()
 end
 
 -- ENCOUNTER_END: encounterID, "encounterName", difficultyID, groupSize, success
-function HandleEncounterEnd(encounter_id, _, _, _, success)
+function HandleEncounterEnd(encounter_id, encounter_name, difficulty_id, group_size, success)
 	if not addon.activated then
-		_G.print("addon deactivated")
 		return
 	end
-	if not success then
-		_G.print("not successful")
+	if not success or success == false or success == 0 then
 		return
 	end
 	local boss_name = addon.data.boss_names[encounter_id]
 	if not boss_name then
-		_G.print("boss name not found for encounter ID " .. encounter_id)
+		Log("Boss not found. Encounter ID = " .. encounter_id)
 		return
 	end
 	local boss_ep_award = addon.data.boss_awards[encounter_id]
 	if not boss_ep_award then
-		_G.print("boss ep award not found")
+		Log("Boss EP Award not found. Encounter ID = " .. encounter_id)
 		return
 	end
 	local zone_name = nil
@@ -183,11 +191,7 @@ function HandleEncounterEnd(encounter_id, _, _, _, success)
 	AddRaidEP(boss_ep_award, boss_str)
 
 	local msg = boss_str .. " defeated! " .. boss_ep_award .. " EP awarded to the raid."
-	if TEST then
-		_G.print("(TEST) " .. msg)
-	else
-		addon.Util.ChatGuild(msg)
-	end
+	addon.Util.ChatGuild(msg)
 end
 
 --- Adds EP to the entire raid
@@ -346,10 +350,6 @@ function Transact(player_name, item_id, amount, is_ep, desc, save, announce)
 			msg = msg .. " (" .. desc .. ")"
 		end
 
-		if TEST then
-			_G.print("(TEST) " .. msg)
-		else
-			addon.Util.ChatGuild(msg)
-		end
+		addon.Util.ChatGuild(msg)
 	end
 end
