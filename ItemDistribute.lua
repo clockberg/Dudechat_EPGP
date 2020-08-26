@@ -23,6 +23,8 @@ setfenv(1, M)
 -- Window
 window = nil -- <Frame>
 window_width = 200 -- <number>
+window_width_minimized = 100 -- <number>
+window_is_minimized = false -- <boolean>
 
 -- Step
 step = 0
@@ -42,6 +44,8 @@ sections = {
 	header = {
 		frame = nil, -- <Frame>
 		title = nil, -- <FontString>
+		subtitle = nil, -- <FontString>
+		slot = nil, -- <Texture>
 		icon = nil, -- <Texture>
 		height = 35, -- <number>
 	},
@@ -103,6 +107,34 @@ function Load()
 	window:SetPoint("TOP", addon.Config.GetOption("ItemDistribute.y"))
 	window:SetWidth(window_width)
 	window:SetHeight(sections.header.height)
+	window:SetScale(0.9)
+
+	-- Remove the default close button
+	local close_btn = window:GetChildren()
+	close_btn:Hide()
+
+	-- Add a minimize button
+	window.minimize_btn = _G.CreateFrame("Button", nil, window)
+	window.minimize_btn:SetPoint("TOPRIGHT", 4, 4)
+	window.minimize_btn:SetSize(32, 32)
+	window.minimize_btn:SetNormalTexture("Interface/Buttons/UI-Panel-CollapseButton-Up")
+	window.minimize_btn:SetHighlightTexture("Interface/Buttons/UI-Panel-CollapseButton-Up")
+	window.minimize_btn:SetPushedTexture("Interface/Buttons/UI-Panel-CollapseButton-Down")
+	window.minimize_btn:SetScript("OnClick", function ()
+		Window_Minimize()
+	end)
+
+	-- Add a maximize button
+	window.maximize_btn = _G.CreateFrame("Button", nil, window)
+	window.maximize_btn:SetPoint("TOPRIGHT", 4, 4)
+	window.maximize_btn:SetSize(32, 32)
+	window.maximize_btn:SetNormalTexture("Interface/Buttons/UI-Panel-ExpandButton-Up")
+	window.maximize_btn:SetHighlightTexture("Interface/Buttons/UI-Panel-ExpandButton-Up")
+	window.maximize_btn:SetPushedTexture("Interface/Buttons/UI-Panel-ExpandButton-Down")
+	window.maximize_btn:SetScript("OnClick", function ()
+		Window_Maximize()
+	end)
+	window.maximize_btn:Hide()
 
 	-- Window background
 	-- To darken the background texture a bit
@@ -146,18 +178,19 @@ function Load()
 			-- We are not looting
 			return false
 		end
-		if not window:IsVisible() then
+		if not Window_IsReady() then
 			return false
 		end
 
-		Step2_Activate(addon.Util.GetItemIdFromItemLink(text))
+		StepTransition_to2(addon.Util.GetItemIdFromItemLink(text))
 		addon.Util.PlaySoundItemDrop()
 		return false
 	end
 
 	-- Menu
 	menu = _G.CreateFrame("Frame", nil, _G.UIParent, "UIDropDownMenuTemplate")
-	menu:SetPoint("CENTER")
+	menu:SetPoint("TOPLEFT", -100, 0)
+	menu:Hide()
 	_G.UIDropDownMenu_Initialize(menu, Menu_Create, "MENU")
 
 	-- Load sections
@@ -174,7 +207,7 @@ end
 
 --- Activate step 1
 -- @param play_sound <boolean>
-function Step1_Activate(play_sound)
+function StepTransition_to1(play_sound)
 	selected_item_id = nil
 	selected_player_name = nil
 	Checkout_SetSelectedGP(0)
@@ -197,7 +230,7 @@ end
 
 --- Activate step 2
 -- @param item_id <number>
-function Step2_Activate(item_id)
+function StepTransition_to2(item_id)
 	if not item_id then
 		return
 	end
@@ -227,7 +260,7 @@ function Step2_Activate(item_id)
 end
 
 --- Activate step 3
-function Step3_Activate()
+function StepTransition_2to3()
 	sections.players.frame:Hide()
 	sections.actions.frame:Hide()
 	Checkout_Activate()
@@ -239,7 +272,7 @@ function Step3_Activate()
 end
 
 --- Back from step 3 to step 2
-function Step3_Back()
+function StepTransition_3to2()
 	Details_Activate(selected_item_id)
 	Players_Activate()
 	Actions_Activate()
@@ -261,26 +294,23 @@ function Header_Load()
 	sections.header.frame:SetHeight(sections.header.height)
 
 	-- Title
-	sections.header.title = sections.header.frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-	sections.header.title:SetPoint("TOPLEFT", 37, -6.5)
-	sections.header.title:SetPoint("BOTTOMRIGHT", -3, 17)
+	sections.header.title = sections.header.frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 	sections.header.title:SetJustifyH("LEFT")
 	sections.header.title:SetJustifyV("TOP")
+	sections.header.title:SetPoint("BOTTOMRIGHT", -3, 17)
 
 	-- Subtitle
-	local elem = sections.header.frame:CreateFontString(nil, "OVERLAY", "GameFontNormalTiny")
-	elem:SetPoint("TOPLEFT", 37, -14.5)
-	elem:SetJustifyH("LEFT")
-	elem:SetText("Item Distribution")
-	elem:SetTextColor(1, 1, 1)
-	elem:SetHeight(25)
+	sections.header.subtitle = sections.header.frame:CreateFontString(nil, "OVERLAY", "GameFontNormalTiny")
+	sections.header.subtitle:SetJustifyH("LEFT")
+	sections.header.subtitle:SetTextColor(1, 1, 1)
+	sections.header.subtitle:SetHeight(25)
 
 	-- Item bag slot
-	elem = sections.header.frame:CreateTexture(nil, "ARTWORK")
-	elem:SetPoint("TOPLEFT", 1, -2)
-	elem:SetHeight(51)
-	elem:SetWidth(51)
-	elem:SetTexture("Interface\\Buttons\\UI-Slot-Background.PNG")
+	sections.header.slot = sections.header.frame:CreateTexture(nil, "ARTWORK")
+	sections.header.slot:SetPoint("TOPLEFT", 1, -2)
+	sections.header.slot:SetHeight(51)
+	sections.header.slot:SetWidth(51)
+	sections.header.slot:SetTexture("Interface\\Buttons\\UI-Slot-Background.PNG")
 
 	-- Item texture slot
 	sections.header.icon = sections.header.frame:CreateTexture(nil, "OVERLAY")
@@ -288,7 +318,26 @@ function Header_Load()
 	sections.header.icon:SetHeight(33)
 	sections.header.icon:SetWidth(33)
 
+	Header_SetMaximized()
 	Header_Reset()
+end
+
+--- Set the header to the maximized state
+function Header_SetMaximized()
+	sections.header.title:SetPoint("TOPLEFT", 35, -6)
+	sections.header.subtitle:SetPoint("TOPLEFT", 37, -14.5)
+	sections.header.subtitle:SetText("Item Distribution")
+	sections.header.frame:SetWidth(window_width)
+	sections.header.slot:Show()
+end
+
+--- Set the header to the minimized state
+function Header_SetMinimized()
+	sections.header.title:SetPoint("TOPLEFT", 8, -6)
+	sections.header.subtitle:SetPoint("TOPLEFT", 7, -14.5)
+	sections.header.subtitle:SetText("Active (minimized)")
+	sections.header.frame:SetWidth(window_width_minimized)
+	sections.header.slot:Hide()
 end
 
 --- Reset the header section
@@ -317,6 +366,7 @@ function Details_Load()
 
 	sections.details.item_details_component = addon.ItemDetailsComponent.Create(sections.details.frame)
 	sections.details.item_details_component.frame:SetPoint("TOPLEFT", 5, 0)
+	sections.details.item_details_component.frame:SetScale(0.9)
 
 	Details_Deactivate()
 end
@@ -548,7 +598,7 @@ end
 --- A player needs the selected item
 -- @param player_fullname <string>
 function Players_Add(player_fullname)
-	if not window:IsVisible() then
+	if not Window_IsReady() then
 		return
 	end
 	if step ~= 2 and step ~= 3 then
@@ -695,7 +745,7 @@ function Actions_Load()
 	elem:SetHeight(18)
 	elem:SetScript("OnClick", function (_, button)
 		addon.Util.PlaySoundClose()
-		Step1_Activate()
+		StepTransition_to1()
 	end)
 	subelem = elem:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
 	subelem:SetPoint("TOPLEFT", 5, 0)
@@ -711,7 +761,7 @@ function Actions_Load()
 	sections.actions.btn_dist:SetHeight(18)
 	sections.actions.btn_dist:SetScript("OnClick", function (_, button)
 		addon.Util.PlaySoundNext()
-		Step3_Activate()
+		StepTransition_2to3()
 	end)
 	sections.actions.btn_dist_text = sections.actions.btn_dist:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
 	sections.actions.btn_dist_text:SetPoint("TOPLEFT", 5, 0)
@@ -777,7 +827,7 @@ function Checkout_Load()
 	elem:SetHeight(18)
 	elem:SetScript("OnClick", function (_, button)
 		addon.Util.PlaySoundBack()
-		Step3_Back()
+		StepTransition_3to2()
 	end)
 	local subelem = elem:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
 	subelem:SetPoint("TOPLEFT", 5, 0)
@@ -921,7 +971,7 @@ end
 function Checkout_Confirm()
 	addon.Core.Transact(selected_player_name, selected_item_id, selected_gp, false, "Item Distribute", true, true)
 	History_Add(selected_player_name, selected_item_id, selected_gp)
-	Step1_Activate()
+	StepTransition_to1()
 end
 
 --- Update the GP dropdown
@@ -1022,6 +1072,7 @@ function History_Load()
 	sections.history.frame = _G.CreateFrame("Frame", nil, window)
 	sections.history.frame:SetPoint("TOPLEFT", 0, -1 * sections.header.height)
 	sections.history.frame:SetWidth(window_width)
+	sections.history.frame:SetHeight(0)
 end
 
 --- Resize and reposition the history section
@@ -1043,7 +1094,11 @@ function History_Restage()
 	end
 	sections.history.frame:SetPoint("TOPLEFT", 0, -1 * y)
 
-	sections.history.frame:SetHeight((sections.history.index - 1) * sections.history.height_ea + 3)
+	local h = 0
+	if sections.history.index > 1 then
+		h = (sections.history.index - 1) * sections.history.height_ea + 3
+	end
+	sections.history.frame:SetHeight(h)
 end
 
 function History_Clear()
@@ -1257,7 +1312,7 @@ function Menu_Create(frame, level, menulist)
 		button.text = "Clear Item"
 		button.noClickSound = true
 		button.func = function ()
-			Step1_Activate()
+			StepTransition_to1()
 		end
 		_G.UIDropDownMenu_AddButton(button)
 	end
@@ -1282,9 +1337,16 @@ function Menu_Create(frame, level, menulist)
 	_G.UIDropDownMenu_AddButton(button)
 
 	button = GetMenuButton()
-	button.text = "Close Window"
-	button.func = function ()
-		Window_Close()
+	if window_is_minimized then
+		button.text = "Maximize Window"
+		button.func = function ()
+			Window_Maximize()
+		end
+	else
+		button.text = "Minimize Window"
+		button.func = function ()
+			Window_Minimize()
+		end
 	end
 	_G.UIDropDownMenu_AddButton(button)
 
@@ -1345,6 +1407,10 @@ end
 -- @param button <string> the mouse button that was pressed
 function Window_OnMouseUp(window, button)
 	if button == "LeftButton" then
+		if not Window_IsReady() then
+			return
+		end
+
 		-- Occurs when the player drops the item onto the window
 		local info_type, item_id, item_link = _G.GetCursorInfo()
 		if info_type == nil or info_type ~= "item" then
@@ -1354,7 +1420,7 @@ function Window_OnMouseUp(window, button)
 		-- Return held item to where it came from
 		_G.ClearCursor()
 
-		Step2_Activate(item_id)
+		StepTransition_to2(item_id)
 	elseif button == "RightButton" then
 		Menu_Toggle()
 	end
@@ -1440,25 +1506,52 @@ function Window_Lock()
 	window:SetScript("OnDragStop", nil)
 end
 
---- Toggle display of the window
-function Window_Toggle()
-	if window:IsVisible() then
-		Window_Close()
-	else
-		Window_Open()
-	end
-end
-
 --- Close the window
 function Window_Close()
 	addon.Util.PlaySoundClose()
 	window:Hide()
-	Step1_Activate(false)
+	StepTransition_to1(false)
 end
 
 --- Open the window
 function Window_Open()
 	addon.Util.PlaySoundOpen()
 	window:Show()
-	Step1_Activate(false)
+	StepTransition_to1(false)
+end
+
+--- Minimize the window
+function Window_Minimize()
+	StepTransition_to1()
+	sections.history.frame:Hide()
+	Header_SetMinimized()
+	window:SetWidth(window_width_minimized)
+	window.maximize_btn:Show()
+	window.minimize_btn:Hide()
+	Window_Resize()
+	window_is_minimized = true
+end
+
+--- Maximize the window
+function Window_Maximize()
+	StepTransition_to1()
+	sections.history.frame:Show()
+	Header_SetMaximized()
+	window:SetWidth(window_width)
+	window.maximize_btn:Hide()
+	window.minimize_btn:Show()
+	Window_Resize()
+	window_is_minimized = false
+end
+
+--- Returns true if the window is ready for items
+-- @return <boolean>
+function Window_IsReady()
+	if window_is_minimized then
+		return false
+	end
+	if not window:IsVisible() then
+		return false
+	end
+	return true
 end
