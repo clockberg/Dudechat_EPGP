@@ -15,6 +15,12 @@ function Component:New()
 	return self
 end
 
+-- Settings
+icon_size = 14
+tier_text_width = 20
+price_text_width = 35
+text_pad_right = 10
+
 --- Create, build, and return a new Component
 -- @param parent <Frame>
 -- @return <Component>
@@ -27,39 +33,48 @@ end
 --- Build the frame
 -- @param parent <Frame>
 function Component:Build(parent)
-	self.item_id = nil
 	self.max_num_rows = addon.Util.SizeOf(addon.data.tiers) + 1
 	self.max_num_cols = addon.Util.SizeOf(addon.data.specs)
-	self.row_height = 18
-	self.tier_text_width = 13
-	self.price_text_width = 30
-	self.icons = {}
-	self.tier_texts = {}
-	self.price_texts = {}
-
+	self.item_id = nil
+	self.lines = {}
 	self.frame = _G.CreateFrame("Frame", nil, parent)
 	self.frame:SetPoint("TOPLEFT", 0, 0)
+	self.frame:SetHeight(icon_size * self.max_num_rows)
+	self.frame:SetWidth(tier_text_width + price_text_width + self.max_num_cols * icon_size)
 
 	for row = 1, self.max_num_rows do
-		local y_offset = -1 * ((row - 1) * self.row_height + 2)
+		local y_offset = -1 * ((row - 1) * icon_size + 2)
 
-		self.tier_texts[row] = self.frame:CreateFontString(self.frame, "OVERLAY", "GameFontNormalSmall")
-		self.tier_texts[row]:SetPoint("TOPLEFT", 0, y_offset)
-		self.tier_texts[row]:SetSize(self.tier_text_width, self.row_height)
-		self.tier_texts[row]:SetJustifyH("CENTER")
+		-- Create the line
+		self.lines[row] = _G.CreateFrame("Frame", nil, self.frame)
+		line = self.lines[row]
+		line:SetPoint("TOPLEFT", 0, y_offset)
+		line:SetSize(
+			icon_size * self.max_num_cols + tier_text_width + price_text_width + text_pad_right,
+			icon_size
+		)
 
-		self.price_texts[row] = self.frame:CreateFontString(self.frame, "OVERLAY", "GameFontNormalSmall")
-		self.price_texts[row]:SetPoint("TOPLEFT", self.tier_text_width, y_offset)
-		self.price_texts[row]:SetSize(self.price_text_width, self.row_height)
-		self.price_texts[row]:SetJustifyH("CENTER")
+		-- Create the tier text
+		line.tier_text = line:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+		line.tier_text:SetPoint("TOPLEFT", 0, 0)
+		line.tier_text:SetSize(tier_text_width, icon_size)
+		line.tier_text:SetJustifyH("CENTER")
+		line.tier_text:SetJustifyV("CENTER")
 
-		self.icons[row] = {}
+		-- Create the price text
+		line.price_text = line:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+		line.price_text:SetPoint("TOPLEFT", tier_text_width, 0)
+		line.price_text:SetSize(price_text_width, icon_size)
+		line.price_text:SetJustifyH("RIGHT")
+		line.price_text:SetJustifyV("CENTER")
+
+		-- Create the icons
+		line.icons = {}
 		for col = 1, self.max_num_cols do
-			local x_offset = (col - 1) * self.row_height + self.tier_text_width + self.price_text_width
-
-			self.icons[row][col] = self.frame:CreateTexture(nil, "OVERLAY")
-			self.icons[row][col]:SetPoint("TOPLEFT", self.frame, "TOPLEFT", x_offset, y_offset)
-			self.icons[row][col]:SetSize(self.row_height - 1, self.row_height - 1)
+			local x_offset = (col - 1) * icon_size + tier_text_width + price_text_width + text_pad_right
+			line.icons[col] = line:CreateTexture(nil, "ARTWORK")
+			line.icons[col]:SetPoint("TOPLEFT", x_offset, 0)
+			line.icons[col]:SetSize(icon_size, icon_size)
 		end
 	end
 
@@ -70,13 +85,12 @@ end
 -- Remove all the text and icons from the frame, resize, and hide it
 function Component:Clear()
 	for row = 1, self.max_num_rows do
-		self.tier_texts[row]:SetText(nil)
-		self.price_texts[row]:SetText(nil)
-	end
-	for row = 1, self.max_num_rows do
+		self.lines[row].tier_text:SetText(nil)
+		self.lines[row].price_text:SetText(nil)
 		for col = 1, self.max_num_cols do
-			self.icons[row][col]:SetTexture(nil)
+			self.lines[row].icons[col]:SetTexture(nil)
 		end
+		self.lines[row]:Hide()
 	end
 	self:Resize(0, 0)
 	self.frame:Hide()
@@ -87,17 +101,21 @@ end
 -- @param cols <number>
 function Component:Resize(rows, cols)
 	self.frame:SetSize(
-		self.row_height * cols + self.tier_text_width + self.price_text_width,
-		self.row_height * rows
+		icon_size * cols + tier_text_width + price_text_width + text_pad_right,
+		icon_size * rows
 	)
 end
 
 --- Update the frame with the given item
 -- @param item_id <number>
+-- @return <boolean>
 function Component:UpdateItem(item_id)
 	if item_id == self.item_id then
 		-- Item matches existing item, don't update
-		return
+		if item_id then
+			return true
+		end
+		return false
 	end
 
 	self:Clear()
@@ -106,7 +124,7 @@ function Component:UpdateItem(item_id)
 	local item_data = addon.Core.GetItemData(item_id)
 	if item_data == nil then
 		-- Item has no data, don't update
-		return
+		return false
 	end
 
 	local num_rows = addon.Util.SizeOf(item_data.by_tier)
@@ -128,13 +146,14 @@ function Component:UpdateItem(item_id)
 	local row = 1
 	for _, tier in _G.pairs(tiers) do
 		tier_data = item_data.by_tier[tier]
-		self.tier_texts[row]:SetText(addon.data.tiers[tier])
-		self.price_texts[row]:SetText(tier_data.price)
+		self.lines[row].tier_text:SetText(addon.data.tiers[tier])
+		self.lines[row].price_text:SetText(tier_data.price)
+		self.lines[row]:Show()
 		local specs_as_keys = addon.Util.TableFlip(tier_data.specs)
 		local col = 1
 		for _, spec in _G.pairs(addon.data.specs) do
 			if specs_as_keys[spec] ~= nil then
-				self.icons[row][col]:SetTexture(addon.data.spec_textures[spec])
+				self.lines[row].icons[col]:SetTexture(addon.data.spec_textures[spec])
 				col = col + 1
 			end
 		end
@@ -142,8 +161,9 @@ function Component:UpdateItem(item_id)
 	end
 
 	if item_data.price ~= nil then
-		self.tier_texts[row]:SetText(addon.data.tier_base_name)
-		self.price_texts[row]:SetText(item_data.price)
+		self.lines[row].tier_text:SetText(addon.data.tier_base_name)
+		self.lines[row].price_text:SetText(item_data.price)
+		self.lines[row]:Show()
 	end
 
 	self:Resize(num_rows, num_cols)
