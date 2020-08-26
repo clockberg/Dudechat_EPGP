@@ -60,9 +60,7 @@ SLASH_DEPGP1 = "/depgp"
 -- @param editbox <Frame>
 function SlashCmdList.DEPGP(command, editbox)
 	if command == "" or command == nil then
-		addon.ItemDistribute.Window_Toggle()
-	elseif command == "item" or command == "dist" or command == "distribute" then
-		addon.ItemDistribute.Window_Toggle()
+		addon.Core.Toggle()
 	elseif command == "on" then
 		addon.Core.Activate()
 	elseif command == "off" then
@@ -71,7 +69,7 @@ function SlashCmdList.DEPGP(command, editbox)
 		--addon.Core.HandleEncounterEnd(123, "The Prophet Skeram", 9, 40, 1)
 		--addon.Core.Transact("Clockbergo", nil, 10, true, "RAID BOSS KILL", false, false)
 	else
-		addon.Core.Log("dist | on | off | test")
+		addon.Core.Log("on | off | test")
 	end
 end
 
