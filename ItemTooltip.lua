@@ -22,7 +22,6 @@ function Update(tooltip)
 	if not addon.Config.GetOption("ItemTooltip.show") then
 		return
 	end
-
 	local item_name = _G.select(1, tooltip:GetItem())
 	if item_name then
 		local item_id = _G.select(1, _G.GetItemInfoInstant(item_name))
