@@ -50,6 +50,14 @@ function Enable()
 	addon.enabled = true
 end
 
+function Toggle()
+	if addon.activated then
+		Deactivate()
+	else
+		Activate()
+	end
+end
+
 function Deactivate()
 	activation_prompt:Hide()
 	if not addon.activated then
