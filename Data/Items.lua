@@ -2,6 +2,31 @@ local _, addon = ...
 
 addon.data = addon.data or {}
 addon.data.items = {
+	[2654] = {
+		["price"] = 1,
+		["by_tier"] = {
+			[1] = {
+				["price"] = 3333,
+				["specs"] = {
+					"PROT_WAR",
+				},
+			},
+			[3] = {
+				["price"] = 4,
+				["specs"] = {
+					"RESTO_SHAM",
+					"RESTO_DRUID",
+					"BEAR_DRUID",
+					"CAT_DRUID",
+					"BOOMKIN",
+					"MAGE",
+					"WARLOCK",
+					"HOLY_PRIEST",
+					"SHADOW_PRIEST",
+				},
+			},
+		},
+	},
 	[21837] = {
 		["price"] = 3,
 		["by_tier"] = {
@@ -10,6 +35,23 @@ addon.data.items = {
 				["specs"] = {
 					"PROT_WAR",
 					"FURY_WAR",
+				},
+			},
+		},
+	},
+	[3363] = {
+		["price"] = 1,
+		["by_tier"] = {
+			[2] = {
+				["price"] = 11,
+				["specs"] = {
+					"MAGE",
+				},
+			},
+			[3] = {
+				["price"] = 5,
+				["specs"] = {
+					"WARLOCK",
 				},
 			},
 		},
