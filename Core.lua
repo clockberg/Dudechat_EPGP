@@ -20,10 +20,12 @@ function Load()
 	addon.ItemTooltip.Load()
 	addon.ItemDistribute.Load()
 
-	ActivationPrompt_Load()
+	ActivationPrompt_Create()
 	Boot()
 end
 
+--- Prints a log message to the chat window
+-- @param message <string>
 function Log(message)
 	_G.print(addon.short_name .. " - " .. message)
 end
@@ -40,16 +42,30 @@ function Warning(message)
 	Log("Warning: " .. message)
 end
 
+--- Returns true if the addon is on, false otherwise.
+function IsOn()
+	if not addon.enabled then
+		return false
+	end
+	if not addon.activated then
+		return false
+	end
+	return true
+end
+
+--- Disable this addon
 function Disable()
 	Log("Disabled")
 	addon.enabled = false
 end
 
+--- Enable this addon
 function Enable()
 	Log("Enabled")
 	addon.enabled = true
 end
 
+--- Toggle activation of this addon
 function Toggle()
 	if addon.activated then
 		Deactivate()
@@ -58,6 +74,7 @@ function Toggle()
 	end
 end
 
+--- Deactivate this addon
 function Deactivate()
 	activation_prompt:Hide()
 	if not addon.activated then
@@ -68,6 +85,7 @@ function Deactivate()
 	Log("Deactivated")
 end
 
+--- Activate this addon
 function Activate()
 	activation_prompt:Hide()
 	if addon.activated then
@@ -78,7 +96,8 @@ function Activate()
 	Log("Activated")
 end
 
-function ActivationPrompt_Load()
+--- Create and init the activation prompt
+function ActivationPrompt_Create()
 	activation_prompt = _G.CreateFrame("Frame", nil, nil, "TooltipBorderedFrameTemplate")
 	activation_prompt:EnableMouse(true)
 	activation_prompt:SetPoint("CENTER", 0, 0)
@@ -87,7 +106,7 @@ function ActivationPrompt_Load()
 	activation_prompt:Hide()
 
 	-- Title
-	local title = activation_prompt:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+	local title = activation_prompt:CreateFontString(nil, nil, "GameFontNormal")
 	title:SetPoint("TOPLEFT", 0, -10)
 	title:SetPoint("BOTTOMRIGHT", 0, 0)
 	title:SetJustifyV("TOP")
@@ -103,7 +122,7 @@ function ActivationPrompt_Load()
 		activation_prompt:Hide()
 		Activate()
 	end)
-	subelem = elem:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+	subelem = elem:CreateFontString(nil, nil, "GameFontNormalSmall")
 	subelem:SetAllPoints(elem)
 	subelem:SetJustifyH("CENTER")
 	subelem:SetJustifyV("CENTER")
@@ -118,14 +137,15 @@ function ActivationPrompt_Load()
 		activation_prompt:Hide()
 		Deactivate()
 	end)
-	subelem = elem:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+	subelem = elem:CreateFontString(nil, nil, "GameFontNormalSmall")
 	subelem:SetAllPoints(elem)
 	subelem:SetJustifyH("CENTER")
 	subelem:SetJustifyV("CENTER")
 	subelem:SetText("Deactivate")
 end
 
-function PromptActivation()
+--- Show the activation prompt
+function ActivationPrompt_Show()
 	activation_prompt:Show()
 end
 
@@ -150,7 +170,7 @@ function IsMasterLooter()
 end
 
 function LootOpened()
-	if not addon.enabled then
+	if not IsOn() then
 		return
 	end
 
@@ -213,6 +233,7 @@ function HandleLoot(text, player_name)
 	_G.print(threshold)
 end
 
+--- Run the boot sequence for this addon
 function Boot()
 	if not addon.enabled then
 		return
@@ -227,12 +248,18 @@ function Boot()
 		return
 	end
 
-	PromptActivation()
+	ActivationPrompt_Show()
 end
 
+--- Handle the event for "ENCOUNTER_END"
 -- ENCOUNTER_END: encounterID, "encounterName", difficultyID, groupSize, success
+-- @param encounter_id <number>
+-- @param encounter_name <string>
+-- @param difficult_id <number>
+-- @param group_size <number>
+-- @param success <boolean>
 function HandleEncounterEnd(encounter_id, encounter_name, difficulty_id, group_size, success)
-	if not addon.activated then
+	if not IsOn() then
 		return
 	end
 	if not success or success == false or success == 0 then
