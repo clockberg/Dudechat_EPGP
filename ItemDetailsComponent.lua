@@ -55,14 +55,14 @@ function Component:Build(parent)
 		)
 
 		-- Create the tier text
-		line.tier_text = line:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+		line.tier_text = line:CreateFontString(nil, nil, "GameFontNormal")
 		line.tier_text:SetPoint("TOPLEFT", 0, 0)
 		line.tier_text:SetSize(tier_text_width, icon_size)
 		line.tier_text:SetJustifyH("CENTER")
 		line.tier_text:SetJustifyV("CENTER")
 
 		-- Create the price text
-		line.price_text = line:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+		line.price_text = line:CreateFontString(nil, nil, "GameFontNormal")
 		line.price_text:SetPoint("TOPLEFT", tier_text_width, 0)
 		line.price_text:SetSize(price_text_width, icon_size)
 		line.price_text:SetJustifyH("RIGHT")
@@ -72,7 +72,7 @@ function Component:Build(parent)
 		line.icons = {}
 		for col = 1, self.max_num_cols do
 			local x_offset = (col - 1) * icon_size + tier_text_width + price_text_width + text_pad_right
-			line.icons[col] = line:CreateTexture(nil, "ARTWORK")
+			line.icons[col] = line:CreateTexture(nil)
 			line.icons[col]:SetPoint("TOPLEFT", x_offset, 0)
 			line.icons[col]:SetSize(icon_size, icon_size)
 		end
@@ -106,6 +106,15 @@ function Component:Resize(rows, cols)
 	)
 end
 
+--- Returns true if the component has an item, false otherwise
+-- @return <boolean>
+function Component:HasItem()
+	if self.item_id then
+		return true
+	end
+	return false
+end
+
 --- Update the frame with the given item
 -- @param item_id <number>
 -- @return <boolean>
@@ -137,16 +146,16 @@ function Component:UpdateItem(item_id)
 		num_cols = _G.max(num_cols, addon.Util.SizeOf(tier_data.specs))
 	end
 
-	local tiers = {}
+	local tiernums = {}
 	if item_data.by_tier then
-		tiers = addon.Util.TableGetKeys(item_data.by_tier)
-		_G.table.sort(tiers)
+		tiernums = addon.Util.TableGetKeys(item_data.by_tier)
+		_G.table.sort(tiernums)
 	end
 
 	local row = 1
-	for _, tier in _G.pairs(tiers) do
-		tier_data = item_data.by_tier[tier]
-		self.lines[row].tier_text:SetText(addon.data.tiers[tier])
+	for _, tiernum in _G.pairs(tiernums) do
+		tier_data = item_data.by_tier[tiernum]
+		self.lines[row].tier_text:SetText(addon.data.tiers[tiernum])
 		self.lines[row].price_text:SetText(tier_data.price)
 		self.lines[row]:Show()
 		local specs_as_keys = addon.Util.TableFlip(tier_data.specs)
