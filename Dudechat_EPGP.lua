@@ -18,6 +18,11 @@ addon.addon_name = "Dudechat_EPGP"
 addon.enabled = true
 addon.activated = false
 
+-- Set up storage
+if DEPGPStorage == nil then
+	DEPGPStorage = {}
+end
+
 --- Onevent handler
 -- We wait to initialize the addon until after the ADDON_LOADED event triggers,
 -- so that all our files are loaded and available
@@ -65,15 +70,20 @@ function SlashCmdList.DEPGP(command, editbox)
 		addon.Core.Activate()
 	elseif command == "off" then
 		addon.Core.Deactivate()
+	elseif command == "reset" then
+		addon.ItemDistribute.Window_ResetPosition()
+		addon.Core.Log("Item Distribute window position reset.")
+	elseif command == "lock" then
+		addon.ItemDistribute.Window_Lock()
+		addon.Core.Log("Item Distribute window locked.")
+	elseif command == "unlock" then
+		addon.ItemDistribute.Window_Unlock()
+		addon.Core.Log("Item Distribute window unlocked.")
 	elseif command == "test" then
+		addon.Guild.SetPlayerSpec("Clockberg-Bigglesworth", nil)
 		--addon.Core.HandleEncounterEnd(123, "The Prophet Skeram", 9, 40, 1)
 		--addon.Core.Transact("Clockbergo", nil, 10, true, "RAID BOSS KILL", false, false)
 	else
-		addon.Core.Log("on | off | test")
+		addon.Core.Log("on | off | test | reset | lock | unlock")
 	end
-end
-
--- Set up storage
-if DEPGPStorage == nil then
-	DEPGPStorage = {}
 end
