@@ -63,7 +63,7 @@ function Load()
 	panel.cancel = OnCancel
 	panel.default = OnDefault
 
-	local title = panel:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+	local title = panel:CreateFontString(nil, nil, "GameFontNormalLarge")
 	title:SetPoint("TOPLEFT", settings.padding, -1 * settings.padding)
 	title:SetPoint("TOPRIGHT", -1 * settings.padding, -1 * settings.padding)
 	title:SetJustifyH("LEFT")
@@ -122,7 +122,7 @@ function AddCheckbox(option_key, col, row, label_text, desc_text, colspan)
 	frame:SetWidth(settings.col_width * colspan - settings.cellspacing)
 	frame:SetHeight(settings.row_height - settings.cellspacing)
 
-	local bg = frame:CreateTexture(nil, "BACKGROUND")
+	local bg = frame:CreateTexture(nil)
 	bg:SetColorTexture(0, 0, 0, 0.5)
 	bg:SetAllPoints(frame)
 
@@ -133,14 +133,14 @@ function AddCheckbox(option_key, col, row, label_text, desc_text, colspan)
 		addon.Config.SetTmpOption(checkbox.option_key, checkbox:GetChecked())
 	end)
 
-	local label = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+	local label = frame:CreateFontString(nil, nil, "GameFontNormal")
 	label:SetText(label_text)
 
 	if desc_text ~= nil then
 		-- Label above desc
 		label:SetPoint("BOTTOMLEFT", 29, 15)
 
-		local desc = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+		local desc = frame:CreateFontString(nil, nil, "GameFontNormalSmall")
 		desc:SetPoint("BOTTOMLEFT", 29, 5)
 		desc:SetTextColor(1, 1, 1)
 		desc:SetText(desc_text)
@@ -171,7 +171,7 @@ function AddEditbox(option_key, col, row, label_text, desc_text, colspan)
 	frame:SetWidth(settings.col_width * colspan - settings.cellspacing)
 	frame:SetHeight(settings.row_height - settings.cellspacing)
 
-	local bg = frame:CreateTexture(nil, "BACKGROUND")
+	local bg = frame:CreateTexture(nil)
 	bg:SetColorTexture(0, 0, 0, 0.5)
 	bg:SetAllPoints(frame)
 
@@ -191,14 +191,14 @@ function AddEditbox(option_key, col, row, label_text, desc_text, colspan)
 		addon.Config.SetTmpOption(editbox.option_key, val)
 	end)
 
-	local label = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+	local label = frame:CreateFontString(nil, nil, "GameFontNormal")
 	label:SetText(label_text)
 	if desc_text ~= nil then
 		-- Label above desc
 		label:SetPoint("BOTTOMLEFT", 69, 15)
 
 		-- Desc
-		local desc = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+		local desc = frame:CreateFontString(nil, nil, "GameFontNormalSmall")
 		desc:SetTextColor(1, 1, 1)
 		desc:SetText(desc_text)
 		desc:SetPoint("BOTTOMLEFT", 69, 5)
