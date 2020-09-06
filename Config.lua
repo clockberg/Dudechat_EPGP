@@ -16,6 +16,12 @@ function Load()
 	end
 end
 
+--- Sets the given option to the default value
+-- @param key <string>
+function SetOptionToDefault(key)
+	_G.DEPGPStorage.options[key] = nil
+end
+
 --- Get option
 -- Returns the value of an option, or nil if no value exists
 -- @param key <string>
