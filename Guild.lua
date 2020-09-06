@@ -12,7 +12,39 @@ function Load()
 	if addon.data.roster == nil then
 		addon.data.roster = {}
 	end
+	if _G.DEPGPStorage.player_spec == nil then
+		_G.DEPGPStorage.player_spec = {}
+	end
 	RefreshRoster()
+end
+
+--- Returns the spec of the given player, or nil if not found
+-- @param player_name <string>
+-- @param class <string>
+-- @return <string> or nil
+function GetPlayerSpec(player_name, class)
+	local player_fullname = GetPlayerFullname(player_name)
+	if _G.DEPGPStorage.player_spec[player_fullname] ~= nil then
+		return _G.DEPGPStorage.player_spec[player_fullname]
+	end
+	if class == "HUNTER" then
+		return "HUNTER"
+	elseif class == "ROGUE" then
+		return "ROGUE"
+	elseif class == "MAGE" then
+		return "MAGE"
+	elseif class == "WARLOCK" then
+		return "WARLOCK"
+	end
+	return nil
+end
+
+--- Sets the spec of the given player
+-- @param player_name <string>
+-- @param spec <string>
+function SetPlayerSpec(player_name, spec)
+	local player_fullname = GetPlayerFullname(player_name)
+	_G.DEPGPStorage.player_spec[player_fullname] = spec
 end
 
 --- Loads player data from the guild roster
@@ -41,10 +73,12 @@ end
 -- @return <table>
 function GetFreshPlayerData(gindex)
 	local fullname, _, _, level, _, _, _, officer_note, _, _, class, _, _, _, _, _, guid = _G.GetGuildRosterInfo(gindex)
+	spec = GetPlayerSpec(fullname, class)
 	return {
 		["name"] = fullname,
 		["level"] = level,
 		["officer_note"] = officer_note,
+		["spec"] = spec,
 		["class"] = class,
 		["level"] = level,
 		["guid"] = guid,
