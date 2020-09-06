@@ -165,7 +165,7 @@ end
 --- Returns the class color for the given class
 -- @param player_class <string>
 -- @return <table>
-function MyGetClassColor(player_class)
+function GetClassColor(player_class)
 	if not player_class or player_class == nil then
 		return {1, 1, 1}
 	end
