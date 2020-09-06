@@ -21,6 +21,7 @@ addon.data.specs = {
 	"RET_PALADIN",
 	"PROT_PALADIN",
 }
+addon.data.spec_unknown_texture = "Interface\\InventoryItems\\WoWUnknownItem01"
 addon.data.spec_textures = {
 	["PROT_WAR"] = GetSpellTexture(7164),
 	["FURY_WAR"] = GetSpellTexture(12303),
