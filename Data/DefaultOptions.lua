@@ -8,4 +8,8 @@ addon.data.default_options = {
 	["ItemDistribute.lock"] = false,
 	["ItemDistribute.announce_raid_warning"] = false,
 	["ItemDistribute.default_price"] = 1,
+	["Tiers.pr_mult.Z"] = 20,
+	["Tiers.pr_mult.S"] = 10,
+	["Tiers.pr_mult.A"] = 5,
+	["Tiers.pr_mult.B"] = 1,
 }
