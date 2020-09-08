@@ -6,19 +6,24 @@ addon.data.items = {
 		["price"] = 1,
 		["by_tier"] = {
 			[1] = {
-				["price"] = 3333,
+				["price"] = 30,
 				["specs"] = {
 					"PROT_WAR",
+					"RESTO_SHAM",
+					"RESTO_DRUID",
+				},
+			},
+			[2] = {
+				["price"] = 15,
+				["specs"] = {
+					"BOOMKIN",
 				},
 			},
 			[3] = {
-				["price"] = 4,
+				["price"] = 5,
 				["specs"] = {
 					"RESTO_SHAM",
-					"RESTO_DRUID",
-					"BEAR_DRUID",
 					"CAT_DRUID",
-					"BOOMKIN",
 					"MAGE",
 					"WARLOCK",
 					"HOLY_PRIEST",
