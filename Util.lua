@@ -10,6 +10,7 @@ setfenv(1, M)
 -- @param msg <string>
 function ChatGuild(msg)
 	_G.SendChatMessage("{SQUARE} " .. msg, "GUILD")
+	--_G.print("GUILD: " .. msg)
 end
 
 --- Send a group message
