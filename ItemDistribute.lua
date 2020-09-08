@@ -8,10 +8,11 @@ setfenv(1, M)
 
 -- Step 1 - Blank: Window is empty and ready.
 --  Can be in a minimized or maximized state
+--  Can only accept items in the maximized state
 
 -- Step 2 - Cart: Item is placed in the window.
 --  Update the header with the item name and icon
---  Show the details section if the item has tier or pricing info
+--  Show the details section with the item tier and pricing info
 --  Show the players section with an empty players table
 --  Show the actions section
 
@@ -21,32 +22,39 @@ setfenv(1, M)
 --  Hide the actions section
 --  Show the checkout section
 
--- Window
-window = nil -- <Frame>
-window_width = 310 -- <number>
-window_width_minimized = 100 -- <number>
-window_is_minimized = false -- <boolean>
+-- Current Step
+cur_step = 0
 
--- Step
-step = 0
+-- Selected Player
+selected_player = {
+	name = nil, -- <string>
+	class = nil, -- <string>
+	spec = nil, -- <string>
+}
 
--- Menu
-menu = nil -- <Frame>
+-- Current Item
+current_item = {
+	id = nil, -- <string>
+	gp_options = {}, -- <table array of table>
+	-- e.g. [{ "tiernum" = <number>, "text" = <string>, "price" = <number> }, ..]
+	spec_to_tiernum = {}, -- <table map spec <string> to tiernum <number>>
+	-- e.g. { "PROT_WAR" = <number>, "RESTO_SHAM" = <number>, .. }
+}
 
--- Selected
-selected_item_id = nil -- <number>
-selected_player_name = nil -- <string>
-selected_player_class = nil -- <string>
-selected_gp = 0 -- <number>
-
--- The GP options on the dropdown in step 3
-item_gp_options = {}
-
--- The spec to tiernum map
-item_spec_to_tiernum = {}
+-- GP that will be transacted
+gp_cost = 0 -- <number>
 
 -- Sections data
 sections = {
+	menu = {
+		frame = nil, -- <Frame>
+	},
+	window = {
+		frame = nil, -- <Frame>
+		width = 310, -- <number>
+		width_minimized = 100, -- <number>
+		is_minimized = false -- <boolean>
+	},
 	spec_prompt = {
 		frame = nil, -- <Frame>
 		player_name = nil, -- <FontString>
@@ -76,7 +84,7 @@ sections = {
 		height_ea = 15, -- <number>
 		th_color = {1, 1, 1, 0.4}, -- <table>
 		index = 1, -- <number>
-		frames = {}, -- <table of <Frame>>
+		frames = {}, -- <table array of <Frame>>
 		max_visible = 6, -- <number> (including th)
 		offset = 0, -- <number>
 		up = nil, -- <Frame>
@@ -89,7 +97,7 @@ sections = {
 			pr = 40,
 			spec = 28,
 			mult = 30,
-			score = 40,
+			score = 50,
 		}
 	},
 	actions = {
@@ -115,7 +123,7 @@ sections = {
 	},
 	history = {
 		frame = nil, -- <Frame>
-		frames = {}, -- <table of <Frame>>
+		frames = {}, -- <table array of <Frame>>
 		height_ea = 12, -- <number>
 		index = 1, -- <number>
 	},
@@ -126,8 +134,8 @@ function Load()
 	Window_Create()
 
 	-- Bind window to whisper events
-	window:RegisterEvent("CHAT_MSG_WHISPER")
-	window:SetScript("OnEvent", Window_OnEvent)
+	sections.window.frame:RegisterEvent("CHAT_MSG_WHISPER")
+	sections.window.frame:SetScript("OnEvent", Window_OnEvent)
 
 	-- Set initial lock state
 	if addon.Config.GetOption("ItemDistribute.lock") then
@@ -137,8 +145,8 @@ function Load()
 	end
 
 	-- Bind to mouse events
-	window:SetScript("OnMouseUp", Window_OnMouseUp)
-	window:SetScript("OnMouseWheel", Window_OnMouseWheel)
+	sections.window.frame:SetScript("OnMouseUp", Window_OnMouseUp)
+	sections.window.frame:SetScript("OnMouseWheel", Window_OnMouseWheel)
 
 	HookItemLink()
 
@@ -152,23 +160,27 @@ function Load()
 	SpecPrompt_Create()
 
 	Window_Resize()
-	window:Hide()
+	Window_Hide()
 	Window_Minimize()
 end
 
---- Hook item link to put into our addon
--- Shift+left click to put item into addon. Only works during looting.
+--- Hook shift+click item from loot frame so that it appears in our window
 function HookItemLink()
+	-- Save reference to original func
 	local orig_ChatEdit_InsertLink = _G.ChatEdit_InsertLink
+
+	-- Override func
 	_G.ChatEdit_InsertLink = function (...)
 		local text = ...
+		-- Call the original func
 		local result = orig_ChatEdit_InsertLink(...)
 		if result then
-			-- A chat link was inserted, that was probably the
+			-- A successful result means achat link was inserted - that was probably the
 			-- desired action, so don't do anything
 			return result
 		end
 		if not text then
+			-- No text in the item link, nothing to do
 			return false
 		end
 
@@ -184,22 +196,27 @@ function HookItemLink()
 			return false
 		end
 
-		-- Insert the item
-		Transition_to2(addon.Util.GetItemIdFromItemLink(text))
+		local item_id = addon.Util.GetItemIdFromItemLink(text)
+		if not item_id then
+			-- No item found from link text
+			return false
+		end
+
+		-- Show the item in our window and transition to the "cart" step
+		Transition_to2(item_id)
 		addon.Util.PlaySoundItemDrop()
 
 		return false
 	end
 end
 
---- Activate step 1
+--- Transition to step 1 - "Blank"
 -- @param play_sound <boolean> default true
 function Transition_to1(play_sound)
-	selected_item_id = nil
-	selected_player_name = nil
-	selected_player_class = nil
-	Checkout_SetSelectedGP(0)
-	item_gp_options = {}
+	Players_ResetSelection()
+	Item_Reset()
+
+	Checkout_SetGPCost(0)
 
 	Header_Transition_to1()
 	Details_Transition_to1()
@@ -214,7 +231,7 @@ function Transition_to1(play_sound)
 		addon.Util.PlaySoundItemDrop()
 	end
 
-	step = 1
+	cur_step = 1
 end
 
 --- Transition to step 2
@@ -224,13 +241,12 @@ function Transition_to2(item_id)
 		return
 	end
 
-	-- Set the selected item
-	local item_name, item_link = _G.GetItemInfo(item_id)
-	selected_item_id = item_id
-	selected_player_name = nil
-	selected_player_class = nil
+	-- Reset the selected player
+	Players_ResetSelection()
 
-	-- Load the item GP data
+	-- Set the current item
+	local item_name, item_link = _G.GetItemInfo(item_id)
+	current_item.id = item_id
 	Item_LoadGP()
 
 	-- Update the sections
@@ -244,9 +260,10 @@ function Transition_to2(item_id)
 	Window_Resize()
 	SpecPrompt_Hide()
 
+	-- Announce item
 	Item_Announce()
 
-	step = 2
+	cur_step = 2
 end
 
 --- Transition from step 2 to 3
@@ -256,21 +273,22 @@ function Transition_2to3()
 	Checkout_Show()
 	History_Restage()
 	Window_Resize()
+	Checkout_UpdateGPSelection()
 	Checkout_RefreshSelectedGP()
 	SpecPrompt_Hide()
-	step = 3
+	cur_step = 3
 end
 
 --- Back from step 3 to step 2
 function Transition_3to2()
-	Details_Transition_to2(selected_item_id)
+	Details_Transition_to2(current_item.id)
 	Players_Transition_3to2()
 	Actions_Show()
 	Checkout_Hide()
 	History_Restage()
 	Window_Resize()
 	SpecPrompt_Hide()
-	step = 2
+	cur_step = 2
 end
 
 ---------
@@ -280,9 +298,9 @@ end
 --- Create and init the header section
 function Header_Create()
 	-- Header frame
-	sections.header.frame = _G.CreateFrame("Frame", nil, window)
+	sections.header.frame = _G.CreateFrame("Frame", nil, sections.window.frame)
 	sections.header.frame:SetPoint("TOPLEFT", 0, 0)
-	sections.header.frame:SetWidth(window_width)
+	sections.header.frame:SetWidth(sections.window.width)
 	sections.header.frame:SetHeight(sections.header.height)
 
 	-- Title
@@ -298,7 +316,7 @@ function Header_Create()
 	sections.header.subtitle:SetHeight(25)
 
 	-- Item bag slot
-	sections.header.slot = sections.header.frame:CreateTexture(nil)
+	sections.header.slot = sections.header.frame:CreateTexture(nil, "BACKGROUND")
 	sections.header.slot:SetPoint("TOPLEFT", 1, -2)
 	sections.header.slot:SetHeight(51)
 	sections.header.slot:SetWidth(51)
@@ -320,7 +338,7 @@ function Header_SetMaximized()
 	sections.header.title:SetPoint("TOPLEFT", 35, -6)
 	sections.header.subtitle:SetPoint("TOPLEFT", 37, -14.5)
 	sections.header.subtitle:SetText("Item Distribution")
-	sections.header.frame:SetWidth(window_width)
+	sections.header.frame:SetWidth(sections.window.width)
 	sections.header.slot:Show()
 end
 
@@ -329,7 +347,7 @@ function Header_SetMinimized()
 	sections.header.title:SetPoint("TOPLEFT", 5, -6)
 	sections.header.subtitle:SetPoint("TOPLEFT", 4, -14.5)
 	sections.header.subtitle:SetText("Active (minimized)")
-	sections.header.frame:SetWidth(window_width_minimized)
+	sections.header.frame:SetWidth(sections.window.width_minimized)
 	sections.header.slot:Hide()
 end
 
@@ -355,8 +373,8 @@ end
 --- Create and init the details section
 function Details_Create()
 	-- Details frame
-	sections.details.frame = _G.CreateFrame("Frame", nil, window)
-	sections.details.frame:SetWidth(window_width)
+	sections.details.frame = _G.CreateFrame("Frame", nil, sections.window.frame)
+	sections.details.frame:SetWidth(sections.window.width)
 
 	-- Item component
 	sections.details.item_details_component = addon.ItemDetailsComponent.Create(sections.details.frame)
@@ -415,9 +433,9 @@ end
 --- Create the players section
 function Players_Create()
 	-- Players frame
-	sections.players.frame = _G.CreateFrame("Frame", nil, window)
+	sections.players.frame = _G.CreateFrame("Frame", nil, sections.window.frame)
 	sections.players.frame:SetPoint("TOPLEFT", 0, -1 * sections.header.height)
-	sections.players.frame:SetWidth(window_width)
+	sections.players.frame:SetWidth(sections.window.width)
 	sections.players.frame:SetHeight(sections.players.height_ea)
 
 	local x = 13
@@ -584,11 +602,11 @@ function Players_Announce(player_name, class, spec, pr, mult, score)
 	if spec then
 		desc = _G.string.lower(spec)
 	end
-	local str = player_name .. " (" .. desc .. ") ("  .. pr .. " PR"
+	local str = player_name .. " (" .. desc .. ") ("  .. pr
 	if mult then
-		str = str .. " x" .. mult
+		str = str .. "x" .. mult
 	end
-	str = str .. ")"
+	str = str .. " pr)"
 	if score then
 		str = "[" .. score .. " pts] " .. str
 	else
@@ -629,7 +647,7 @@ function Players_NewFrame()
 	-- Frame settings
 	frame:EnableMouse(true)
 	frame:SetPoint("TOPLEFT", 2, 0)
-	frame:SetWidth(window_width - 6)
+	frame:SetWidth(sections.window.width - 6)
 	frame:SetHeight(sections.players.height_ea)
 
 	x = 10
@@ -718,20 +736,28 @@ end
 -- @param frame <Frame> the clicked player row frame
 function Players_Select(frame)
 	Players_Deselect()
-	selected_player_name = frame.name_text:GetText()
-	selected_player_class = frame.player_class
+	selected_player.name = frame.name_text:GetText()
+	selected_player.class = frame.player_class
+	selected_player.spec = frame.player_spec
 	frame.select:Show()
 	sections.checkout.player_text:SetTextColor(frame.name_text:GetTextColor())
 	sections.checkout.player_text:SetText(frame.name_text:GetText())
 	Actions_EnableDistributeButton()
 	Actions_EnableSetSpecButton()
+	SpecPrompt_Hide()
 	addon.Util.PlaySoundNext()
+end
+
+--- Reset the vars associated with the selected player
+function Players_ResetSelection()
+	selected_player.name = nil
+	selected_player.class = nil
+	selected_player.spec = nil
 end
 
 --- Deselect all players rows
 function Players_Deselect()
-	selected_player_name = nil
-	selected_player_class = nil
+	Players_ResetSelection()
 	for i = 1, addon.Util.SizeOf(sections.players.frames) do
 		sections.players.frames[i].select:Hide()
 	end
@@ -740,6 +766,7 @@ function Players_Deselect()
 	end
 	Actions_DisableDistributeButton()
 	Actions_DisableSetSpecButton()
+	SpecPrompt_Hide()
 end
 
 --- A player needs the selected item
@@ -748,7 +775,7 @@ function Players_Add(player_fullname)
 	if not Window_IsReady() then
 		return
 	end
-	if step ~= 2 and step ~= 3 then
+	if cur_step ~= 2 and cur_step ~= 3 then
 		return
 	end
 
@@ -779,7 +806,7 @@ function Players_Add(player_fullname)
 	-- Save frame vars
 	frame.player_name = player_name
 	frame.player_class = player_data.class
-	frame.player_spec = player_spec
+	frame.player_spec = player_data.spec
 	frame.tier = nil
 	frame.mult = nil
 	frame.score = nil
@@ -815,6 +842,7 @@ function Players_SetScore(player_name, player_class, player_spec, save)
 	for i = 1, addon.Util.SizeOf(sections.players.frames) do
 		local frame = sections.players.frames[i]
 		if frame.player_name == player_name then
+			frame.player_spec = player_spec
 			if player_spec then
 				frame.spec_icon:SetTexture(addon.data.spec_textures[player_spec])
 
@@ -938,6 +966,9 @@ function SpecPrompt_Create()
 	sections.spec_prompt.frame:SetHeight(110)
 	sections.spec_prompt.frame:SetFrameStrata("DIALOG")
 
+	sections.spec_prompt.str_player_name = nil
+	sections.spec_prompt.str_player_class = nil
+
 	local y = -8
 
 	-- Title
@@ -973,8 +1004,9 @@ function SpecPrompt_Create()
 		btn:SetPoint("BOTTOMRIGHT", sections.spec_prompt.frame, "TOPRIGHT", -10, y - 15)
 		btn:SetHeight(sections.spec_prompt.button_height_ea)
 		btn:SetScript("OnClick", function (self, button)
-			Players_SetScore(selected_player_name, selected_player_class, self.spec, true)
+			Players_SetScore(sections.spec_prompt.str_player_name, sections.spec_prompt.str_player_class, self.spec, true)
 			SpecPrompt_Hide()
+			selected_player.spec = self.spec
 		end)
 		btn.btn_text = btn:CreateFontString(nil, nil, "GameFontNormalSmall")
 		btn.btn_text:SetAllPoints(btn)
@@ -992,6 +1024,9 @@ end
 function SpecPrompt_Show(player_name, player_class)
 	sections.spec_prompt.player_name:SetText(player_name)
 	sections.spec_prompt.player_name:SetTextColor(_G.unpack(addon.Util.GetClassColor(player_class)))
+
+	sections.spec_prompt.str_player_name = player_name
+	sections.spec_prompt.str_player_class = player_class
 
 	sections.spec_prompt.buttons[2]:Hide()
 	sections.spec_prompt.buttons[3]:Hide()
@@ -1042,7 +1077,9 @@ end
 
 --- Hide the spec prompt
 function SpecPrompt_Hide()
-	sections.spec_prompt.frame:Hide()
+	if sections.spec_prompt.frame then
+		sections.spec_prompt.frame:Hide()
+	end
 end
 
 ----------
@@ -1052,8 +1089,8 @@ end
 --- Create and init the actions section
 function Actions_Create()
 	-- Frame
-	sections.actions.frame = _G.CreateFrame("Frame", nil, window)
-	sections.actions.frame:SetWidth(window_width)
+	sections.actions.frame = _G.CreateFrame("Frame", nil, sections.window.frame)
+	sections.actions.frame:SetWidth(sections.window.width)
 	sections.actions.frame:SetHeight(sections.actions.height)
 
 	-- Cancel button
@@ -1093,7 +1130,7 @@ function Actions_Create()
 	sections.actions.btn_set_spec:SetWidth(75)
 	sections.actions.btn_set_spec:SetHeight(18)
 	sections.actions.btn_set_spec:SetScript("OnClick", function (_, button)
-		SpecPrompt_Show(selected_player_name, selected_player_class)
+		SpecPrompt_Show(selected_player.name, selected_player.class)
 	end)
 	sections.actions.btn_set_spec_text = sections.actions.btn_set_spec:CreateFontString(nil, nil, "GameFontNormalSmall")
 	sections.actions.btn_set_spec_text:SetPoint("TOPLEFT", 5, 0)
@@ -1184,9 +1221,9 @@ end
 --- Create and init the checkout section
 function Checkout_Create()
 	-- Checkout frame
-	sections.checkout.frame = _G.CreateFrame("Frame", nil, window)
+	sections.checkout.frame = _G.CreateFrame("Frame", nil, sections.window.frame)
 	sections.checkout.frame:SetPoint("TOPLEFT", 0, -1 * sections.header.height)
-	sections.checkout.frame:SetWidth(window_width)
+	sections.checkout.frame:SetWidth(sections.window.width)
 	sections.checkout.frame:SetHeight(sections.checkout.min_height)
 
 	-- Back button
@@ -1239,6 +1276,7 @@ function Checkout_Create()
 
 	-- GP select dropdown
 	local sel = sections.checkout.gp_select
+	-- add 1 for base tier option and 1 for custom option
 	sel.options.max = addon.Util.SizeOf(addon.data.tiers) + 2
 	sel.dropdown = _G.CreateFrame("FRAME", nil, sections.checkout.frame, "OptionsDropdownTemplate")
 	sel.dropdown:SetPoint("TOPLEFT", 10, -15)
@@ -1268,8 +1306,9 @@ function Checkout_Create()
 		sel.options.frames[i]:SetWidth(sel.wrapper:GetWidth())
 		sel.options.frames[i]:SetHeight(sel.options.height_ea)
 		sel.options.frames[i].value = 0
-		sel.options.frames[i]:SetScript("OnClick", function (option)
-			Checkout_ChooseGPOption(option)
+		sel.options.frames[i].tiernum = 0
+		sel.options.frames[i]:SetScript("OnClick", function (option_frame)
+			Checkout_ChooseGPOptionByFrame(option_frame)
 		end)
 
 		-- Option highlight
@@ -1299,7 +1338,7 @@ function Checkout_Create()
 	end)
 	sections.checkout.custom_gp:SetScript("OnTextChanged", function()
 		local val = sections.checkout.custom_gp:GetText()
-		Checkout_SetSelectedGP(val)
+		Checkout_SetGPCost(val)
 	end)
 
 	Checkout_Hide()
@@ -1331,15 +1370,15 @@ end
 
 --- Hide the checkout section
 function Checkout_Hide()
-	Checkout_SetSelectedGP(0)
+	Checkout_SetGPCost(0)
 	sections.checkout.frame:Hide()
 	sections.checkout.gp_select.wrapper:Hide()
 end
 
 --- Confirm the checkout
 function Checkout_Confirm()
-	addon.Core.Transact(selected_player_name, selected_item_id, selected_gp, false, "Item Distribute", true, true)
-	History_Add(selected_player_name, selected_item_id, selected_gp)
+	addon.Core.Transact(selected_player.name, current_item.id, gp_cost, false, "Item Distribute", true, true)
+	History_Add(selected_player.name, current_item.id, gp_cost)
 	Transition_to1()
 end
 
@@ -1348,7 +1387,8 @@ function Checkout_UpdateGPDropdown()
 	local sel = sections.checkout.gp_select
 
 	local i = 1
-	for key, option in _G.pairs(item_gp_options) do
+	for key, option in _G.pairs(current_item.gp_options) do
+		sel.options.frames[i].tiernum = option.tiernum
 		sel.options.frames[i].value = option.price
 		sel.options.frames[i].text:SetText(option.text)
 		sel.options.frames[i]:Show()
@@ -1363,9 +1403,11 @@ function Checkout_UpdateGPDropdown()
 	sel.dropdown.Text:SetText(sel.options.frames[1].text:GetText())
 	sel.dropdown.value = sel.options.frames[1].value
 
-	Checkout_SetSelectedGP(sel.options.frames[1].value)
+	Checkout_SetGPCost(sel.options.frames[1].value)
 
 	for j = i + 1, sel.options.max do
+		sel.options.frames[j].tiernum = 0
+		sel.options.frames[j].value = 0
 		sel.options.frames[j]:Hide()
 	end
 end
@@ -1380,16 +1422,16 @@ function Checkout_ToggleGPOptions()
 end
 
 --- When an option is selected on the GP dropdown
--- @param option <Frame>
-function Checkout_ChooseGPOption(option)
+-- @param option_frame <Frame>
+function Checkout_ChooseGPOptionByFrame(option_frame)
 	sections.checkout.gp_select.wrapper:Hide()
-	sections.checkout.gp_select.dropdown.Text:SetText(option.text:GetText())
-	sections.checkout.gp_select.dropdown.value = option.value
-	if option.value <= 0 then
+	sections.checkout.gp_select.dropdown.Text:SetText(option_frame.text:GetText())
+	sections.checkout.gp_select.dropdown.value = option_frame.value
+	if option_frame.value <= 0 then
 		Checkout_ShowCustomGPInput()
 	else
 		Checkout_HideCustomGPInput()
-		Checkout_SetSelectedGP(option.value)
+		Checkout_SetGPCost(option_frame.value)
 	end
 	addon.Util.PlaySoundNext()
 end
@@ -1404,20 +1446,43 @@ function Checkout_HideCustomGPInput()
 	sections.checkout.custom_gp:Hide()
 end
 
---- Sets the currently selected GP
+--- Sets the GP cost
 -- @param gp <number>
-function Checkout_SetSelectedGP(gp)
+function Checkout_SetGPCost(gp)
 	gp = addon.Util.AddonNumber(gp)
-	selected_gp = gp
+	gp_cost = gp
 end
 
 --- Automatically refresh the selected GP
 function Checkout_RefreshSelectedGP()
 	if sections.checkout.custom_gp:IsVisible() then
-		Checkout_SetSelectedGP(addon.Util.AddonNumber(sections.checkout.custom_gp:GetText()))
+		Checkout_SetGPCost(addon.Util.AddonNumber(sections.checkout.custom_gp:GetText()))
 	else
-		Checkout_SetSelectedGP(sections.checkout.gp_select.dropdown.value)
+		Checkout_SetGPCost(sections.checkout.gp_select.dropdown.value)
 	end
+end
+
+--- Selects the appropriate option in the GP dropdown
+-- Based on the selected player and spec
+function Checkout_UpdateGPSelection()
+	_G.print("Checkout_UpdateGPSelection()")
+	if not selected_player.spec then
+		_G.print("-> no player spec")
+		return
+	end
+	local tiernum = current_item.spec_to_tiernum[selected_player.spec]
+	if not tiernum then
+		tiernum = addon.Util.SizeOf(addon.data.tiers) + 1
+		_G.print("-> default tiernum")
+	end
+	for i, option_frame in _G.pairs(sections.checkout.gp_select.options.frames) do
+		if option_frame.tiernum == tiernum then
+			_G.print("-> found option frame " .. i)
+			Checkout_ChooseGPOptionByFrame(option_frame)
+			return
+		end
+	end
+
 end
 
 ----------
@@ -1426,9 +1491,9 @@ end
 
 --- Create and init the history section
 function History_Create()
-	sections.history.frame = _G.CreateFrame("Frame", nil, window)
+	sections.history.frame = _G.CreateFrame("Frame", nil, sections.window.frame)
 	sections.history.frame:SetPoint("TOPLEFT", 0, -1 * sections.header.height)
-	sections.history.frame:SetWidth(window_width)
+	sections.history.frame:SetWidth(sections.window.width)
 	sections.history.frame:SetHeight(0)
 end
 
@@ -1523,7 +1588,7 @@ function History_NewFrame()
 
 	-- Frame settings
 	frame:SetPoint("TOPLEFT", 0, -1 * sections.history.height_ea * (sections.history.index - 1))
-	frame:SetWidth(window_width)
+	frame:SetWidth(sections.window.width)
 	frame:SetHeight(sections.history.height_ea)
 
 	-- Item
@@ -1554,16 +1619,16 @@ end
 -- Item
 -------
 
---- Loads the GP options for the selected item
+--- Loads the GP options for the selected item into current_item.gp_options
 function Item_LoadGP()
-	item_gp_options = {}
-	item_spec_to_tiernum = {}
+	current_item.gp_options = {}
+	current_item.spec_to_tiernum = {}
 
 	-- Reset the custom GP input to the default price
 	sections.checkout.custom_gp:SetText(addon.Config.GetOption("ItemDistribute.default_price"))
 
 	-- Get the item data
-	local item_data = addon.Core.GetItemData(selected_item_id)
+	local item_data = addon.Core.GetItemData(current_item.id)
 	if item_data == nil then
 		Checkout_ShowCustomGPInput()
 		return
@@ -1579,16 +1644,19 @@ function Item_LoadGP()
 	-- Insert the tier GP options
 	for _, tiernum in _G.pairs(tiernums) do
 		tier_data = item_data.by_tier[tiernum]
-		_G.table.insert(item_gp_options, {
-			["text"] = addon.data.tiers[tiernum] .. ": " .. tier_data.price .. "gp",
+		_G.table.insert(current_item.gp_options, {
+			["tiernum"] = tiernum,
+			["text"] = "(" .. tiernum .. ") " .. addon.data.tiers[tiernum] .. ": " .. tier_data.price .. "gp",
 			["price"] = tier_data.price,
 		})
 	end
 
 	-- Insert the final base GP option
 	if item_data.price ~= nil then
-		_G.table.insert(item_gp_options, {
-			["text"] = addon.data.tier_base_name .. ": " .. item_data.price .. "gp",
+		local base_tiernum = addon.Util.SizeOf(addon.data.tiers) + 1
+		_G.table.insert(current_item.gp_options, {
+			["tiernum"] = base_tiernum,
+			["text"] = "(" .. base_tiernum .. ") " .. addon.data.tier_base_name .. ": " .. item_data.price .. "gp",
 			["price"] = item_data.price,
 		})
 	end
@@ -1597,28 +1665,37 @@ function Item_LoadGP()
 		tier_data = item_data.by_tier[tiernum]
 		if tier_data.specs ~= nil then
 			for _, spec in _G.pairs(tier_data.specs) do
-				item_spec_to_tiernum[spec] = tiernum
+				if not current_item.spec_to_tiernum[spec] then
+					current_item.spec_to_tiernum[spec] = tiernum
+				end
 			end
 		end
 	end
 
-	if addon.Util.SizeOf(item_gp_options) then
+	if addon.Util.SizeOf(current_item.gp_options) then
 		Checkout_HideCustomGPInput()
 	else
 		Checkout_ShowCustomGPInput()
 	end
 end
 
+--- Reset the vars associated with the current item
+function Item_Reset()
+	current_item.id = nil
+	current_item.gp_options = {}
+	current_item.spec_to_tiernum = {}
+end
+
 --- Announces the selected item
 function Item_Announce()
-	if selected_item_id == nil then
+	if current_item.id == nil then
 		return
 	end
 
-	local _, item_link = _G.GetItemInfo(selected_item_id)
+	local _, item_link = _G.GetItemInfo(current_item.id)
 	local msg = "Now Distributing: " .. item_link
 	addon.Util.ChatGroup(msg, addon.Config.GetOption("ItemDistribute.announce_raid_warning"))
-	local item_data = addon.Core.GetItemData(selected_item_id)
+	local item_data = addon.Core.GetItemData(current_item.id)
 	local total = 0
 	if item_data ~= nil then
 		local tiers = {}
@@ -1669,7 +1746,7 @@ end
 -- @param spec <string>
 -- @return int
 function Item_GetTiernumFromSpec(spec)
-	return item_spec_to_tiernum[spec]
+	return current_item.spec_to_tiernum[spec]
 end
 
 -------
@@ -1678,10 +1755,10 @@ end
 
 --- Create the right click context menu
 function Menu_Create()
-	menu = _G.CreateFrame("Frame", nil, _G.UIParent, "UIDropDownMenuTemplate")
-	menu:SetPoint("TOPLEFT", -100, 0)
-	menu:Hide()
-	_G.UIDropDownMenu_Initialize(menu, Menu_Refresh, "MENU")
+	sections.menu.frame = _G.CreateFrame("Frame", nil, _G.UIParent, "UIDropDownMenuTemplate")
+	sections.menu.frame:SetPoint("TOPLEFT", -100, 0)
+	sections.menu.frame:Hide()
+	_G.UIDropDownMenu_Initialize(sections.menu.frame, Menu_Refresh, "MENU")
 end
 
 --- This function is called every time the context menu is opened
@@ -1705,7 +1782,7 @@ function Menu_Refresh(frame, level, menulist)
 	end
 	_G.UIDropDownMenu_AddButton(button)
 
-	if window and selected_item_id then
+	if sections.window.frame and current_item.id then
 		button = GetMenuButton()
 		button.text = "Item"
 		button.isTitle = true
@@ -1728,7 +1805,7 @@ function Menu_Refresh(frame, level, menulist)
 		_G.UIDropDownMenu_AddButton(button)
 	end
 
-	if window and sections.history.index > 1 then
+	if sections.window.frame and sections.history.index > 1 then
 		button = GetMenuButton()
 		button.text = "History"
 		button.isTitle = true
@@ -1748,7 +1825,7 @@ function Menu_Refresh(frame, level, menulist)
 	_G.UIDropDownMenu_AddButton(button)
 
 	button = GetMenuButton()
-	if window_is_minimized then
+	if sections.window.is_minimized then
 		button.text = "Maximize Window"
 		button.func = function ()
 			Window_Maximize()
@@ -1789,7 +1866,7 @@ end
 --- Toggle the context menu (right click)
 function Menu_Toggle()
 	addon.Util.PlaySoundOpen()
-	_G.ToggleDropDownMenu(1, nil, menu, "cursor", 3, -3, nil, nil, 2)
+	_G.ToggleDropDownMenu(1, nil, sections.menu.frame, "cursor", 3, -3, nil, nil, 2)
 end
 
 ---------
@@ -1799,50 +1876,50 @@ end
 --- Create the window
 function Window_Create()
 	-- Create window frame
-	window = _G.CreateFrame("Frame", nil, nil, "BasicFrameTemplate")
-	window:EnableMouse(true)
-	window:SetClampedToScreen(true)
-	window:SetPoint(
+	sections.window.frame = _G.CreateFrame("Frame", nil, nil, "BasicFrameTemplate")
+	sections.window.frame:EnableMouse(true)
+	sections.window.frame:SetClampedToScreen(true)
+	sections.window.frame:SetPoint(
 		"TOPLEFT",
 		addon.Config.GetOption("ItemDistribute.x"),
 		addon.Config.GetOption("ItemDistribute.y")
 	)
-	window:SetPoint("TOP", addon.Config.GetOption("ItemDistribute.y"))
-	window:SetWidth(window_width)
-	window:SetHeight(sections.header.height)
-	window:SetScale(0.9)
-	window:SetFrameStrata("HIGH")
+	sections.window.frame:SetPoint("TOP", addon.Config.GetOption("ItemDistribute.y"))
+	sections.window.frame:SetWidth(sections.window.width)
+	sections.window.frame:SetHeight(sections.header.height)
+	sections.window.frame:SetScale(0.9)
+	sections.window.frame:SetFrameStrata("HIGH")
 
 	-- Remove the default close button from "BasicFrameTemplate"
-	local close_btn = window:GetChildren()
+	local close_btn = sections.window.frame:GetChildren()
 	close_btn:Hide()
 
 	-- Add a minimize button
-	window.minimize_btn = _G.CreateFrame("Button", nil, window)
-	window.minimize_btn:SetPoint("TOPRIGHT", 0, 1)
-	window.minimize_btn:SetSize(24, 24)
-	window.minimize_btn:SetNormalTexture("Interface/Buttons/UI-SpellbookIcon-PrevPage-Up")
-	window.minimize_btn:SetHighlightTexture("Interface/Buttons/UI-SpellbookIcon-PrevPage-Up")
-	window.minimize_btn:SetPushedTexture("Interface/Buttons/UI-SpellbookIcon-PrevPage-Down")
-	window.minimize_btn:SetScript("OnClick", function ()
+	sections.window.frame.minimize_btn = _G.CreateFrame("Button", nil, sections.window.frame)
+	sections.window.frame.minimize_btn:SetPoint("TOPRIGHT", 0, 1)
+	sections.window.frame.minimize_btn:SetSize(24, 24)
+	sections.window.frame.minimize_btn:SetNormalTexture("Interface/Buttons/UI-SpellbookIcon-PrevPage-Up")
+	sections.window.frame.minimize_btn:SetHighlightTexture("Interface/Buttons/UI-SpellbookIcon-PrevPage-Up")
+	sections.window.frame.minimize_btn:SetPushedTexture("Interface/Buttons/UI-SpellbookIcon-PrevPage-Down")
+	sections.window.frame.minimize_btn:SetScript("OnClick", function ()
 		Window_Minimize()
 	end)
 
 	-- Add a maximize button
-	window.maximize_btn = _G.CreateFrame("Button", nil, window)
-	window.maximize_btn:SetPoint("TOPRIGHT", 0, 1)
-	window.maximize_btn:SetSize(24, 24)
-	window.maximize_btn:SetNormalTexture("Interface/Buttons/UI-SpellbookIcon-NextPage-Up")
-	window.maximize_btn:SetHighlightTexture("Interface/Buttons/UI-SpellbookIcon-NextPage-Up")
-	window.maximize_btn:SetPushedTexture("Interface/Buttons/UI-SpellbookIcon-NextPage-Down")
-	window.maximize_btn:SetScript("OnClick", function ()
+	sections.window.frame.maximize_btn = _G.CreateFrame("Button", nil, sections.window.frame)
+	sections.window.frame.maximize_btn:SetPoint("TOPRIGHT", 0, 1)
+	sections.window.frame.maximize_btn:SetSize(24, 24)
+	sections.window.frame.maximize_btn:SetNormalTexture("Interface/Buttons/UI-SpellbookIcon-NextPage-Up")
+	sections.window.frame.maximize_btn:SetHighlightTexture("Interface/Buttons/UI-SpellbookIcon-NextPage-Up")
+	sections.window.frame.maximize_btn:SetPushedTexture("Interface/Buttons/UI-SpellbookIcon-NextPage-Down")
+	sections.window.frame.maximize_btn:SetScript("OnClick", function ()
 		Window_Maximize()
 	end)
-	window.maximize_btn:Hide()
+	sections.window.frame.maximize_btn:Hide()
 
 	-- Window background
 	-- To darken the background texture a bit
-	local bg = window:CreateTexture(nil)
+	local bg = sections.window.frame:CreateTexture(nil)
 	bg:SetColorTexture(0, 0, 0, 0.6)
 	bg:SetPoint("TOPLEFT", 3, -20)
 	bg:SetPoint("BOTTOMRIGHT", -3, 3)
@@ -1893,7 +1970,7 @@ end
 -- @param window <Frame>
 -- @param dir <number> 1 for up, -1 for down
 function Window_OnMouseWheel(window, dir)
-	if step == 2 then
+	if cur_step == 2 then
 		local min = 0
 		local max = sections.players.index - sections.players.max_visible
 		local diff = -1 * dir
@@ -1921,78 +1998,78 @@ function Window_Resize()
 	if sections.history.frame:IsVisible() then
 		h = h + sections.history.frame:GetHeight()
 	end
-	window:SetHeight(h)
+	sections.window.frame:SetHeight(h)
 end
 
 --- Unlock the window
 -- Enable dragging and bind to drag events
 function Window_Unlock()
-	window:SetMovable(true)
-	window:RegisterForDrag("LeftButton")
-	window:SetScript("OnDragStart", Window_OnDragStart)
-	window:SetScript("OnDragStop", Window_OnDragStop)
+	sections.window.frame:SetMovable(true)
+	sections.window.frame:RegisterForDrag("LeftButton")
+	sections.window.frame:SetScript("OnDragStart", Window_OnDragStart)
+	sections.window.frame:SetScript("OnDragStop", Window_OnDragStop)
 end
 
 --- When starting window drag
 function Window_OnDragStart()
-	window:StartMoving()
+	sections.window.frame:StartMoving()
 end
 
 --- When stopping window drag
 function Window_OnDragStop()
-	local _, _, _, x, y = window:GetPoint()
+	local _, _, _, x, y = sections.window.frame:GetPoint()
 
 	-- Clamp top left
 	x = _G.max(x, 0)
 	y = _G.min(y, 0)
 
 	-- Clamp bottom right
-	x = _G.min(x, _G.GetScreenWidth() - window:GetWidth())
-	y = _G.max(y, -1 * _G.GetScreenHeight() + window:GetHeight())
+	x = _G.min(x, _G.GetScreenWidth() - sections.window.frame:GetWidth())
+	y = _G.max(y, -1 * _G.GetScreenHeight() + sections.window.frame:GetHeight())
 
 	-- Save position
 	addon.Config.SetOption("ItemDistribute.x", x)
 	addon.Config.SetOption("ItemDistribute.y", y)
 
 	-- Set position
-	window:StopMovingOrSizing()
-	window:ClearAllPoints()
-	window:SetPoint("TOPLEFT", x, y)
+	sections.window.frame:StopMovingOrSizing()
+	sections.window.frame:ClearAllPoints()
+	sections.window.frame:SetPoint("TOPLEFT", x, y)
 end
 
 --- Reset the window's position
 function Window_ResetPosition()
 	addon.Config.SetOptionToDefault("ItemDistribute.x")
 	addon.Config.SetOptionToDefault("ItemDistribute.y")
-	window:SetPoint(
+	sections.window.frame:SetPoint(
 		"TOPLEFT",
 		addon.Config.GetOption("ItemDistribute.x"),
 		addon.Config.GetOption("ItemDistribute.y")
 	)
-	window:SetPoint("TOP", addon.Config.GetOption("ItemDistribute.y"))
-	window:SetPoint("CENTER", 0, 0)
+	sections.window.frame:SetPoint("TOP", addon.Config.GetOption("ItemDistribute.y"))
+	sections.window.frame:SetPoint("CENTER", 0, 0)
 end
 
 --- Lock the window
 -- Disable dragging events and set unmovable
 function Window_Lock()
-	window:SetMovable(false)
-	window:RegisterForDrag(nil)
-	window:SetScript("OnDragStart", nil)
-	window:SetScript("OnDragStop", nil)
+	sections.window.frame:SetMovable(false)
+	sections.window.frame:RegisterForDrag(nil)
+	sections.window.frame:SetScript("OnDragStart", nil)
+	sections.window.frame:SetScript("OnDragStop", nil)
 end
 
 --- Close the window
 function Window_Close()
 	addon.Util.PlaySoundClose()
-	window:Hide()
+	Window_Hide()
 	Transition_to1(false)
 end
 
 --- Open the window
 function Window_Open()
 	addon.Util.PlaySoundOpen()
-	window:Show()
+	Window_Show()
 	Transition_to1(false)
 end
 
@@ -2001,11 +2078,11 @@ function Window_Minimize()
 	Transition_to1()
 	sections.history.frame:Hide()
 	Header_SetMinimized()
-	window:SetWidth(window_width_minimized)
-	window.maximize_btn:Show()
-	window.minimize_btn:Hide()
+	sections.window.frame:SetWidth(sections.window.width_minimized)
+	sections.window.frame.maximize_btn:Show()
+	sections.window.frame.minimize_btn:Hide()
 	Window_Resize()
-	window_is_minimized = true
+	sections.window.frame_is_minimized = true
 end
 
 --- Maximize the window
@@ -2013,21 +2090,31 @@ function Window_Maximize()
 	Transition_to1()
 	sections.history.frame:Show()
 	Header_SetMaximized()
-	window:SetWidth(window_width)
-	window.maximize_btn:Hide()
-	window.minimize_btn:Show()
+	sections.window.frame:SetWidth(sections.window.width)
+	sections.window.frame.maximize_btn:Hide()
+	sections.window.frame.minimize_btn:Show()
 	Window_Resize()
-	window_is_minimized = false
+	sections.window.frame_is_minimized = false
 end
 
 --- Returns true if the window is ready for items
 -- @return <boolean>
 function Window_IsReady()
-	if window_is_minimized then
+	if sections.window.is_minimized then
 		return false
 	end
-	if not window:IsVisible() then
+	if not sections.window.frame:IsVisible() then
 		return false
 	end
 	return true
+end
+
+--- Show the window
+function Window_Show()
+	sections.window.frame:Show()
+end
+
+--- Hide the window
+function Window_Hide()
+	sections.window.frame:Hide()
 end
