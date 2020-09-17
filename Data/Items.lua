@@ -194,7 +194,7 @@ addon.data.items = {
 		["price"] = 1,
 		["by_tier"] = {
 			[3] = {
-				["price"] = 4,
+				["price"] = 8,
 				["specs"] = {
 					"RESTO_SHAM",
 					"RESTO_DRUID",
