@@ -820,9 +820,9 @@ function Players_Add(player_fullname)
 	frame.gp_text:SetText(epgp.gp)
 	frame.pr_text:SetText(_G.string.format("%.2f", frame.pr))
 
-	Players_SetScore(player_name, player_data.class, player_data.spec, false)
 	frame:Show()
 
+	Players_SetScore(player_name, player_data.class, player_data.spec, false)
 	Players_Restage()
 	Actions_Restage()
 	Checkout_Restage()
@@ -1465,19 +1465,15 @@ end
 --- Selects the appropriate option in the GP dropdown
 -- Based on the selected player and spec
 function Checkout_UpdateGPSelection()
-	_G.print("Checkout_UpdateGPSelection()")
 	if not selected_player.spec then
-		_G.print("-> no player spec")
 		return
 	end
 	local tiernum = current_item.spec_to_tiernum[selected_player.spec]
 	if not tiernum then
 		tiernum = addon.Util.SizeOf(addon.data.tiers) + 1
-		_G.print("-> default tiernum")
 	end
 	for i, option_frame in _G.pairs(sections.checkout.gp_select.options.frames) do
 		if option_frame.tiernum == tiernum then
-			_G.print("-> found option frame " .. i)
 			Checkout_ChooseGPOptionByFrame(option_frame)
 			return
 		end
@@ -2082,7 +2078,7 @@ function Window_Minimize()
 	sections.window.frame.maximize_btn:Show()
 	sections.window.frame.minimize_btn:Hide()
 	Window_Resize()
-	sections.window.frame_is_minimized = true
+	sections.window.is_minimized = true
 end
 
 --- Maximize the window
@@ -2094,7 +2090,7 @@ function Window_Maximize()
 	sections.window.frame.maximize_btn:Hide()
 	sections.window.frame.minimize_btn:Show()
 	Window_Resize()
-	sections.window.frame_is_minimized = false
+	sections.window.is_minimized = false
 end
 
 --- Returns true if the window is ready for items
@@ -2117,4 +2113,24 @@ end
 --- Hide the window
 function Window_Hide()
 	sections.window.frame:Hide()
+end
+
+--- Returns true if the window is open, false otherwise
+-- @return <boolean>
+function Window_IsOpen()
+	return sections.window.frame:IsVisible()
+end
+
+-------
+-- Test
+-------
+
+function Test_Needs()
+	Players_Add("Berg")
+	Players_Add("Dambi")
+	Players_Add("Tuna")
+	Players_Add("Sheep")
+	Players_Add("Quackin")
+	Players_Add("Colitiscow")
+	Players_Add("Beazlebubs")
 end
