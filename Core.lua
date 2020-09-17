@@ -47,7 +47,7 @@ function IsOn()
 	if not addon.enabled then
 		return false
 	end
-	if not addon.activated then
+	if addon.activated ~= 1 then
 		return false
 	end
 	return true
@@ -67,10 +67,10 @@ end
 
 --- Toggle activation of this addon
 function Toggle()
-	if addon.activated then
-		Deactivate()
-	else
+	if addon.activated ~= 1 then
 		Activate()
+	else
+		Deactivate()
 	end
 end
 
@@ -80,18 +80,17 @@ function Deactivate()
 	if not addon.activated then
 		return
 	end
-	addon.activated = false
+	addon.activated = -1
 	addon.ItemDistribute.Window_Close()
-	Log("Deactivated")
 end
 
 --- Activate this addon
 function Activate()
 	activation_prompt:Hide()
-	if addon.activated then
+	if addon.activated == 1 then
 		return
 	end
-	addon.activated = true
+	addon.activated = 1
 	addon.ItemDistribute.Window_Open()
 	Log("Activated")
 end
@@ -191,7 +190,7 @@ function LootOpened()
 		return
 	end
 
-	if addon.activated and not addon.ItemDistribute.window:IsVisible() then
+	if addon.activated and not addon.ItemDistribute.Window_IsOpen() then
 		addon.ItemDistribute.Window_Open()
 	end
 end
@@ -234,7 +233,7 @@ function HandleLoot(text, player_name)
 end
 
 --- Run the boot sequence for this addon
-function Boot()
+function Boot(reprompt)
 	if not addon.enabled then
 		return
 	end
@@ -244,7 +243,11 @@ function Boot()
 		return
 	end
 
-	if addon.activated then
+	if addon.activated == 1 then
+		return
+	end
+
+	if addon.activated == -1 and not reprompt then
 		return
 	end
 

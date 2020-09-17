@@ -16,7 +16,7 @@ addon.short_name = "dEPGP"
 addon.full_name = "Dudechat EPGP"
 addon.addon_name = "Dudechat_EPGP"
 addon.enabled = true
-addon.activated = false
+addon.activated = 0
 
 -- Set up storage
 if DEPGPStorage == nil then
@@ -37,7 +37,7 @@ local function OnEvent(_, event, arg1, arg2, arg3, arg4, arg5)
 	elseif event == "ENCOUNTER_END" then
 		addon.Core.HandleEncounterEnd(arg1, arg2, arg3, arg4, arg5)
 	elseif event == "PARTY_LOOT_METHOD_CHANGED" then
-		addon.Core.Boot()
+		addon.Core.Boot(true)
 	elseif event == "PLAYER_ROLES_ASSIGNED" then
 		addon.Core.Boot()
 	elseif event == "LOOT_OPENED" then
@@ -83,6 +83,8 @@ function SlashCmdList.DEPGP(command, editbox)
 		addon.Guild.SetPlayerSpec("Clockberg-Bigglesworth", nil)
 		--addon.Core.HandleEncounterEnd(123, "The Prophet Skeram", 9, 40, 1)
 		--addon.Core.Transact("Clockbergo", nil, 10, true, "RAID BOSS KILL", false, false)
+	elseif command == "testneeds" then
+		addon.ItemDistribute.Test_Needs()
 	else
 		addon.Core.Log("on | off | test | reset | lock | unlock")
 	end
