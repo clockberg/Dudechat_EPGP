@@ -80,14 +80,14 @@ addon.data.items = {
 		["price"] = 1,
 		["by_tier"] = {
 			[1] = {
-				["price"] = 29,
+				["price"] = 23,
 				["specs"] = {
 					"PROT_WAR",
 					"FURY_WAR",
 				},
 			},
 			[2] = {
-				["price"] = 17,
+				["price"] = 13,
 				["specs"] = {
 					"ROGUE",
 				},
@@ -927,14 +927,14 @@ addon.data.items = {
 		["price"] = 1,
 		["by_tier"] = {
 			[2] = {
-				["price"] = 15,
+				["price"] = 12,
 				["specs"] = {
 					"ROGUE",
 					"HUNTER",
 				},
 			},
 			[1] = {
-				["price"] = 26,
+				["price"] = 21,
 				["specs"] = {
 					"RESTO_SHAM",
 				},
@@ -1030,13 +1030,13 @@ addon.data.items = {
 		["price"] = 1,
 		["by_tier"] = {
 			[1] = {
-				["price"] = 16,
+				["price"] = 13,
 				["specs"] = {
 					"PROT_WAR",
 				},
 			},
 			[2] = {
-				["price"] = 9,
+				["price"] = 8,
 				["specs"] = {
 					"WARLOCK",
 					"SHADOW_PRIEST",
@@ -1136,13 +1136,13 @@ addon.data.items = {
 		["price"] = 1,
 		["by_tier"] = {
 			[1] = {
-				["price"] = 28,
+				["price"] = 22,
 				["specs"] = {
 					"PROT_WAR",
 				},
 			},
 			[2] = {
-				["price"] = 16,
+				["price"] = 13,
 				["specs"] = {
 					"FURY_WAR",
 					"ROGUE",
@@ -1154,13 +1154,13 @@ addon.data.items = {
 		["price"] = 1,
 		["by_tier"] = {
 			[2] = {
-				["price"] = 11,
+				["price"] = 9,
 				["specs"] = {
 					"HUNTER",
 				},
 			},
 			[1] = {
-				["price"] = 18,
+				["price"] = 15,
 				["specs"] = {
 					"RESTO_SHAM",
 				},
@@ -1387,14 +1387,14 @@ addon.data.items = {
 		["price"] = 1,
 		["by_tier"] = {
 			[1] = {
-				["price"] = 23,
+				["price"] = 18,
 				["specs"] = {
 					"PROT_WAR",
 					"RESTO_SHAM",
 				},
 			},
 			[2] = {
-				["price"] = 13,
+				["price"] = 11,
 				["specs"] = {
 					"ROGUE",
 					"HUNTER",
