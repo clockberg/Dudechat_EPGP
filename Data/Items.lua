@@ -2,1372 +2,690 @@ local _, addon = ...
 
 addon.data = addon.data or {}
 addon.data.items = {
-	[21837] = {
-		["price"] = 3,
+	[22939] = {
+		["price"] = ,
 		["by_tier"] = {
-			[3] = {
-				["price"] = 4,
-				["specs"] = {
-					"PROT_WAR",
-					"FURY_WAR",
-				},
-			},
-		},
-	},
-	[21836] = {
-		["price"] = 1,
-		["by_tier"] = {
-			[2] = {
-				["price"] = 11,
-				["specs"] = {
-					"MAGE",
-				},
-			},
-			[3] = {
-				["price"] = 5,
-				["specs"] = {
-					"WARLOCK",
-				},
-			},
-		},
-	},
-	[21888] = {
-		["price"] = 1,
-	},
-	[21838] = {
-		["price"] = 1,
-		["by_tier"] = {
-			[2] = {
-				["price"] = 1,
-				["specs"] = {
-					"BOOMKIN",
-				},
-			},
-			[3] = {
-				["price"] = 1,
-				["specs"] = {
-					"SHADOW_PRIEST",
-				},
-			},
-		},
-	},
-	[21856] = {
-		["price"] = 1,
-		["by_tier"] = {
-			[3] = {
-				["price"] = 1,
-				["specs"] = {
-					"ENHANCE_SHAM",
-				},
-			},
-		},
-	},
-	[21890] = {
-		["price"] = 1,
-		["by_tier"] = {
-			[3] = {
-				["price"] = 2,
-				["specs"] = {
-					"RESTO_SHAM",
-				},
-			},
-		},
-	},
-	[21891] = {
-		["price"] = 1,
-	},
-	[20928] = {
-		["price"] = 1,
-		["by_tier"] = {
-			[1] = {
-				["price"] = 23,
-				["specs"] = {
-					"PROT_WAR",
-					"FURY_WAR",
-				},
-			},
-			[2] = {
-				["price"] = 13,
-				["specs"] = {
-					"ROGUE",
-				},
-			},
-		},
-	},
-	[20932] = {
-		["price"] = 1,
-		["by_tier"] = {
-			[1] = {
-				["price"] = 10,
-				["specs"] = {
-					"RESTO_SHAM",
-					"ELE_SHAM",
-				},
-			},
-			[2] = {
-				["price"] = 6,
-				["specs"] = {
-					"MAGE",
-					"WARLOCK",
-				},
-			},
-		},
-	},
-	[21232] = {
-		["price"] = 5,
-		["by_tier"] = {
-			[2] = {
-				["price"] = 24,
-				["specs"] = {
-					"PROT_WAR",
-					"FURY_WAR",
-					"ROGUE",
-					"HUNTER",
-				},
-			},
-		},
-	},
-	[21237] = {
-		["price"] = 8,
-		["by_tier"] = {
-			[3] = {
-				["price"] = 8,
-				["specs"] = {
-					"RESTO_SHAM",
-					"RESTO_DRUID",
-					"BEAR_DRUID",
-					"CAT_DRUID",
-					"BOOMKIN",
-					"MAGE",
-					"WARLOCK",
-					"HOLY_PRIEST",
-					"SHADOW_PRIEST",
-				},
-			},
-		},
-	},
-	[21692] = {
-		["price"] = 1,
-		["by_tier"] = {
-			[3] = {
-				["price"] = 4,
-				["specs"] = {
-					"PROT_WAR",
-					"FURY_WAR",
-				},
-			},
-		},
-	},
-	[21693] = {
-		["price"] = 1,
-		["by_tier"] = {
-			[1] = {
-				["price"] = 1,
-				["specs"] = {
-					"BEAR_DRUID",
-				},
-			},
-		},
-	},
-	[21694] = {
-		["price"] = 1,
-		["by_tier"] = {
-			[3] = {
-				["price"] = 6,
-				["specs"] = {
-					"RESTO_SHAM",
-				},
-			},
-			[2] = {
-				["price"] = 14,
-				["specs"] = {
-					"HOLY_PRIEST",
-				},
-			},
-		},
-	},
-	[21695] = {
-		["price"] = 1,
-	},
-	[21696] = {
-		["price"] = 1,
-	},
-	[21697] = {
-		["price"] = 1,
-	},
-	[21698] = {
-		["price"] = 1,
-		["by_tier"] = {
-			[3] = {
-				["price"] = 2,
-				["specs"] = {
-					"RESTO_SHAM",
-					"BOOMKIN",
-				},
-			},
-		},
-	},
-	[21699] = {
-		["price"] = 1,
-		["by_tier"] = {
-			[3] = {
-				["price"] = 1,
-				["specs"] = {
-					"HUNTER",
-				},
-			},
-		},
-	},
-	[21700] = {
-		["price"] = 1,
-	},
-	[21701] = {
-		["price"] = 1,
-		["by_tier"] = {
-			[3] = {
-				["price"] = 7,
-				["specs"] = {
-					"FURY_WAR",
-				},
-			},
-			[2] = {
-				["price"] = 15,
-				["specs"] = {
-					"ROGUE",
-					"ENHANCE_SHAM",
-					"BEAR_DRUID",
-					"CAT_DRUID",
-				},
-			},
-		},
-	},
-	[21703] = {
-		["price"] = 1,
-	},
-	[21706] = {
-		["price"] = 1,
-	},
-	[21707] = {
-		["price"] = 1,
-		["by_tier"] = {
-			[1] = {
-				["price"] = 1,
-				["specs"] = {
-					"ELE_SHAM",
-				},
-			},
-		},
-	},
-	[21708] = {
-		["price"] = 1,
-	},
-	[21814] = {
-		["price"] = 1,
-		["by_tier"] = {
-			[2] = {
-				["price"] = 13,
-				["specs"] = {
-					"FURY_WAR",
-				},
-			},
-		},
-	},
-	[21702] = {
-		["price"] = 1,
-	},
-	[21705] = {
-		["price"] = 1,
-	},
-	[21128] = {
-		["price"] = 1,
-	},
-	[21688] = {
-		["price"] = 1,
-		["by_tier"] = {
-			[3] = {
-				["price"] = 4,
-				["specs"] = {
-					"PROT_WAR",
-					"FURY_WAR",
-				},
-			},
-		},
-	},
-	[21689] = {
-		["price"] = 1,
-		["by_tier"] = {
-			[3] = {
-				["price"] = 1,
-				["specs"] = {
-					"BOOMKIN",
-				},
-			},
-		},
-	},
-	[21690] = {
-		["price"] = 1,
-		["by_tier"] = {
-			[3] = {
-				["price"] = 4,
-				["specs"] = {
-					"RESTO_SHAM",
-					"HOLY_PRIEST",
-				},
-			},
-		},
-	},
-	[21691] = {
-		["price"] = 1,
-	},
-	[21682] = {
-		["price"] = 1,
-	},
-	[21684] = {
-		["price"] = 1,
-		["by_tier"] = {
-			[3] = {
-				["price"] = 1,
-				["specs"] = {
-					"ELE_SHAM",
-				},
-			},
-		},
-	},
-	[21686] = {
-		["price"] = 1,
-		["by_tier"] = {
-			[3] = {
-				["price"] = 1,
-				["specs"] = {
-					"MAGE",
-				},
-			},
-		},
-	},
-	[21687] = {
-		["price"] = 1,
-	},
-	[21603] = {
-		["price"] = 1,
-		["by_tier"] = {
-			[2] = {
-				["price"] = 6,
-				["specs"] = {
-					"MAGE",
-					"WARLOCK",
-					"SHADOW_PRIEST",
-				},
-			},
-			[3] = {
-				["price"] = 2,
-				["specs"] = {
-					"HOLY_PRIEST",
-				},
-			},
-		},
-	},
-	[21680] = {
-		["price"] = 1,
-		["by_tier"] = {
-			[3] = {
-				["price"] = 4,
-				["specs"] = {
-					"FURY_WAR",
-					"ROGUE",
-					"ENHANCE_SHAM",
-				},
-			},
-			[2] = {
-				["price"] = 10,
-				["specs"] = {
-					"CAT_DRUID",
-				},
-			},
-		},
-	},
-	[21681] = {
-		["price"] = 1,
-		["by_tier"] = {
-			[3] = {
-				["price"] = 4,
-				["specs"] = {
-					"RESTO_SHAM",
-					"RESTO_DRUID",
-					"HOLY_PRIEST",
-				},
-			},
-		},
-	},
-	[21685] = {
-		["price"] = 1,
-	},
-	[21648] = {
-		["price"] = 1,
-	},
-	[21668] = {
-		["price"] = 1,
-		["by_tier"] = {
-			[3] = {
-				["price"] = 2,
-				["specs"] = {
-					"RESTO_SHAM",
-					"ELE_SHAM",
-				},
-			},
-		},
-	},
-	[21666] = {
-		["price"] = 1,
-		["by_tier"] = {
-			[2] = {
-				["price"] = 21,
-				["specs"] = {
-					"RESTO_SHAM",
-					"RESTO_DRUID",
-					"HOLY_PRIEST",
-				},
-			},
-		},
-	},
-	[21669] = {
-		["price"] = 1,
-		["by_tier"] = {
-			[3] = {
-				["price"] = 2,
-				["specs"] = {
-					"RESTO_SHAM",
-				},
-			},
-		},
-	},
-	[21670] = {
-		["price"] = 1,
-		["by_tier"] = {
-			[3] = {
-				["price"] = 7,
-				["specs"] = {
-					"FURY_WAR",
-					"ROGUE",
-				},
-			},
-			[2] = {
-				["price"] = 16,
-				["specs"] = {
-					"HUNTER",
-				},
-			},
-		},
-	},
-	[21672] = {
-		["price"] = 1,
-		["by_tier"] = {
-			[3] = {
-				["price"] = 7,
-				["specs"] = {
-					"FURY_WAR",
-				},
-			},
-			[2] = {
-				["price"] = 15,
-				["specs"] = {
-					"ROGUE",
-				},
-			},
-			[1] = {
-				["price"] = 26,
-				["specs"] = {
-					"ENHANCE_SHAM",
-					"CAT_DRUID",
-				},
-			},
-		},
-	},
-	[21671] = {
-		["price"] = 1,
-		["by_tier"] = {
-			[1] = {
-				["price"] = 1,
-				["specs"] = {
-					"ELE_SHAM",
-				},
-			},
-			[3] = {
-				["price"] = 1,
-				["specs"] = {
-					"SHADOW_PRIEST",
-				},
-			},
-		},
-	},
-	[21673] = {
-		["price"] = 1,
-		["by_tier"] = {
-			[2] = {
-				["price"] = 10,
-				["specs"] = {
-					"HUNTER",
-				},
-			},
-		},
-	},
-	[21674] = {
-		["price"] = 1,
-		["by_tier"] = {
-			[3] = {
-				["price"] = 4,
-				["specs"] = {
-					"PROT_WAR",
-					"FURY_WAR",
-				},
-			},
-		},
-	},
-	[21675] = {
-		["price"] = 1,
-	},
-	[21676] = {
-		["price"] = 1,
-		["by_tier"] = {
-			[2] = {
-				["price"] = 8,
-				["specs"] = {
-					"MAGE",
-				},
-			},
-		},
-	},
-	[21678] = {
-		["price"] = 1,
-	},
-	[21627] = {
-		["price"] = 1,
-	},
-	[21635] = {
-		["price"] = 1,
-		["by_tier"] = {
-			[3] = {
-				["price"] = 1,
-				["specs"] = {
-					"HUNTER",
-				},
-			},
-		},
-	},
-	[21639] = {
-		["price"] = 1,
-		["by_tier"] = {
-			[3] = {
-				["price"] = 1,
-				["specs"] = {
-					"PROT_WAR",
-				},
-			},
-		},
-	},
-	[21645] = {
-		["price"] = 1,
-	},
-	[21647] = {
-		["price"] = 1,
-	},
-	[21650] = {
-		["price"] = 5,
-		["by_tier"] = {
-			[2] = {
-				["price"] = 23,
-				["specs"] = {
-					"FURY_WAR",
-					"ROGUE",
-				},
-			},
-		},
-	},
-	[21652] = {
-		["price"] = 1,
-	},
-	[21663] = {
-		["price"] = 1,
-		["by_tier"] = {
-			[2] = {
-				["price"] = 21,
-				["specs"] = {
-					"RESTO_SHAM",
-					"RESTO_DRUID",
-					"HOLY_PRIEST",
-				},
-			},
-		},
-	},
-	[21664] = {
-		["price"] = 1,
-		["by_tier"] = {
-			[2] = {
-				["price"] = 17,
-				["specs"] = {
-					"FURY_WAR",
-					"ENHANCE_SHAM",
-				},
-			},
-			[3] = {
-				["price"] = 7,
-				["specs"] = {
-					"ROGUE",
-				},
-			},
-		},
-	},
-	[21665] = {
-		["price"] = 1,
-		["by_tier"] = {
-			[3] = {
-				["price"] = 7,
-				["specs"] = {
-					"FURY_WAR",
-					"ROGUE",
-				},
-			},
-			[2] = {
-				["price"] = 16,
-				["specs"] = {
-					"HUNTER",
-				},
-			},
 			[1] = {
 				["price"] = 27,
 				["specs"] = {
-					"ENHANCE_SHAM",
-					"CAT_DRUID",
-				},
-			},
-		},
-	},
-	[21651] = {
-		["price"] = 1,
-		["by_tier"] = {
-			[3] = {
-				["price"] = 4,
-				["specs"] = {
-					"FURY_WAR",
-					"HUNTER",
-				},
-			},
-			[2] = {
-				["price"] = 8,
-				["specs"] = {
-					"ENHANCE_SHAM",
-				},
-			},
-		},
-	},
-	[22396] = {
-		["price"] = 1,
-		["by_tier"] = {
-			[2] = {
-				["price"] = 9,
-				["specs"] = {
-					"RESTO_SHAM",
-				},
-			},
-		},
-	},
-	[21622] = {
-		["price"] = 10,
-		["by_tier"] = {
-			[2] = {
-				["price"] = 35,
-				["specs"] = {
-					"MAGE",
-					"WARLOCK",
-				},
-			},
-		},
-	},
-	[21624] = {
-		["price"] = 1,
-	},
-	[21625] = {
-		["price"] = 1,
-		["by_tier"] = {
-			[1] = {
-				["price"] = 24,
-				["specs"] = {
-					"RESTO_SHAM",
-				},
-			},
-			[2] = {
-				["price"] = 14,
-				["specs"] = {
 					"RESTO_DRUID",
+				},
+			},
+			[2] = {
+				["price"] = 16,
+				["specs"] = {
 					"HOLY_PRIEST",
 				},
 			},
 		},
 	},
-	[21677] = {
-		["price"] = 1,
-		["by_tier"] = {
-			[2] = {
-				["price"] = 17,
-				["specs"] = {
-					"FURY_WAR",
-				},
-			},
-			[3] = {
-				["price"] = 7,
-				["specs"] = {
-					"ROGUE",
-				},
-			},
-			[1] = {
-				["price"] = 30,
-				["specs"] = {
-					"ENHANCE_SHAM",
-				},
-			},
-		},
+	[22935] = {
+		["price"] = ,
 	},
-	[22399] = {
-		["price"] = 1,
-		["by_tier"] = {
-			[1] = {
-				["price"] = 5,
-				["specs"] = {
-					"RESTO_DRUID",
-					"BOOMKIN",
-				},
-			},
-		},
-	},
-	[21626] = {
-		["price"] = 1,
-	},
-	[21616] = {
-		["price"] = 1,
-		["by_tier"] = {
-			[3] = {
-				["price"] = 4,
-				["specs"] = {
-					"FURY_WAR",
-					"ROGUE",
-				},
-			},
-		},
-	},
-	[21617] = {
-		["price"] = 1,
+	[22937] = {
+		["price"] = ,
 		["by_tier"] = {
 			[3] = {
 				["price"] = 3,
 				["specs"] = {
-					"RESTO_SHAM",
-				},
-			},
-			[2] = {
-				["price"] = 6,
-				["specs"] = {
-					"RESTO_DRUID",
-				},
-			},
-		},
-	},
-	[21618] = {
-		["price"] = 1,
-		["by_tier"] = {
-			[2] = {
-				["price"] = 13,
-				["specs"] = {
-					"FURY_WAR",
-				},
-			},
-		},
-	},
-	[21619] = {
-		["price"] = 1,
-		["by_tier"] = {
-			[2] = {
-				["price"] = 14,
-				["specs"] = {
-					"RESTO_SHAM",
-				},
-			},
-			[3] = {
-				["price"] = 6,
-				["specs"] = {
-					"HOLY_PRIEST",
-				},
-			},
-		},
-	},
-	[21620] = {
-		["price"] = 1,
-		["by_tier"] = {
-			[1] = {
-				["price"] = 49,
-				["specs"] = {
-					"RESTO_SHAM",
-					"RESTO_DRUID",
-				},
-			},
-			[2] = {
-				["price"] = 28,
-				["specs"] = {
-					"HOLY_PRIEST",
-				},
-			},
-		},
-	},
-	[21621] = {
-		["price"] = 1,
-		["by_tier"] = {
-			[3] = {
-				["price"] = 4,
-				["specs"] = {
-					"PROT_WAR",
-					"FURY_WAR",
-				},
-			},
-		},
-	},
-	[21598] = {
-		["price"] = 1,
-		["by_tier"] = {
-			[3] = {
-				["price"] = 1,
-				["specs"] = {
-					"PROT_WAR",
-				},
-			},
-		},
-	},
-	[21597] = {
-		["price"] = 1,
-		["by_tier"] = {
-			[2] = {
-				["price"] = 16,
-				["specs"] = {
-					"ELE_SHAM",
 					"MAGE",
 					"WARLOCK",
 				},
 			},
-			[3] = {
-				["price"] = 7,
+		},
+	},
+	[22938] = {
+		["price"] = ,
+		["by_tier"] = {
+			[2] = {
+				["price"] = 12,
 				["specs"] = {
-					"SHADOW_PRIEST",
+					"PROT_WAR",
+				},
+			},
+			[3] = {
+				["price"] = 5,
+				["specs"] = {
+					"FURY_WAR",
 				},
 			},
 		},
 	},
-	[21599] = {
-		["price"] = 1,
-	},
-	[21600] = {
-		["price"] = 1,
+	[22936] = {
+		["price"] = ,
 		["by_tier"] = {
+			[1] = {
+				["price"] = 24,
+				["specs"] = {
+					"PROT_WAR",
+					"FURY_WAR",
+				},
+			},
+		},
+	},
+	[22355] = {
+		["price"] = ,
+	},
+	[22369] = {
+		["price"] = ,
+	},
+	[22362] = {
+		["price"] = ,
+	},
+	[22942] = {
+		["price"] = ,
+		["by_tier"] = {
+			[2] = {
+				["price"] = 9,
+				["specs"] = {
+					"HOLY_PRIEST",
+				},
+			},
+		},
+	},
+	[22941] = {
+		["price"] = ,
+	},
+	[22806] = {
+		["price"] = ,
+		["by_tier"] = {
+			[2] = {
+				["price"] = 12,
+				["specs"] = {
+					"PROT_WAR",
+				},
+			},
+			[3] = {
+				["price"] = 5,
+				["specs"] = {
+					"FURY_WAR",
+				},
+			},
+		},
+	},
+	[22940] = {
+		["price"] = ,
+	},
+	[22943] = {
+		["price"] = ,
+		["by_tier"] = {
+			[2] = {
+				["price"] = 8,
+				["specs"] = {
+					"MAGE",
+				},
+			},
+		},
+	},
+	[22371] = {
+		["price"] = ,
+	},
+	[22364] = {
+		["price"] = ,
+	},
+	[22357] = {
+		["price"] = ,
+	},
+	[22954] = {
+		["price"] = ,
+		["by_tier"] = {
+			[1] = {
+				["price"] = 86,
+				["specs"] = {
+					"PROT_WAR",
+					"FURY_WAR",
+					"ROGUE",
+					"BEAR_DRUID",
+				},
+			},
+		},
+	},
+	[22807] = {
+		["price"] = ,
+		["by_tier"] = {
+			[1] = {
+				["price"] = 43,
+				["specs"] = {
+					"MAGE",
+					"WARLOCK",
+				},
+			},
+		},
+	},
+	[22947] = {
+		["price"] = ,
+		["by_tier"] = {
+			[3] = {
+				["price"] = 2,
+				["specs"] = {
+					"HOLY_PRIEST",
+				},
+			},
+		},
+	},
+	[22804] = {
+		["price"] = ,
+		["by_tier"] = {
+			[2] = {
+				["price"] = 23,
+				["specs"] = {
+					"PROT_WAR",
+					"FURY_WAR",
+					"HUNTER",
+				},
+			},
+		},
+	},
+	[23220] = {
+		["price"] = ,
+		["by_tier"] = {
+			[3] = {
+				["price"] = 4,
+				["specs"] = {
+					"MAGE",
+					"WARLOCK",
+				},
+			},
 			[1] = {
 				["price"] = 17,
 				["specs"] = {
-					"BOOMKIN",
 					"SHADOW_PRIEST",
 				},
 			},
-			[3] = {
-				["price"] = 4,
-				["specs"] = {
-					"MAGE",
-					"WARLOCK",
-				},
-			},
 		},
 	},
-	[21601] = {
-		["price"] = 1,
+	[23030] = {
+		["price"] = ,
 		["by_tier"] = {
-			[3] = {
-				["price"] = 1,
+			[2] = {
+				["price"] = 19,
 				["specs"] = {
 					"PROT_WAR",
-				},
-			},
-			[1] = {
-				["price"] = 4,
-				["specs"] = {
-					"BEAR_DRUID",
-				},
-			},
-		},
-	},
-	[21602] = {
-		["price"] = 1,
-		["by_tier"] = {
-			[3] = {
-				["price"] = 8,
-				["specs"] = {
 					"FURY_WAR",
-					"HUNTER",
-				},
-			},
-			[2] = {
-				["price"] = 18,
-				["specs"] = {
-					"ROGUE",
-				},
-			},
-			[1] = {
-				["price"] = 31,
-				["specs"] = {
-					"ENHANCE_SHAM",
-					"BEAR_DRUID",
-					"CAT_DRUID",
 				},
 			},
 		},
 	},
-	[20930] = {
-		["price"] = 1,
+	[23029] = {
+		["price"] = ,
 		["by_tier"] = {
 			[2] = {
-				["price"] = 12,
+				["price"] = 13,
 				["specs"] = {
-					"ROGUE",
-					"HUNTER",
-				},
-			},
-			[1] = {
-				["price"] = 21,
-				["specs"] = {
-					"RESTO_SHAM",
-				},
-			},
-		},
-	},
-	[21604] = {
-		["price"] = 1,
-		["by_tier"] = {
-			[2] = {
-				["price"] = 7,
-				["specs"] = {
-					"RESTO_SHAM",
 					"RESTO_DRUID",
 					"HOLY_PRIEST",
 				},
 			},
 		},
 	},
-	[21605] = {
-		["price"] = 1,
+	[23031] = {
+		["price"] = ,
 		["by_tier"] = {
-			[3] = {
-				["price"] = 2,
-				["specs"] = {
-					"ROGUE",
-				},
-			},
 			[1] = {
-				["price"] = 7,
+				["price"] = 43,
 				["specs"] = {
-					"BEAR_DRUID",
-				},
-			},
-		},
-	},
-	[21608] = {
-		["price"] = 1,
-		["by_tier"] = {
-			[2] = {
-				["price"] = 21,
-				["specs"] = {
-					"BOOMKIN",
 					"MAGE",
-				},
-			},
-			[1] = {
-				["price"] = 36,
-				["specs"] = {
 					"WARLOCK",
 				},
 			},
-			[3] = {
-				["price"] = 9,
-				["specs"] = {
-					"SHADOW_PRIEST",
-				},
-			},
 		},
 	},
-	[21607] = {
-		["price"] = 1,
-		["by_tier"] = {
-			[3] = {
-				["price"] = 2,
-				["specs"] = {
-					"RESTO_SHAM",
-				},
-			},
-		},
+	[23028] = {
+		["price"] = ,
 	},
-	[21609] = {
-		["price"] = 1,
+	[22816] = {
+		["price"] = ,
 		["by_tier"] = {
 			[2] = {
-				["price"] = 10,
+				["price"] = 19,
 				["specs"] = {
-					"RESTO_SHAM",
-				},
-			},
-			[3] = {
-				["price"] = 4,
-				["specs"] = {
-					"RESTO_DRUID",
+					"PROT_WAR",
+					"FURY_WAR",
 				},
 			},
 		},
 	},
-	[21679] = {
-		["price"] = 5,
+	[23005] = {
+		["price"] = ,
 	},
-	[20926] = {
-		["price"] = 1,
+	[22363] = {
+		["price"] = ,
+	},
+	[22370] = {
+		["price"] = ,
+	},
+	[22510] = {
+		["price"] = ,
 		["by_tier"] = {
-			[1] = {
-				["price"] = 13,
-				["specs"] = {
-					"PROT_WAR",
-				},
-			},
 			[2] = {
 				["price"] = 8,
 				["specs"] = {
 					"WARLOCK",
-					"SHADOW_PRIEST",
 				},
 			},
 		},
 	},
-	[21610] = {
-		["price"] = 1,
-		["by_tier"] = {
-			[2] = {
-				["price"] = 9,
-				["specs"] = {
-					"RESTO_SHAM",
-				},
-			},
-		},
-	},
-	[21611] = {
-		["price"] = 1,
+	[23068] = {
+		["price"] = ,
 		["by_tier"] = {
 			[3] = {
-				["price"] = 4,
+				["price"] = 11,
+				["specs"] = {
+					"PROT_WAR",
+				},
+			},
+			[1] = {
+				["price"] = 42,
+				["specs"] = {
+					"FURY_WAR",
+				},
+			},
+		},
+	},
+	[23033] = {
+		["price"] = ,
+	},
+	[23035] = {
+		["price"] = ,
+		["by_tier"] = {
+			[3] = {
+				["price"] = 5,
 				["specs"] = {
 					"MAGE",
+				},
+			},
+			[2] = {
+				["price"] = 11,
+				["specs"] = {
 					"WARLOCK",
 				},
 			},
-			[2] = {
-				["price"] = 9,
-				["specs"] = {
-					"SHADOW_PRIEST",
-				},
-			},
 		},
 	},
-	[21615] = {
-		["price"] = 1,
-		["by_tier"] = {
-			[2] = {
-				["price"] = 22,
-				["specs"] = {
-					"RESTO_SHAM",
-					"HOLY_PRIEST",
-				},
-			},
-			[1] = {
-				["price"] = 38,
-				["specs"] = {
-					"RESTO_DRUID",
-				},
-			},
-		},
+	[23019] = {
+		["price"] = ,
 	},
-	[23557] = {
-		["price"] = 1,
-		["by_tier"] = {
-			[3] = {
-				["price"] = 2,
-				["specs"] = {
-					"PROT_WAR",
-					"HUNTER",
-				},
-			},
-			[2] = {
-				["price"] = 6,
-				["specs"] = {
-					"FURY_WAR",
-					"ROGUE",
-				},
-			},
-		},
-	},
-	[23558] = {
-		["price"] = 1,
-	},
-	[23570] = {
-		["price"] = 1,
-		["by_tier"] = {
-			[2] = {
-				["price"] = 28,
-				["specs"] = {
-					"FURY_WAR",
-					"ROGUE",
-					"HUNTER",
-				},
-			},
-			[3] = {
-				["price"] = 12,
-				["specs"] = {
-					"ENHANCE_SHAM",
-				},
-			},
-		},
-	},
-	[20927] = {
-		["price"] = 1,
+	[23036] = {
+		["price"] = ,
 		["by_tier"] = {
 			[1] = {
 				["price"] = 22,
 				["specs"] = {
-					"PROT_WAR",
+					"BEAR_DRUID",
 				},
 			},
 			[2] = {
 				["price"] = 13,
 				["specs"] = {
+					"HOLY_PRIEST",
+				},
+			},
+		},
+	},
+	[22366] = {
+		["price"] = ,
+	},
+	[22359] = {
+		["price"] = ,
+	},
+	[22352] = {
+		["price"] = ,
+	},
+	[23038] = {
+		["price"] = ,
+		["by_tier"] = {
+			[3] = {
+				["price"] = 17,
+				["specs"] = {
+					"PROT_WAR",
+				},
+			},
+			[1] = {
+				["price"] = 69,
+				["specs"] = {
 					"FURY_WAR",
 					"ROGUE",
 				},
 			},
 		},
 	},
-	[20931] = {
-		["price"] = 1,
+	[23039] = {
+		["price"] = ,
 		["by_tier"] = {
-			[2] = {
-				["price"] = 9,
+			[1] = {
+				["price"] = 11,
 				["specs"] = {
 					"HUNTER",
 				},
 			},
-			[1] = {
+		},
+	},
+	[23037] = {
+		["price"] = ,
+	},
+	[22800] = {
+		["price"] = ,
+		["by_tier"] = {
+			[2] = {
 				["price"] = 15,
 				["specs"] = {
-					"RESTO_SHAM",
+					"MAGE",
+					"WARLOCK",
 				},
 			},
 		},
 	},
-	[21221] = {
-		["price"] = 1,
+	[23042] = {
+		["price"] = ,
+	},
+	[23009] = {
+		["price"] = ,
+		["by_tier"] = {
+			[1] = {
+				["price"] = 27,
+				["specs"] = {
+					"HOLY_PRIEST",
+				},
+			},
+		},
+	},
+	[23018] = {
+		["price"] = ,
+		["by_tier"] = {
+			[3] = {
+				["price"] = 2,
+				["specs"] = {
+					"PROT_WAR",
+				},
+			},
+			[1] = {
+				["price"] = 10,
+				["specs"] = {
+					"BEAR_DRUID",
+				},
+			},
+		},
+	},
+	[23004] = {
+		["price"] = ,
+	},
+	[23219] = {
+		["price"] = ,
+		["by_tier"] = {
+			[1] = {
+				["price"] = 54,
+				["specs"] = {
+					"PROT_WAR",
+					"FURY_WAR",
+				},
+			},
+		},
+	},
+	[23017] = {
+		["price"] = ,
+		["by_tier"] = {
+			[3] = {
+				["price"] = 3,
+				["specs"] = {
+					"MAGE",
+					"WARLOCK",
+				},
+			},
+		},
+	},
+	[23014] = {
+		["price"] = ,
 		["by_tier"] = {
 			[2] = {
 				["price"] = 32,
 				["specs"] = {
 					"PROT_WAR",
+					"FURY_WAR",
 					"ROGUE",
-					"ELE_SHAM",
-				},
-			},
-			[1] = {
-				["price"] = 54,
-				["specs"] = {
-					"RESTO_SHAM",
-					"RESTO_DRUID",
-					"CAT_DRUID",
-					"BOOMKIN",
-					"MAGE",
-					"WARLOCK",
-					"HOLY_PRIEST",
-					"SHADOW_PRIEST",
+					"HUNTER",
 				},
 			},
 		},
 	},
-	[21126] = {
-		["price"] = 19,
+	[22372] = {
+		["price"] = ,
+	},
+	[22365] = {
+		["price"] = ,
+	},
+	[22358] = {
+		["price"] = ,
+	},
+	[23032] = {
+		["price"] = ,
+	},
+	[23021] = {
+		["price"] = ,
 		["by_tier"] = {
-			[1] = {
-				["price"] = 74,
+			[2] = {
+				["price"] = 11,
+				["specs"] = {
+					"MAGE",
+				},
+			},
+			[3] = {
+				["price"] = 5,
+				["specs"] = {
+					"WARLOCK",
+				},
+			},
+		},
+	},
+	[23023] = {
+		["price"] = ,
+		["by_tier"] = {
+			[2] = {
+				["price"] = 15,
 				["specs"] = {
 					"PROT_WAR",
-					"FURY_WAR",
-					"ROGUE",
 				},
 			},
-		},
-	},
-	[21134] = {
-		["price"] = 12,
-		["by_tier"] = {
-			[2] = {
-				["price"] = 28,
+			[3] = {
+				["price"] = 6,
 				["specs"] = {
 					"FURY_WAR",
 				},
 			},
 			[1] = {
-				["price"] = 48,
+				["price"] = 25,
 				["specs"] = {
-					"ENHANCE_SHAM",
+					"BEAR_DRUID",
 				},
 			},
 		},
 	},
-	[21579] = {
-		["price"] = 1,
+	[23073] = {
+		["price"] = ,
 	},
-	[21581] = {
-		["price"] = 1,
+	[23020] = {
+		["price"] = ,
+	},
+	[22691] = {
+		["price"] = ,
+	},
+	[23071] = {
+		["price"] = ,
 		["by_tier"] = {
-			[1] = {
-				["price"] = 54,
+			[3] = {
+				["price"] = 5,
 				["specs"] = {
 					"FURY_WAR",
+					"HUNTER",
+				},
+			},
+			[1] = {
+				["price"] = 18,
+				["specs"] = {
+					"BEAR_DRUID",
 				},
 			},
 		},
 	},
-	[21582] = {
-		["price"] = 1,
+	[22809] = {
+		["price"] = ,
+	},
+	[23025] = {
+		["price"] = ,
 		["by_tier"] = {
 			[2] = {
-				["price"] = 28,
+				["price"] = 15,
 				["specs"] = {
-					"RESTO_SHAM",
-				},
-			},
-			[1] = {
-				["price"] = 49,
-				["specs"] = {
-					"RESTO_DRUID",
-					"HOLY_PRIEST",
-				},
-			},
-		},
-	},
-	[21583] = {
-		["price"] = 1,
-		["by_tier"] = {
-			[1] = {
-				["price"] = 24,
-				["specs"] = {
-					"RESTO_SHAM",
-				},
-			},
-			[2] = {
-				["price"] = 14,
-				["specs"] = {
-					"RESTO_DRUID",
-					"HOLY_PRIEST",
-				},
-			},
-		},
-	},
-	[21585] = {
-		["price"] = 1,
-		["by_tier"] = {
-			[1] = {
-				["price"] = 49,
-				["specs"] = {
-					"ELE_SHAM",
-					"BOOMKIN",
 					"MAGE",
 					"WARLOCK",
-					"SHADOW_PRIEST",
 				},
 			},
 		},
 	},
-	[21586] = {
-		["price"] = 1,
+	[22811] = {
+		["price"] = ,
 		["by_tier"] = {
 			[2] = {
-				["price"] = 23,
+				["price"] = 11,
 				["specs"] = {
-					"FURY_WAR",
-					"ROGUE",
+					"PROT_WAR",
 				},
 			},
 			[1] = {
-				["price"] = 39,
+				["price"] = 18,
 				["specs"] = {
-					"ENHANCE_SHAM",
-					"BEAR_DRUID",
-					"CAT_DRUID",
+					"FURY_WAR",
 				},
 			},
 		},
 	},
-	[21596] = {
-		["price"] = 1,
+	[23027] = {
+		["price"] = ,
 		["by_tier"] = {
-			[2] = {
-				["price"] = 20,
+			[1] = {
+				["price"] = 27,
+				["specs"] = {
+					"HOLY_PRIEST",
+				},
+			},
+		},
+	},
+	[22349] = {
+		["price"] = ,
+	},
+	[22351] = {
+		["price"] = ,
+	},
+	[22350] = {
+		["price"] = ,
+	},
+	[22960] = {
+		["price"] = ,
+		["by_tier"] = {
+			[3] = {
+				["price"] = 11,
+				["specs"] = {
+					"RESTO_SHAM",
+				},
+			},
+			[1] = {
+				["price"] = 45,
+				["specs"] = {
+					"RESTO_DRUID",
+					"HOLY_PRIEST",
+				},
+			},
+		},
+	},
+	[22961] = {
+		["price"] = ,
+		["by_tier"] = {
+			[1] = {
+				["price"] = 11,
 				["specs"] = {
 					"HUNTER",
 				},
 			},
 		},
 	},
-	[21839] = {
-		["price"] = 12,
+	[22815] = {
+		["price"] = ,
+	},
+	[22820] = {
+		["price"] = ,
 		["by_tier"] = {
-			[2] = {
-				["price"] = 35,
+			[1] = {
+				["price"] = 18,
 				["specs"] = {
-					"RESTO_SHAM",
-					"RESTO_DRUID",
+					"MAGE",
+					"WARLOCK",
+				},
+			},
+		},
+	},
+	[22818] = {
+		["price"] = ,
+	},
+	[22368] = {
+		["price"] = ,
+	},
+	[22354] = {
+		["price"] = ,
+	},
+	[22361] = {
+		["price"] = ,
+	},
+	[22967] = {
+		["price"] = ,
+	},
+	[22810] = {
+		["price"] = ,
+		["by_tier"] = {
+			[3] = {
+				["price"] = 4,
+				["specs"] = {
+					"PROT_WAR",
+					"FURY_WAR",
+				},
+			},
+		},
+	},
+	[22988] = {
+		["price"] = ,
+		["by_tier"] = {
+			[3] = {
+				["price"] = 3,
+				["specs"] = {
 					"HOLY_PRIEST",
 				},
 			},
-		},
-	},
-	[22730] = {
-		["price"] = 1,
-		["by_tier"] = {
 			[1] = {
-				["price"] = 49,
-				["specs"] = {
-					"ELE_SHAM",
-					"BOOMKIN",
-					"MAGE",
-					"WARLOCK",
-					"SHADOW_PRIEST",
-				},
-			},
-		},
-	},
-	[22731] = {
-		["price"] = 1,
-		["by_tier"] = {
-			[2] = {
-				["price"] = 18,
-				["specs"] = {
-					"BOOMKIN",
-					"MAGE",
-					"WARLOCK",
-				},
-			},
-			[1] = {
-				["price"] = 31,
+				["price"] = 13,
 				["specs"] = {
 					"SHADOW_PRIEST",
 				},
 			},
 		},
 	},
-	[22732] = {
-		["price"] = 1,
+	[22803] = {
+		["price"] = ,
+		["by_tier"] = {
+			[3] = {
+				["price"] = 3,
+				["specs"] = {
+					"MAGE",
+					"WARLOCK",
+				},
+			},
+		},
+	},
+	[22968] = {
+		["price"] = ,
+	},
+	[22813] = {
+		["price"] = ,
+	},
+	[22981] = {
+		["price"] = ,
 		["by_tier"] = {
 			[3] = {
 				["price"] = 1,
@@ -1375,40 +693,595 @@ addon.data.items = {
 					"PROT_WAR",
 				},
 			},
+		},
+	},
+	[22994] = {
+		["price"] = ,
+	},
+	[23075] = {
+		["price"] = ,
+	},
+	[22983] = {
+		["price"] = ,
+		["by_tier"] = {
 			[1] = {
-				["price"] = 4,
+				["price"] = 40,
 				["specs"] = {
-					"BEAR_DRUID",
+					"MAGE",
+					"SHADOW_PRIEST",
+				},
+			},
+			[2] = {
+				["price"] = 23,
+				["specs"] = {
+					"WARLOCK",
 				},
 			},
 		},
 	},
-	[20929] = {
-		["price"] = 1,
+	[23070] = {
+		["price"] = ,
 		["by_tier"] = {
 			[1] = {
-				["price"] = 18,
+				["price"] = 43,
 				["specs"] = {
-					"PROT_WAR",
-					"RESTO_SHAM",
+					"MAGE",
+					"WARLOCK",
 				},
 			},
+		},
+	},
+	[22801] = {
+		["price"] = ,
+		["by_tier"] = {
+			[3] = {
+				["price"] = 2,
+				["specs"] = {
+					"HOLY_PRIEST",
+				},
+			},
+		},
+	},
+	[23001] = {
+		["price"] = ,
+		["by_tier"] = {
 			[2] = {
+				["price"] = 8,
+				["specs"] = {
+					"MAGE",
+				},
+			},
+		},
+	},
+	[23000] = {
+		["price"] = ,
+		["by_tier"] = {
+			[3] = {
 				["price"] = 11,
 				["specs"] = {
+					"PROT_WAR",
+				},
+			},
+			[1] = {
+				["price"] = 42,
+				["specs"] = {
+					"FURY_WAR",
+				},
+			},
+		},
+	},
+	[22808] = {
+		["price"] = ,
+	},
+	[22353] = {
+		["price"] = ,
+	},
+	[22360] = {
+		["price"] = ,
+	},
+	[22367] = {
+		["price"] = ,
+	},
+	[23548] = {
+		["price"] = ,
+		["by_tier"] = {
+			[1] = {
+				["price"] = 6,
+				["specs"] = {
+					"PROT_WAR",
+					"FURY_WAR",
 					"ROGUE",
 					"HUNTER",
 				},
 			},
 		},
 	},
-	[20933] = {
-		["price"] = 1,
+	[23545] = {
+		["price"] = ,
+		["by_tier"] = {
+			[1] = {
+				["price"] = 6,
+				["specs"] = {
+					"MAGE",
+					"WARLOCK",
+				},
+			},
+			[3] = {
+				["price"] = 2,
+				["specs"] = {
+					"HOLY_PRIEST",
+				},
+			},
+		},
+	},
+	[] = {
+		["price"] = ,
 		["by_tier"] = {
 			[2] = {
+				["price"] = 4,
+				["specs"] = {
+					"PROT_WAR",
+				},
+			},
+		},
+	},
+	[] = {
+		["price"] = ,
+		["by_tier"] = {
+			[1] = {
+				["price"] = 6,
+				["specs"] = {
+					"RESTO_SHAM",
+					"RESTO_DRUID",
+					"HOLY_PRIEST",
+				},
+			},
+		},
+	},
+	[23047] = {
+		["price"] = ,
+		["by_tier"] = {
+			[1] = {
+				["price"] = 32,
+				["specs"] = {
+					"RESTO_SHAM",
+					"RESTO_DRUID",
+					"HOLY_PRIEST",
+				},
+			},
+		},
+	},
+	[23045] = {
+		["price"] = ,
+		["by_tier"] = {
+			[3] = {
+				["price"] = 9,
+				["specs"] = {
+					"PROT_WAR",
+				},
+			},
+			[1] = {
+				["price"] = 36,
+				["specs"] = {
+					"FURY_WAR",
+					"ROGUE",
+				},
+			},
+		},
+	},
+	[23242] = {
+		["price"] = ,
+		["by_tier"] = {
+			[3] = {
+				["price"] = 5,
+				["specs"] = {
+					"ROGUE",
+				},
+			},
+			[1] = {
+				["price"] = 18,
+				["specs"] = {
+					"HUNTER",
+				},
+			},
+		},
+	},
+	[23043] = {
+		["price"] = ,
+		["by_tier"] = {
+			[2] = {
+				["price"] = 12,
+				["specs"] = {
+					"PROT_WAR",
+				},
+			},
+			[3] = {
+				["price"] = 5,
+				["specs"] = {
+					"FURY_WAR",
+				},
+			},
+		},
+	},
+	[23048] = {
+		["price"] = ,
+		["by_tier"] = {
+			[1] = {
+				["price"] = 38,
+				["specs"] = {
+					"RESTO_DRUID",
+					"HOLY_PRIEST",
+				},
+			},
+		},
+	},
+	[23041] = {
+		["price"] = ,
+		["by_tier"] = {
+			[3] = {
+				["price"] = 20,
+				["specs"] = {
+					"PROT_WAR",
+				},
+			},
+			[1] = {
+				["price"] = 80,
+				["specs"] = {
+					"FURY_WAR",
+					"ROGUE",
+					"HUNTER",
+				},
+			},
+		},
+	},
+	[23040] = {
+		["price"] = ,
+		["by_tier"] = {
+			[2] = {
+				["price"] = 6,
+				["specs"] = {
+					"PROT_WAR",
+				},
+			},
+		},
+	},
+	[23046] = {
+		["price"] = ,
+		["by_tier"] = {
+			[1] = {
+				["price"] = 56,
+				["specs"] = {
+					"MAGE",
+					"WARLOCK",
+					"SHADOW_PRIEST",
+				},
+			},
+			[3] = {
+				["price"] = 14,
+				["specs"] = {
+					"HOLY_PRIEST",
+				},
+			},
+		},
+	},
+	[23050] = {
+		["price"] = ,
+		["by_tier"] = {
+			[1] = {
+				["price"] = 43,
+				["specs"] = {
+					"MAGE",
+					"WARLOCK",
+				},
+			},
+		},
+	},
+	[23049] = {
+		["price"] = ,
+		["by_tier"] = {
+			[1] = {
+				["price"] = 49,
+				["specs"] = {
+					"MAGE",
+					"WARLOCK",
+					"SHADOW_PRIEST",
+				},
+			},
+		},
+	},
+	[22520] = {
+		["price"] = ,
+	},
+	[23060] = {
+		["price"] = ,
+		["by_tier"] = {
+			[1] = {
+				["price"] = 14,
+				["specs"] = {
+					"ROGUE",
+				},
+			},
+		},
+	},
+	[23057] = {
+		["price"] = ,
+		["by_tier"] = {
+			[2] = {
+				["price"] = 8,
+				["specs"] = {
+					"MAGE",
+					"WARLOCK",
+				},
+			},
+		},
+	},
+	[22798] = {
+		["price"] = ,
+	},
+	[23059] = {
+		["price"] = ,
+		["by_tier"] = {
+			[2] = {
+				["price"] = 12,
+				["specs"] = {
+					"PROT_WAR",
+				},
+			},
+			[3] = {
+				["price"] = 5,
+				["specs"] = {
+					"FURY_WAR",
+				},
+			},
+		},
+	},
+	[22802] = {
+		["price"] = ,
+		["by_tier"] = {
+			[1] = {
+				["price"] = 77,
+				["specs"] = {
+					"PROT_WAR",
+					"ROGUE",
+					"HUNTER",
+				},
+			},
+			[2] = {
+				["price"] = 45,
+				["specs"] = {
+					"FURY_WAR",
+				},
+			},
+		},
+	},
+	[23065] = {
+		["price"] = ,
+		["by_tier"] = {
+			[1] = {
+				["price"] = 27,
+				["specs"] = {
+					"RESTO_SHAM",
+				},
+			},
+		},
+	},
+	[23053] = {
+		["price"] = ,
+		["by_tier"] = {
+			[3] = {
+				["price"] = 11,
+				["specs"] = {
+					"PROT_WAR",
+					"HUNTER",
+				},
+			},
+			[1] = {
+				["price"] = 45,
+				["specs"] = {
+					"FURY_WAR",
+				},
+			},
+		},
+	},
+	[23062] = {
+		["price"] = ,
+		["by_tier"] = {
+			[2] = {
+				["price"] = 8,
+				["specs"] = {
+					"MAGE",
+				},
+			},
+		},
+	},
+	[23056] = {
+		["price"] = ,
+		["by_tier"] = {
+			[1] = {
+				["price"] = 65,
+				["specs"] = {
+					"RESTO_SHAM",
+					"RESTO_DRUID",
+					"HOLY_PRIEST",
+				},
+			},
+		},
+	},
+	[23067] = {
+		["price"] = ,
+		["by_tier"] = {
+			[2] = {
+				["price"] = 4,
+				["specs"] = {
+					"HUNTER",
+				},
+			},
+		},
+	},
+	[22799] = {
+		["price"] = ,
+		["by_tier"] = {
+			[2] = {
+				["price"] = 15,
+				["specs"] = {
+					"MAGE",
+					"WARLOCK",
+				},
+			},
+		},
+	},
+	[22821] = {
+		["price"] = ,
+		["by_tier"] = {
+			[1] = {
+				["price"] = 18,
+				["specs"] = {
+					"MAGE",
+				},
+			},
+			[2] = {
+				["price"] = 11,
+				["specs"] = {
+					"WARLOCK",
+				},
+			},
+		},
+	},
+	[23061] = {
+		["price"] = ,
+		["by_tier"] = {
+			[1] = {
+				["price"] = 27,
+				["specs"] = {
+					"HOLY_PRIEST",
+				},
+			},
+		},
+	},
+	[23054] = {
+		["price"] = ,
+		["by_tier"] = {
+			[2] = {
+				["price"] = 42,
+				["specs"] = {
+					"PROT_WAR",
+				},
+			},
+			[1] = {
+				["price"] = 72,
+				["specs"] = {
+					"FURY_WAR",
+					"ROGUE",
+				},
+			},
+		},
+	},
+	[23063] = {
+		["price"] = ,
+		["by_tier"] = {
+			[3] = {
 				["price"] = 1,
 				["specs"] = {
-					"SHADOW_PRIEST",
+					"WARLOCK",
+				},
+			},
+		},
+	},
+	[23064] = {
+		["price"] = ,
+		["by_tier"] = {
+			[3] = {
+				["price"] = 1,
+				["specs"] = {
+					"RESTO_DRUID",
+				},
+			},
+		},
+	},
+	[22819] = {
+		["price"] = ,
+		["by_tier"] = {
+			[1] = {
+				["price"] = 27,
+				["specs"] = {
+					"RESTO_SHAM",
+				},
+			},
+		},
+	},
+	[22812] = {
+		["price"] = ,
+		["by_tier"] = {
+			[1] = {
+				["price"] = 48,
+				["specs"] = {
+					"HUNTER",
+				},
+			},
+		},
+	},
+	[23577] = {
+		["price"] = ,
+		["by_tier"] = {
+			[1] = {
+				["price"] = 66,
+				["specs"] = {
+					"PROT_WAR",
+					"FURY_WAR",
+					"ROGUE",
+				},
+			},
+		},
+	},
+	[23226] = {
+		["price"] = ,
+		["by_tier"] = {
+			[1] = {
+				["price"] = ,
+				["specs"] = {
+					"BEAR_DRUID",
+				},
+			},
+		},
+	},
+	[23663] = {
+		["price"] = ,
+	},
+	[23044] = {
+		["price"] = ,
+	},
+	[23665] = {
+		["price"] = ,
+	},
+	[23221] = {
+		["price"] = ,
+		["by_tier"] = {
+			[3] = {
+				["price"] = ,
+				["specs"] = {
+					"PROT_WAR",
+					"FURY_WAR",
+					"ROGUE",
+				},
+			},
+		},
+	},
+	[23069] = {
+		["price"] = ,
+	},
+	[23664] = {
+		["price"] = ,
+	},
+	[23238] = {
+		["price"] = ,
+	},
+	[23237] = {
+		["price"] = ,
+		["by_tier"] = {
+			[1] = {
+				["price"] = ,
+				["specs"] = {
+					"MAGE",
 				},
 			},
 		},
