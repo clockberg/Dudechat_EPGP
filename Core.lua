@@ -327,6 +327,9 @@ end
 -- 		}
 -- 	}
 function GetItemData(item_id)
+	if not addon.data or not addon.data.items then
+		return nil
+	end
 	local item_data = addon.data.items[item_id]
 	if item_data and not item_data.by_tier then
 		item_data.by_tier = {}

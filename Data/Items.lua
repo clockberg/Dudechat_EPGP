@@ -3,7 +3,7 @@ local _, addon = ...
 addon.data = addon.data or {}
 addon.data.items = {
 	[22939] = {
-		["price"] = ,
+		["price"] = 7,
 		["by_tier"] = {
 			[1] = {
 				["price"] = 27,
@@ -20,10 +20,10 @@ addon.data.items = {
 		},
 	},
 	[22935] = {
-		["price"] = ,
+		["price"] = 1,
 	},
 	[22937] = {
-		["price"] = ,
+		["price"] = 3,
 		["by_tier"] = {
 			[3] = {
 				["price"] = 3,
@@ -35,7 +35,7 @@ addon.data.items = {
 		},
 	},
 	[22938] = {
-		["price"] = ,
+		["price"] = 5,
 		["by_tier"] = {
 			[2] = {
 				["price"] = 12,
@@ -52,7 +52,7 @@ addon.data.items = {
 		},
 	},
 	[22936] = {
-		["price"] = ,
+		["price"] = 6,
 		["by_tier"] = {
 			[1] = {
 				["price"] = 24,
@@ -64,16 +64,16 @@ addon.data.items = {
 		},
 	},
 	[22355] = {
-		["price"] = ,
+		["price"] = 1,
 	},
 	[22369] = {
-		["price"] = ,
+		["price"] = 1,
 	},
 	[22362] = {
-		["price"] = ,
+		["price"] = 1,
 	},
 	[22942] = {
-		["price"] = ,
+		["price"] = 4,
 		["by_tier"] = {
 			[2] = {
 				["price"] = 9,
@@ -84,10 +84,10 @@ addon.data.items = {
 		},
 	},
 	[22941] = {
-		["price"] = ,
+		["price"] = 1,
 	},
 	[22806] = {
-		["price"] = ,
+		["price"] = 5,
 		["by_tier"] = {
 			[2] = {
 				["price"] = 12,
@@ -104,10 +104,10 @@ addon.data.items = {
 		},
 	},
 	[22940] = {
-		["price"] = ,
+		["price"] = 1,
 	},
 	[22943] = {
-		["price"] = ,
+		["price"] = 3,
 		["by_tier"] = {
 			[2] = {
 				["price"] = 8,
@@ -118,16 +118,16 @@ addon.data.items = {
 		},
 	},
 	[22371] = {
-		["price"] = ,
+		["price"] = 1,
 	},
 	[22364] = {
-		["price"] = ,
+		["price"] = 1,
 	},
 	[22357] = {
-		["price"] = ,
+		["price"] = 1,
 	},
 	[22954] = {
-		["price"] = ,
+		["price"] = 22,
 		["by_tier"] = {
 			[1] = {
 				["price"] = 86,
@@ -141,7 +141,7 @@ addon.data.items = {
 		},
 	},
 	[22807] = {
-		["price"] = ,
+		["price"] = 11,
 		["by_tier"] = {
 			[1] = {
 				["price"] = 43,
@@ -153,7 +153,7 @@ addon.data.items = {
 		},
 	},
 	[22947] = {
-		["price"] = ,
+		["price"] = 2,
 		["by_tier"] = {
 			[3] = {
 				["price"] = 2,
@@ -164,7 +164,7 @@ addon.data.items = {
 		},
 	},
 	[22804] = {
-		["price"] = ,
+		["price"] = 10,
 		["by_tier"] = {
 			[2] = {
 				["price"] = 23,
@@ -177,7 +177,7 @@ addon.data.items = {
 		},
 	},
 	[23220] = {
-		["price"] = ,
+		["price"] = 4,
 		["by_tier"] = {
 			[3] = {
 				["price"] = 4,
@@ -195,7 +195,7 @@ addon.data.items = {
 		},
 	},
 	[23030] = {
-		["price"] = ,
+		["price"] = 8,
 		["by_tier"] = {
 			[2] = {
 				["price"] = 19,
@@ -207,7 +207,7 @@ addon.data.items = {
 		},
 	},
 	[23029] = {
-		["price"] = ,
+		["price"] = 6,
 		["by_tier"] = {
 			[2] = {
 				["price"] = 13,
@@ -219,7 +219,7 @@ addon.data.items = {
 		},
 	},
 	[23031] = {
-		["price"] = ,
+		["price"] = 11,
 		["by_tier"] = {
 			[1] = {
 				["price"] = 43,
@@ -231,10 +231,10 @@ addon.data.items = {
 		},
 	},
 	[23028] = {
-		["price"] = ,
+		["price"] = 1,
 	},
 	[22816] = {
-		["price"] = ,
+		["price"] = 8,
 		["by_tier"] = {
 			[2] = {
 				["price"] = 19,
@@ -246,16 +246,16 @@ addon.data.items = {
 		},
 	},
 	[23005] = {
-		["price"] = ,
+		["price"] = 1,
 	},
 	[22363] = {
-		["price"] = ,
+		["price"] = 1,
 	},
 	[22370] = {
-		["price"] = ,
+		["price"] = 1,
 	},
 	[22510] = {
-		["price"] = ,
+		["price"] = 3,
 		["by_tier"] = {
 			[2] = {
 				["price"] = 8,
@@ -266,7 +266,7 @@ addon.data.items = {
 		},
 	},
 	[23068] = {
-		["price"] = ,
+		["price"] = 11,
 		["by_tier"] = {
 			[3] = {
 				["price"] = 11,
@@ -283,10 +283,10 @@ addon.data.items = {
 		},
 	},
 	[23033] = {
-		["price"] = ,
+		["price"] = 1,
 	},
 	[23035] = {
-		["price"] = ,
+		["price"] = 5,
 		["by_tier"] = {
 			[3] = {
 				["price"] = 5,
@@ -303,19 +303,19 @@ addon.data.items = {
 		},
 	},
 	[23019] = {
-		["price"] = ,
+		["price"] = 1,
 	},
 	[23036] = {
-		["price"] = ,
+		["price"] = 7,
 		["by_tier"] = {
 			[1] = {
-				["price"] = 22,
+				["price"] = 27,
 				["specs"] = {
-					"BEAR_DRUID",
+					"RESTO_DRUID",
 				},
 			},
 			[2] = {
-				["price"] = 13,
+				["price"] = 16,
 				["specs"] = {
 					"HOLY_PRIEST",
 				},
@@ -323,16 +323,16 @@ addon.data.items = {
 		},
 	},
 	[22366] = {
-		["price"] = ,
+		["price"] = 1,
 	},
 	[22359] = {
-		["price"] = ,
+		["price"] = 1,
 	},
 	[22352] = {
-		["price"] = ,
+		["price"] = 1,
 	},
 	[23038] = {
-		["price"] = ,
+		["price"] = 17,
 		["by_tier"] = {
 			[3] = {
 				["price"] = 17,
@@ -350,7 +350,7 @@ addon.data.items = {
 		},
 	},
 	[23039] = {
-		["price"] = ,
+		["price"] = 3,
 		["by_tier"] = {
 			[1] = {
 				["price"] = 11,
@@ -361,10 +361,10 @@ addon.data.items = {
 		},
 	},
 	[23037] = {
-		["price"] = ,
+		["price"] = 1,
 	},
 	[22800] = {
-		["price"] = ,
+		["price"] = 6,
 		["by_tier"] = {
 			[2] = {
 				["price"] = 15,
@@ -376,10 +376,10 @@ addon.data.items = {
 		},
 	},
 	[23042] = {
-		["price"] = ,
+		["price"] = 1,
 	},
 	[23009] = {
-		["price"] = ,
+		["price"] = 7,
 		["by_tier"] = {
 			[1] = {
 				["price"] = 27,
@@ -390,7 +390,7 @@ addon.data.items = {
 		},
 	},
 	[23018] = {
-		["price"] = ,
+		["price"] = 2,
 		["by_tier"] = {
 			[3] = {
 				["price"] = 2,
@@ -407,10 +407,10 @@ addon.data.items = {
 		},
 	},
 	[23004] = {
-		["price"] = ,
+		["price"] = 1,
 	},
 	[23219] = {
-		["price"] = ,
+		["price"] = 14,
 		["by_tier"] = {
 			[1] = {
 				["price"] = 54,
@@ -422,7 +422,7 @@ addon.data.items = {
 		},
 	},
 	[23017] = {
-		["price"] = ,
+		["price"] = 3,
 		["by_tier"] = {
 			[3] = {
 				["price"] = 3,
@@ -434,7 +434,7 @@ addon.data.items = {
 		},
 	},
 	[23014] = {
-		["price"] = ,
+		["price"] = 14,
 		["by_tier"] = {
 			[2] = {
 				["price"] = 32,
@@ -448,19 +448,19 @@ addon.data.items = {
 		},
 	},
 	[22372] = {
-		["price"] = ,
+		["price"] = 1,
 	},
 	[22365] = {
-		["price"] = ,
+		["price"] = 1,
 	},
 	[22358] = {
-		["price"] = ,
+		["price"] = 1,
 	},
 	[23032] = {
-		["price"] = ,
+		["price"] = 1,
 	},
 	[23021] = {
-		["price"] = ,
+		["price"] = 5,
 		["by_tier"] = {
 			[2] = {
 				["price"] = 11,
@@ -477,7 +477,7 @@ addon.data.items = {
 		},
 	},
 	[23023] = {
-		["price"] = ,
+		["price"] = 6,
 		["by_tier"] = {
 			[2] = {
 				["price"] = 15,
@@ -500,16 +500,16 @@ addon.data.items = {
 		},
 	},
 	[23073] = {
-		["price"] = ,
+		["price"] = 1,
 	},
 	[23020] = {
-		["price"] = ,
+		["price"] = 1,
 	},
 	[22691] = {
-		["price"] = ,
+		["price"] = 1,
 	},
 	[23071] = {
-		["price"] = ,
+		["price"] = 5,
 		["by_tier"] = {
 			[3] = {
 				["price"] = 5,
@@ -527,10 +527,10 @@ addon.data.items = {
 		},
 	},
 	[22809] = {
-		["price"] = ,
+		["price"] = 1,
 	},
 	[23025] = {
-		["price"] = ,
+		["price"] = 6,
 		["by_tier"] = {
 			[2] = {
 				["price"] = 15,
@@ -542,7 +542,7 @@ addon.data.items = {
 		},
 	},
 	[22811] = {
-		["price"] = ,
+		["price"] = 5,
 		["by_tier"] = {
 			[2] = {
 				["price"] = 11,
@@ -559,7 +559,7 @@ addon.data.items = {
 		},
 	},
 	[23027] = {
-		["price"] = ,
+		["price"] = 7,
 		["by_tier"] = {
 			[1] = {
 				["price"] = 27,
@@ -570,16 +570,16 @@ addon.data.items = {
 		},
 	},
 	[22349] = {
-		["price"] = ,
+		["price"] = 1,
 	},
 	[22351] = {
-		["price"] = ,
+		["price"] = 1,
 	},
 	[22350] = {
-		["price"] = ,
+		["price"] = 1,
 	},
 	[22960] = {
-		["price"] = ,
+		["price"] = 11,
 		["by_tier"] = {
 			[3] = {
 				["price"] = 11,
@@ -597,7 +597,7 @@ addon.data.items = {
 		},
 	},
 	[22961] = {
-		["price"] = ,
+		["price"] = 3,
 		["by_tier"] = {
 			[1] = {
 				["price"] = 11,
@@ -608,10 +608,10 @@ addon.data.items = {
 		},
 	},
 	[22815] = {
-		["price"] = ,
+		["price"] = 1,
 	},
 	[22820] = {
-		["price"] = ,
+		["price"] = 5,
 		["by_tier"] = {
 			[1] = {
 				["price"] = 18,
@@ -623,22 +623,22 @@ addon.data.items = {
 		},
 	},
 	[22818] = {
-		["price"] = ,
+		["price"] = 1,
 	},
 	[22368] = {
-		["price"] = ,
+		["price"] = 1,
 	},
 	[22354] = {
-		["price"] = ,
+		["price"] = 1,
 	},
 	[22361] = {
-		["price"] = ,
+		["price"] = 1,
 	},
 	[22967] = {
-		["price"] = ,
+		["price"] = 1,
 	},
 	[22810] = {
-		["price"] = ,
+		["price"] = 4,
 		["by_tier"] = {
 			[3] = {
 				["price"] = 4,
@@ -650,7 +650,7 @@ addon.data.items = {
 		},
 	},
 	[22988] = {
-		["price"] = ,
+		["price"] = 3,
 		["by_tier"] = {
 			[3] = {
 				["price"] = 3,
@@ -667,7 +667,7 @@ addon.data.items = {
 		},
 	},
 	[22803] = {
-		["price"] = ,
+		["price"] = 3,
 		["by_tier"] = {
 			[3] = {
 				["price"] = 3,
@@ -679,13 +679,13 @@ addon.data.items = {
 		},
 	},
 	[22968] = {
-		["price"] = ,
+		["price"] = 1,
 	},
 	[22813] = {
-		["price"] = ,
+		["price"] = 1,
 	},
 	[22981] = {
-		["price"] = ,
+		["price"] = 1,
 		["by_tier"] = {
 			[3] = {
 				["price"] = 1,
@@ -696,13 +696,13 @@ addon.data.items = {
 		},
 	},
 	[22994] = {
-		["price"] = ,
+		["price"] = 1,
 	},
 	[23075] = {
-		["price"] = ,
+		["price"] = 1,
 	},
 	[22983] = {
-		["price"] = ,
+		["price"] = 10,
 		["by_tier"] = {
 			[1] = {
 				["price"] = 40,
@@ -720,7 +720,7 @@ addon.data.items = {
 		},
 	},
 	[23070] = {
-		["price"] = ,
+		["price"] = 11,
 		["by_tier"] = {
 			[1] = {
 				["price"] = 43,
@@ -732,7 +732,7 @@ addon.data.items = {
 		},
 	},
 	[22801] = {
-		["price"] = ,
+		["price"] = 2,
 		["by_tier"] = {
 			[3] = {
 				["price"] = 2,
@@ -743,7 +743,7 @@ addon.data.items = {
 		},
 	},
 	[23001] = {
-		["price"] = ,
+		["price"] = 3,
 		["by_tier"] = {
 			[2] = {
 				["price"] = 8,
@@ -754,7 +754,7 @@ addon.data.items = {
 		},
 	},
 	[23000] = {
-		["price"] = ,
+		["price"] = 11,
 		["by_tier"] = {
 			[3] = {
 				["price"] = 11,
@@ -771,19 +771,19 @@ addon.data.items = {
 		},
 	},
 	[22808] = {
-		["price"] = ,
+		["price"] = 1,
 	},
 	[22353] = {
-		["price"] = ,
+		["price"] = 1,
 	},
 	[22360] = {
-		["price"] = ,
+		["price"] = 1,
 	},
 	[22367] = {
-		["price"] = ,
+		["price"] = 1,
 	},
 	[23548] = {
-		["price"] = ,
+		["price"] = 2,
 		["by_tier"] = {
 			[1] = {
 				["price"] = 6,
@@ -797,7 +797,7 @@ addon.data.items = {
 		},
 	},
 	[23545] = {
-		["price"] = ,
+		["price"] = 2,
 		["by_tier"] = {
 			[1] = {
 				["price"] = 6,
@@ -814,8 +814,8 @@ addon.data.items = {
 			},
 		},
 	},
-	[] = {
-		["price"] = ,
+	[23549] = {
+		["price"] = 2,
 		["by_tier"] = {
 			[2] = {
 				["price"] = 4,
@@ -825,8 +825,8 @@ addon.data.items = {
 			},
 		},
 	},
-	[] = {
-		["price"] = ,
+	[23547] = {
+		["price"] = 2,
 		["by_tier"] = {
 			[1] = {
 				["price"] = 6,
@@ -839,7 +839,7 @@ addon.data.items = {
 		},
 	},
 	[23047] = {
-		["price"] = ,
+		["price"] = 8,
 		["by_tier"] = {
 			[1] = {
 				["price"] = 32,
@@ -852,7 +852,7 @@ addon.data.items = {
 		},
 	},
 	[23045] = {
-		["price"] = ,
+		["price"] = 9,
 		["by_tier"] = {
 			[3] = {
 				["price"] = 9,
@@ -870,7 +870,7 @@ addon.data.items = {
 		},
 	},
 	[23242] = {
-		["price"] = ,
+		["price"] = 5,
 		["by_tier"] = {
 			[3] = {
 				["price"] = 5,
@@ -887,7 +887,7 @@ addon.data.items = {
 		},
 	},
 	[23043] = {
-		["price"] = ,
+		["price"] = 5,
 		["by_tier"] = {
 			[2] = {
 				["price"] = 12,
@@ -904,7 +904,7 @@ addon.data.items = {
 		},
 	},
 	[23048] = {
-		["price"] = ,
+		["price"] = 9,
 		["by_tier"] = {
 			[1] = {
 				["price"] = 38,
@@ -916,7 +916,7 @@ addon.data.items = {
 		},
 	},
 	[23041] = {
-		["price"] = ,
+		["price"] = 20,
 		["by_tier"] = {
 			[3] = {
 				["price"] = 20,
@@ -935,7 +935,7 @@ addon.data.items = {
 		},
 	},
 	[23040] = {
-		["price"] = ,
+		["price"] = 2,
 		["by_tier"] = {
 			[2] = {
 				["price"] = 6,
@@ -946,7 +946,7 @@ addon.data.items = {
 		},
 	},
 	[23046] = {
-		["price"] = ,
+		["price"] = 14,
 		["by_tier"] = {
 			[1] = {
 				["price"] = 56,
@@ -965,7 +965,7 @@ addon.data.items = {
 		},
 	},
 	[23050] = {
-		["price"] = ,
+		["price"] = 11,
 		["by_tier"] = {
 			[1] = {
 				["price"] = 43,
@@ -977,7 +977,7 @@ addon.data.items = {
 		},
 	},
 	[23049] = {
-		["price"] = ,
+		["price"] = 12,
 		["by_tier"] = {
 			[1] = {
 				["price"] = 49,
@@ -990,10 +990,10 @@ addon.data.items = {
 		},
 	},
 	[22520] = {
-		["price"] = ,
+		["price"] = 6,
 	},
 	[23060] = {
-		["price"] = ,
+		["price"] = 3,
 		["by_tier"] = {
 			[1] = {
 				["price"] = 14,
@@ -1004,7 +1004,7 @@ addon.data.items = {
 		},
 	},
 	[23057] = {
-		["price"] = ,
+		["price"] = 3,
 		["by_tier"] = {
 			[2] = {
 				["price"] = 8,
@@ -1016,10 +1016,10 @@ addon.data.items = {
 		},
 	},
 	[22798] = {
-		["price"] = ,
+		["price"] = 8,
 	},
 	[23059] = {
-		["price"] = ,
+		["price"] = 5,
 		["by_tier"] = {
 			[2] = {
 				["price"] = 12,
@@ -1036,7 +1036,7 @@ addon.data.items = {
 		},
 	},
 	[22802] = {
-		["price"] = ,
+		["price"] = 19,
 		["by_tier"] = {
 			[1] = {
 				["price"] = 77,
@@ -1055,7 +1055,7 @@ addon.data.items = {
 		},
 	},
 	[23065] = {
-		["price"] = ,
+		["price"] = 7,
 		["by_tier"] = {
 			[1] = {
 				["price"] = 27,
@@ -1066,7 +1066,7 @@ addon.data.items = {
 		},
 	},
 	[23053] = {
-		["price"] = ,
+		["price"] = 11,
 		["by_tier"] = {
 			[3] = {
 				["price"] = 11,
@@ -1084,7 +1084,7 @@ addon.data.items = {
 		},
 	},
 	[23062] = {
-		["price"] = ,
+		["price"] = 3,
 		["by_tier"] = {
 			[2] = {
 				["price"] = 8,
@@ -1095,7 +1095,7 @@ addon.data.items = {
 		},
 	},
 	[23056] = {
-		["price"] = ,
+		["price"] = 16,
 		["by_tier"] = {
 			[1] = {
 				["price"] = 65,
@@ -1108,7 +1108,7 @@ addon.data.items = {
 		},
 	},
 	[23067] = {
-		["price"] = ,
+		["price"] = 2,
 		["by_tier"] = {
 			[2] = {
 				["price"] = 4,
@@ -1119,7 +1119,7 @@ addon.data.items = {
 		},
 	},
 	[22799] = {
-		["price"] = ,
+		["price"] = 6,
 		["by_tier"] = {
 			[2] = {
 				["price"] = 15,
@@ -1131,7 +1131,7 @@ addon.data.items = {
 		},
 	},
 	[22821] = {
-		["price"] = ,
+		["price"] = 5,
 		["by_tier"] = {
 			[1] = {
 				["price"] = 18,
@@ -1148,7 +1148,7 @@ addon.data.items = {
 		},
 	},
 	[23061] = {
-		["price"] = ,
+		["price"] = 7,
 		["by_tier"] = {
 			[1] = {
 				["price"] = 27,
@@ -1159,7 +1159,7 @@ addon.data.items = {
 		},
 	},
 	[23054] = {
-		["price"] = ,
+		["price"] = 18,
 		["by_tier"] = {
 			[2] = {
 				["price"] = 42,
@@ -1177,7 +1177,7 @@ addon.data.items = {
 		},
 	},
 	[23063] = {
-		["price"] = ,
+		["price"] = 1,
 		["by_tier"] = {
 			[3] = {
 				["price"] = 1,
@@ -1188,7 +1188,7 @@ addon.data.items = {
 		},
 	},
 	[23064] = {
-		["price"] = ,
+		["price"] = 1,
 		["by_tier"] = {
 			[3] = {
 				["price"] = 1,
@@ -1199,7 +1199,7 @@ addon.data.items = {
 		},
 	},
 	[22819] = {
-		["price"] = ,
+		["price"] = 7,
 		["by_tier"] = {
 			[1] = {
 				["price"] = 27,
@@ -1210,7 +1210,7 @@ addon.data.items = {
 		},
 	},
 	[22812] = {
-		["price"] = ,
+		["price"] = 12,
 		["by_tier"] = {
 			[1] = {
 				["price"] = 48,
@@ -1221,7 +1221,7 @@ addon.data.items = {
 		},
 	},
 	[23577] = {
-		["price"] = ,
+		["price"] = 17,
 		["by_tier"] = {
 			[1] = {
 				["price"] = 66,
@@ -1234,10 +1234,10 @@ addon.data.items = {
 		},
 	},
 	[23226] = {
-		["price"] = ,
+		["price"] = 1,
 		["by_tier"] = {
 			[1] = {
-				["price"] = ,
+				["price"] = 5,
 				["specs"] = {
 					"BEAR_DRUID",
 				},
@@ -1245,19 +1245,19 @@ addon.data.items = {
 		},
 	},
 	[23663] = {
-		["price"] = ,
+		["price"] = 1,
 	},
 	[23044] = {
-		["price"] = ,
+		["price"] = 1,
 	},
 	[23665] = {
-		["price"] = ,
+		["price"] = 1,
 	},
 	[23221] = {
-		["price"] = ,
+		["price"] = 1,
 		["by_tier"] = {
 			[3] = {
-				["price"] = ,
+				["price"] = 5,
 				["specs"] = {
 					"PROT_WAR",
 					"FURY_WAR",
@@ -1267,19 +1267,19 @@ addon.data.items = {
 		},
 	},
 	[23069] = {
-		["price"] = ,
+		["price"] = 1,
 	},
 	[23664] = {
-		["price"] = ,
+		["price"] = 1,
 	},
 	[23238] = {
-		["price"] = ,
+		["price"] = 1,
 	},
 	[23237] = {
-		["price"] = ,
+		["price"] = 1,
 		["by_tier"] = {
 			[1] = {
-				["price"] = ,
+				["price"] = 22,
 				["specs"] = {
 					"MAGE",
 				},
